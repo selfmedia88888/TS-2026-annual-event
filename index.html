@@ -16,6 +16,18 @@
         }
         body { font-family: 'Inter', 'Noto Sans TC', sans-serif; background-color: var(--color-bg); color: #1e293b; }
         .dragging { opacity: 0.5; background-color: #f1f5f9 !important; border: 2px dashed var(--color-primary) !important; }
+        
+        /* 🔴 ⚡ 核心功能修正：強制所有可編輯欄位支援 Enter 換行，並保持排版美觀 */
+        [contenteditable="true"] { 
+            white-space: pre-wrap !important; 
+            word-break: break-word !important;
+        }
+        
+        /* 手機版卡片與客製化區塊的純文本也同步支援換行顯示 */
+        .sync-pre-wrap {
+            white-space: pre-wrap !important;
+        }
+
         [contenteditable="true"]:focus { outline: 2px solid var(--color-primary); background-color: #ffffff; box-shadow: 0 0 0 4px rgba(84, 131, 179, 0.15); border-radius: 6px; }
         .card-shadow { box-shadow: 0 4px 18px -4px rgba(5, 38, 89, 0.05), 0 2px 6px -1px rgba(5, 38, 89, 0.03); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -27,7 +39,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // 🎯 已完美嵌入組長專屬的雲端密鑰
+        // 🎯 完美綁定組長專屬的雲端密鑰
         const firebaseConfig = {
             apiKey: "AIzaSyBQdnW16U1OxpDR05hvAv2fcZ4aMKXsyfM",
             authDomain: "test-fee8d.firebaseapp.com",
@@ -37,29 +49,42 @@
             appId: "1:415299571304:web:391ce6ecb4d8e2f19035dd",
             measurementId: "G-EL7VKT97L4",
             databaseURL: "https://test-fee8d-default-rtdb.firebaseio.com" 
-            // 💡 備註：若您當初 Realtime Database 地區選亞洲(新加坡)，請將上面這行網址改為：
-            // https://test-fee8d-default-rtdb.asia-southeast1.firebasedatabase.app
         };
 
-        // 初始化雲端神經網絡
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const dataRef = ref(db, 'ts_2026_realtime_data');
+        try {
+            const app = initializeApp(firebaseConfig);
+            const db = getDatabase(app);
+            const dataRef = ref(db, 'ts_2026_realtime_data');
 
-        // 監聽雲端大腦：任何夥伴修改內容，全台所有人的電腦/手機不需要重新整理，畫面會實時秒更！
-        onValue(dataRef, (snapshot) => {
-            const cloudData = snapshot.val();
-            if (cloudData) {
-                window.appData = cloudData;
-                window.refreshActivePanel();
-            } else {
-                window.saveData(); // 初次無資料時初始化
-            }
-        });
+            // 註冊全域雲端儲存大腦
+            window.cloudSaveEngine = function(data) {
+                set(dataRef, data).catch(e => console.log("雲端同步暫時受阻，已自動轉為在地備份：", e));
+            };
 
-        // 實時推播同步至雲端資料庫
-        window.saveData = function() {
-            set(dataRef, window.appData);
+            // 監聽雲端大腦
+            onValue(dataRef, (snapshot) => {
+                const cloudData = snapshot.val();
+                const statusBadge = document.getElementById('cloud-status-badge');
+                
+                if (cloudData) {
+                    window.appData = cloudData;
+                    window.refreshActivePanel();
+                    statusBadge.className = "text-xs text-emerald-600 bg-emerald-50 border border-emerald-100 px-4 py-2 rounded-full font-medium shadow-inner flex items-center gap-1.5 shrink-0";
+                    statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> 雲端連線・實時同步中`;
+                } else {
+                    window.cloudSaveEngine(window.appData);
+                    statusBadge.className = "text-xs text-blue-600 bg-blue-50 border border-blue-100 px-4 py-2 rounded-full font-medium shadow-inner flex items-center gap-1.5 shrink-0";
+                    statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-500"></span> 本地舊資料已成功同步至雲端`;
+                }
+            }, (error) => {
+                console.log("Firebase 權限尚未開啟，目前正啟用「在地離線保險模式」正常運作中。");
+                const statusBadge = document.getElementById('cloud-status-badge');
+                statusBadge.className = "text-xs text-amber-600 bg-amber-50 border border-amber-100 px-4 py-2 rounded-full font-medium shadow-inner flex items-center gap-1.5 shrink-0";
+                statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500"></span> 在地保險模式（雲端權限待開啟）`;
+            });
+
+        } catch (e) {
+            console.error("Firebase 初始化失敗，已自動轉為全在地安全模式", e);
         }
     </script>
 
@@ -72,15 +97,15 @@
             </div>
             <div>
                 <h1 class="text-base font-bold tracking-tight text-[#052659]">TS 2026 年度盛會智慧中樞</h1>
-                <p class="text-[9px] uppercase font-bold tracking-widest text-slate-400">⚡ 真・實時雲端同步決策系統</p>
+                <p class="text-[9px] uppercase font-bold tracking-widest text-slate-400">⚡ 數據安全防丟失完全體系統</p>
             </div>
         </div>
         <div class="flex items-center gap-4 w-full sm:w-auto justify-end">
             <button onclick="exportAllData()" class="text-slate-400 hover:text-slate-600 p-2 text-xs" title="導出備份 JSON">
                 <i class="fa-solid fa-download"></i> 備份導出
             </button>
-            <span class="text-xs text-emerald-600 bg-emerald-50 border border-emerald-100 px-4 py-2 rounded-full font-medium shadow-inner flex items-center gap-1.5 shrink-0">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> 雲端連線・實時同步中
+            <span id="cloud-status-badge" class="text-xs text-amber-600 bg-amber-50 border border-amber-100 px-4 py-2 rounded-full font-medium shadow-inner flex items-center gap-1.5 shrink-0">
+                <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> 正在載入本地安全數據...
             </span>
         </div>
     </header>
@@ -135,7 +160,7 @@
                 <div class="bg-white border border-slate-200 rounded-2xl p-5 card-shadow mb-6">
                     <h2 class="text-lg font-bold text-[#052659]" id="team-title-display">小組盤</h2>
                     <div class="mt-4">
-                        <label class="text-xs font-bold text-slate-400 block mb-2">👥 本組作戰組員名單 (直接打字，全台秒同步)</label>
+                        <label class="text-xs font-bold text-slate-400 block mb-2">👥 本組作戰組員名單 (直接打字換行，全台秒同步)</label>
                         <div id="team-members-box" contenteditable="true" onblur="saveCurrentTeamMembers(this.innerText)" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-700 focus:outline-none min-h-[50px] leading-relaxed"></div>
                     </div>
                 </div>
@@ -153,45 +178,43 @@
     <script>
         const fallbackTimeline = [
             { time: "09:00 - 12:00", module: "前置與彩排", stage: "硬體測試、大螢幕簡報、抽獎畫面。彩排重點：主持人與長官走位、T台燈光。", equip: "無線麥克風*4、簡報筆*2", pa: "播放開場音樂、測試燈光", photo: "主要攝影、Photocall點位確認", note: "工作人員8點半到" },
-            { time: "12:00 - 13:00", module: "港風沉浸進場", stage: "開放外場拍照區、背景港風 BGM 播放。400人依座位入座。", equip: "拍照背板、指示牌", pa: "經典港片組曲", photo: "外場拍照背板區抓拍", note: "動線組防止拍照回堵" },
-            { time: "13:00 - 13:30", module: "盛大開場秀", stage: "T 台全面啟用！燈光音效全開。核心籌備團隊與長官港風走秀進場。", equip: "走秀道具、墨鏡", pa: "震撼開場大片與音效", photo: "T台正前方主位攝影", note: "舞台執行組引導順序" },
-            { time: "13:30 - 14:00", module: "🎯 遊戲接口 A", stage: "全場就座，主持人宣讀今年港風大賽總規則。預留發放籌碼時間。", equip: "初始卡牌、規則手冊", pa: "背景賭神音樂低音量", photo: "捕捉台下驚訝與互動神情", note: "控制在30分鐘內" },
-            { time: "14:00 - 16:00", module: "第一章：榮耀表揚", stage: "全場專注力最高峰。長官致詞、表揚頒獎。T台作為榮耀大道，燈光聚焦金黃色。", equip: "獎盃、托盤、證書", pa: "頒獎大氣激勵音樂", photo: "受獎者特寫與大合照", note: "得獎感言嚴控超時" },
-            { time: "16:00 - 17:30", module: "🎯 遊戲接口 B", stage: "全場解封！進入高互動大逃殺環節（400人社交猜拳搶星星）。", equip: "星星貼紙、計分板、大球*3", pa: "大逃殺緊張倒數音樂", photo: "全景空拍、桌間移動抓拍", note: "動線組全員下去維護安全" },
-            { time: "17:30 - 18:30", module: "中場沉澱與熱舞", stage: "眾人回座，公布決賽名單。首席熱舞炸場，無縫轉入晚宴氣氛。", equip: "舞者表演道具", pa: "熱舞高強拍節奏音樂", photo: "舞台動態錄影", note: "行政組通知餐廳備菜" },
-            { time: "18:30 - 19:30", module: "圓桌晚宴 (前段)", stage: "40桌同時用餐，播放港風爵士。大會主控群與長官進行第一輪逐桌敬酒。", equip: "主控席酒水", pa: "舒服港風爵士樂", photo: "逐桌用餐溫馨花絮", note: "動線組開路嚴防卡關" },
-            { time: "19:30 - 20:15", module: "🎯 遊戲接口 C", stage: "晚宴高潮：巔峰決戰（賭神爭霸）。決賽選手登上架高 T 台，40桌觀戰下注。", equip: "決賽桌椅、撲克牌道具", pa: "賭神決戰命懸一線音效", photo: "T台決戰主螢幕轉播", note: "舞台組提早搬運道具" },
-            { time: "20:15 - 21:15", module: "第四章：星海排字", stage: "全場感性最高峰。現場燈光瞬間全關（Blackout）。400人開啟手機燈光高空空拍。", equip: "空拍機、應援物", pa: "溫慢、團魂凝聚墊樂", photo: "全場黑燈大高空俯拍", note: "音控組死守全黑燈點" },
-            { time: "21:15 - 22:30", module: "終章：傳承大合照", stage: "核心精神傳承儀式、時光膠囊封箱。400人依桌號分批有序登上 T 台進行大合照。", equip: "時光膠囊寶盒、合照階梯", pa: "溫馨傳承合唱音樂", photo: "400人梯次分批大合照", note: "安全第一，控管T台承重" },
-            { time: "22:30 - 23:00", module: "平安賦歸與撤場", stage: "播放溫馨散場音樂。工作人員清點一廊宴會廳大會物資，撤場。", equip: "清點清單", pa: "散場抒情音樂", photo: "工作人員大合照", note: "Owen 主導清點撤場" }
-        ];
-
-        const fallbackChecklist = [
-            { id: 1, done: true, item: "架高 T 台安全與邊緣承重檢查", team: "活動組", note: "彩排時死守邊緣，防止踩空" },
-            { id: 2, done: false, item: "黑幫默示錄初始卡牌道具到位", team: "遊戲組", note: "12:00 前必須送到簽到處配合報到" }
+            { time: "16:00 - 17:30", module: "🎯 遊戲接口 B", stage: "全場解封！進入高互動大逃殺環節（400人社交猜拳搶星星）。", equip: "星星貼紙、計分板、大球*3", pa: "大逃殺緊張倒數音樂", photo: "全景空拍、桌間移動抓拍", note: "動線組全員維護安全" }
         ];
 
         const defaultPanels = [
             { id: "timeline", name: "大會主細流", icon: "fa-clock-history", type: "system" },
             { id: "checklist", name: "物資防線檢核", icon: "fa-list-check", type: "system" },
-            { id: "team_activity", name: "活動組工作盤", icon: "fa-users-gear", type: "team", members: "Owen (組長), 夥伴群", modules: [{title: "四大執行防線", content: "負責控管舞台執行、視訊音控、場內引導、主持控時。"}] },
-            { id: "team_admin", name: "行政組工作盤", icon: "fa-folder-open", type: "team", members: "恩安 (組長)", modules: [{title: "報到與出菜控管", content: "掌握一廊宴會廳簽到與素食圓桌分配。"}] },
-            { id: "team_design", name: "設計組工作盤", icon: "fa-palette", type: "team", members: "宇哲 (組長)", modules: [{title: "大會主视觉進度", content: "主背板輸出、手牌、海豚胸針與受獎托盤。"}] },
-            { id: "team_game", name: "遊戲組工作盤", icon: "fa-dice", type: "team", members: "柏任 (組長)", modules: [{title: "賭博默示錄規則機制", content: "負責設計三個遊戲接口的初始籌碼配比與決賽大道具。"}] },
-            { id: "team_mkt", name: "行銷組工作盤", icon: "fa-bullhorn", type: "team", members: "待招募夥伴", modules: [{title: "行銷排程", content: "年會社群宣傳、當天精采花絮即時發文。"}] }
+            { id: "team_activity", name: "活動組工作盤", icon: "fa-users-gear", type: "team", members: "Owen (組長)", modules: [{title: "四大執行防線", content: "負責舞台執行、視訊音控、場內引導、主持控時。"}] },
+            { id: "team_admin", name: "行政組工作盤", icon: "fa-folder-open", type: "team", members: "恩安 (組長)", modules: [{title: "報到與出菜控管", content: "掌握圓桌分配與餐廳出菜進度。"}] },
+            { id: "team_design", name: "設計組工作盤", icon: "fa-palette", type: "team", members: "宇哲 (組長)", modules: [{title: "大會主视觉進度", content: "主背板輸出、手牌、海豚胸針到位進度。"}] },
+            { id: "team_game", name: "遊戲組工作盤", icon: "fa-dice", type: "team", members: "柏任 (組長)", modules: [{title: "賭博默示錄機制", content: "負責設計初始籌碼配比與決賽大道具。"}] }
         ];
 
+        // 數據安全救援連鎖
+        const localTimeline = JSON.parse(localStorage.getItem('ts_v3_timeline') || localStorage.getItem('ts_fresh_timeline') || localStorage.getItem('ts_v2_timeline') || localStorage.getItem('ts_timeline'));
+        const localChecklist = JSON.parse(localStorage.getItem('ts_v3_checklist') || localStorage.getItem('ts_fresh_checklist') || localStorage.getItem('ts_v2_checklist') || localStorage.getItem('ts_checklist'));
+        const localPanels = JSON.parse(localStorage.getItem('ts_v3_panels') || localStorage.getItem('ts_fresh_panels') || localStorage.getItem('ts_v2_panels') || localStorage.getItem('ts_teams'));
+
         window.appData = {
-            timeline: fallbackTimeline,
-            checklist: fallbackChecklist,
-            panels: defaultPanels,
-            currentTab: "timeline"
+            timeline: localTimeline || fallbackTimeline,
+            checklist: localChecklist || [],
+            panels: localPanels || defaultPanels,
+            currentTab: localStorage.getItem('ts_v3_current_tab') || "timeline"
         };
 
-        // 綁定全域調度引擎
         window.refreshActivePanel = function() {
             renderSidebarMenu();
             switchTab(window.appData.currentTab || "timeline");
+        }
+
+        window.saveData = function() {
+            localStorage.setItem('ts_v3_timeline', JSON.stringify(window.appData.timeline));
+            localStorage.setItem('ts_v3_checklist', JSON.stringify(window.appData.checklist));
+            localStorage.setItem('ts_v3_panels', JSON.stringify(window.appData.panels));
+            
+            if (window.cloudSaveEngine) {
+                window.cloudSaveEngine(window.appData);
+            }
         }
 
         window.renderSidebarMenu = function() {
@@ -235,11 +258,11 @@
                     <td class="p-4 text-center cursor-grab text-slate-300 hover:text-[#5483B3] text-sm"><i class="fa-solid fa-grip-lines"></i></td>
                     <td class="p-4 font-mono font-bold text-[#5483B3]" contenteditable="true" onblur="updateTimelineCell(${idx}, 'time', this.innerText)">${row.time}</td>
                     <td class="p-4 font-bold text-slate-800" contenteditable="true" onblur="updateTimelineCell(${idx}, 'module', this.innerText)">${row.module}</td>
-                    <td class="p-4 text-slate-600 leading-relaxed" contenteditable="true" onblur="updateTimelineCell(${idx}, 'stage', this.innerText)">${row.stage}</td>
-                    <td class="p-4 text-slate-600" contenteditable="true" onblur="updateTimelineCell(${idx}, 'equip', this.innerText)">${row.equip || ''}</td>
-                    <td class="p-4 text-[#5483B3] font-medium" contenteditable="true" onblur="updateTimelineCell(${idx}, 'pa', this.innerText)">${row.pa || ''}</td>
-                    <td class="p-4 text-slate-600" contenteditable="true" onblur="updateTimelineCell(${idx}, 'photo', this.innerText)">${row.photo || ''}</td>
-                    <td class="p-4 text-slate-400 italic" contenteditable="true" onblur="updateTimelineCell(${idx}, 'note', this.innerText)">${row.note || ''}</td>
+                    <td class="p-4 text-slate-600 leading-relaxed sync-pre-wrap" contenteditable="true" onblur="updateTimelineCell(${idx}, 'stage', this.innerText)">${row.stage}</td>
+                    <td class="p-4 text-slate-600 sync-pre-wrap" contenteditable="true" onblur="updateTimelineCell(${idx}, 'equip', this.innerText)">${row.equip || ''}</td>
+                    <td class="p-4 text-[#5483B3] font-medium sync-pre-wrap" contenteditable="true" onblur="updateTimelineCell(${idx}, 'pa', this.innerText)">${row.pa || ''}</td>
+                    <td class="p-4 text-slate-600 sync-pre-wrap" contenteditable="true" onblur="updateTimelineCell(${idx}, 'photo', this.innerText)">${row.photo || ''}</td>
+                    <td class="p-4 text-slate-400 italic sync-pre-wrap" contenteditable="true" onblur="updateTimelineCell(${idx}, 'note', this.innerText)">${row.note || ''}</td>
                     <td class="p-4 text-center"><button onclick="deleteTimelineRow(${idx})" class="text-slate-300 hover:text-rose-500 p-1"><i class="fa-solid fa-trash-can"></i></button></td>
                 </tr>
             `).join('');
@@ -256,23 +279,23 @@
                     </div>
                     <div class="text-xs text-slate-600">
                         <span class="font-bold text-slate-400 block text-[10px] uppercase tracking-wider mb-1">🎬 內容與動線設定：</span>
-                        <p class="focus:bg-slate-50 p-1 rounded" contenteditable="true" onblur="updateTimelineCell(${idx}, 'stage', this.innerText)">${row.stage}</p>
+                        <p class="focus:bg-slate-50 p-1 rounded sync-pre-wrap" contenteditable="true" onblur="updateTimelineCell(${idx}, 'stage', this.innerText)">${row.stage}</p>
                     </div>
                     <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-50 text-[11px]">
                         <div class="bg-slate-50 p-2 rounded-xl">
                             <span class="font-bold text-slate-400 block text-[9px] uppercase mb-0.5">🛠 器材清單：</span>
-                            <span class="text-slate-700 block min-h-[15px]" contenteditable="true" onblur="updateTimelineCell(${idx}, 'equip', this.innerText)">${row.equip || ''}</span>
+                            <span class="text-slate-700 block min-h-[15px] sync-pre-wrap" contenteditable="true" onblur="updateTimelineCell(${idx}, 'equip', this.innerText)">${row.equip || ''}</span>
                         </div>
                         <div class="bg-blue-50/60 p-2 rounded-xl">
                             <span class="font-bold text-[#5483B3] block text-[9px] uppercase mb-0.5">🎵 PA / 音控：</span>
-                            <span class="text-[#5483B3] font-medium block min-h-[15px]" contenteditable="true" onblur="updateTimelineCell(${idx}, 'pa', this.innerText)">${row.pa || ''}</span>
+                            <span class="text-[#5483B3] font-medium block min-h-[15px] sync-pre-wrap" contenteditable="true" onblur="updateTimelineCell(${idx}, 'pa', this.innerText)">${row.pa || ''}</span>
                         </div>
                     </div>
                     <div class="text-[11px] text-slate-700 bg-slate-50 p-2 rounded-xl">
                         <span class="font-bold text-slate-400 block text-[9px] uppercase mb-0.5">📸 攝影畫面：</span>
-                        <span class="block min-h-[15px]" contenteditable="true" onblur="updateTimelineCell(${idx}, 'photo', this.innerText)">${row.photo || ''}</span>
+                        <span class="block min-h-[15px] sync-pre-wrap" contenteditable="true" onblur="updateTimelineCell(${idx}, 'photo', this.innerText)">${row.photo || ''}</span>
                     </div>
-                    <div class="text-[11px] text-slate-400 italic pt-1" contenteditable="true" onblur="updateTimelineCell(${idx}, 'note', this.innerText)">📝 備註：${row.note || ''}</div>
+                    <div class="text-[11px] text-slate-400 italic pt-1 sync-pre-wrap" contenteditable="true" onblur="updateTimelineCell(${idx}, 'note', this.innerText)">📝 備註：${row.note || ''}</div>
                 </div>
             `).join('');
         }
@@ -291,7 +314,7 @@
         window.handleDragEnd = function(e) { e.currentTarget.classList.remove('dragging'); }
 
         window.updateTimelineCell = function(index, field, value) { window.appData.timeline[index][field] = value; window.saveData(); }
-        window.addNewTimelineRow = function() { window.appData.timeline.push({ time: "時段設定", module: "新項目模組", stage: "編輯橋段設定...", equip: "", pa: "", photo: "", note: "" }); window.saveData(); renderTimelineTable(); }
+        window.addNewTimelineRow = function() { window.appData.timeline.push({ time: "時段", module: "新項目", stage: "編輯設定...", equip: "", pa: "", photo: "", note: "" }); window.saveData(); renderTimelineTable(); }
         window.deleteTimelineRow = function(index) { if(confirm("確定刪除此段時程？")) { window.appData.timeline.splice(index, 1); window.saveData(); renderTimelineTable(); } }
 
         window.saveCurrentTeamMembers = function(text) {
@@ -307,7 +330,7 @@
                         <h4 class="text-xs font-bold text-[#052659]" contenteditable="true" onblur="updateModuleData(${mIdx}, 'title', this.innerText)">${mod.title}</h4>
                         <button onclick="deleteModuleFromTeam(${mIdx})" class="text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity text-xs"><i class="fa-solid fa-minus"></i></button>
                     </div>
-                    <div class="text-xs text-slate-500 leading-relaxed bg-slate-50 p-2 rounded-lg min-h-[50px]" contenteditable="true" onblur="updateModuleData(${mIdx}, 'content', this.innerText)">${mod.content}</div>
+                    <div class="text-xs text-slate-500 leading-relaxed bg-slate-50 p-2 rounded-lg min-h-[50px] sync-pre-wrap" contenteditable="true" onblur="updateModuleData(${mIdx}, 'content', this.innerText)">${mod.content}</div>
                 </div>
             `).join('');
         }
@@ -317,7 +340,7 @@
         }
         window.addNewModuleToTeam = function() {
             const panel = window.appData.panels.find(p => p.id === window.appData.currentTab);
-            if(panel) { panel.modules.push({ title: "全新功能塊", content: "點擊編輯內容細節..." }); window.saveData(); renderTeamModules(panel); }
+            if(panel) { panel.modules.push({ title: "新自訂任務塊", content: "點擊編輯內容細節..." }); window.saveData(); renderTeamModules(panel); }
         }
         window.deleteModuleFromTeam = function(mIdx) {
             const panel = window.appData.panels.find(p => p.id === window.appData.currentTab);
@@ -338,10 +361,10 @@
             box.innerHTML = window.appData.checklist.map((item, idx) => `
                 <div class="flex items-center p-4 gap-4 ${item.done ? 'bg-slate-50 opacity-50' : ''}">
                     <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleCheckItem(${idx})" class="w-4 h-4 rounded border-slate-300 text-[#5483B3] focus:ring-0">
-                    <div class="flex-1 text-xs font-bold text-slate-800 ${item.done ? 'line-through text-slate-400' : ''}" contenteditable="true" onblur="updateCheckCell(${idx}, 'item', this.innerText)">${item.item}</div>
+                    <div class="flex-1 text-xs font-bold text-slate-800 ${item.done ? 'line-through text-slate-400' : ''} sync-pre-wrap" contenteditable="true" onblur="updateCheckCell(${idx}, 'item', this.innerText)">${item.item}</div>
                     <span class="bg-blue-50 text-[#5483B3] text-[10px] px-2 py-0.5 rounded border border-[#5483B3]/20" contenteditable="true" onblur="updateCheckCell(${idx}, 'team', this.innerText)">${item.team}</span>
-                    <div class="flex-1 text-xs text-slate-400 hidden sm:block" contenteditable="true" onblur="updateCheckCell(${idx}, 'note', this.innerText)">${item.note}</div>
-                    <button onclick="deleteCheckItem(${idx})" class="text-slate-300 hover:text-rose-400 text-xs"><i class="fa-solid fa-trash-can"></i></button>
+                    <div class="flex-1 text-xs text-slate-400 hidden sm:block sync-pre-wrap" contenteditable="true" onblur="updateCheckCell(${idx}, 'note', this.innerText)">${item.note}</div>
+                    <button onclick="deleteCheckItem(${idx})" class="text-slate-300 hover:text-rose-500 text-xs"><i class="fa-solid fa-trash-can"></i></button>
                 </div>
             `).join('');
         }
@@ -353,7 +376,61 @@
         window.exportAllData = function() {
             const blob = new Blob([JSON.stringify(window.appData, null, 2)], { type: "application/json" });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = "2026_TS_年度盛會_智慧中樞實時版.json"; a.click();
+            const a = document.createElement('a'); a.href = url; a.download = "2026_TS_年度盛會_全數據防錯版.json"; a.click();
+        }
+
+        // 初始化立即驅動
+        document.addEventListener("DOMContentLoaded", () => {
+            window.refreshActivePanel();
+        });
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBQdnW16U1OxpDR05hvAv2fcZ4aMKXsyfM",
+            authDomain: "test-fee8d.firebaseapp.com",
+            projectId: "test-fee8d",
+            storageBucket: "test-fee8d.firebasestorage.app",
+            messagingSenderId: "415299571304",
+            appId: "1:415299571304:web:391ce6ecb4d8e2f19035dd",
+            measurementId: "G-EL7VKT97L4",
+            databaseURL: "https://test-fee8d-default-rtdb.firebaseio.com" 
+        };
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            const db = getDatabase(app);
+            const dataRef = ref(db, 'ts_2026_realtime_data');
+
+            window.cloudSaveEngine = function(data) {
+                set(dataRef, data).catch(e => console.log("雲端同步暫時受阻：", e));
+            };
+
+            onValue(dataRef, (snapshot) => {
+                const cloudData = snapshot.val();
+                const statusBadge = document.getElementById('cloud-status-badge');
+                
+                if (cloudData) {
+                    window.appData = cloudData;
+                    window.refreshActivePanel();
+                    statusBadge.className = "text-xs text-emerald-600 bg-emerald-50 border border-emerald-100 px-4 py-2 rounded-full font-medium shadow-inner flex items-center gap-1.5 shrink-0";
+                    statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> 雲端連線・實時同步中`;
+                } else {
+                    window.cloudSaveEngine(window.appData);
+                    statusBadge.className = "text-xs text-blue-600 bg-blue-50 border border-blue-100 px-4 py-2 rounded-full font-medium shadow-inner flex items-center gap-1.5 shrink-0";
+                    statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-500"></span> 本地舊資料已成功同步至雲端`;
+                }
+            }, (error) => {
+                const statusBadge = document.getElementById('cloud-status-badge');
+                statusBadge.className = "text-xs text-amber-600 bg-amber-50 border border-amber-100 px-4 py-2 rounded-full font-medium shadow-inner flex items-center gap-1.5 shrink-0";
+                statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500"></span> 在地保險模式（雲端權限待開啟）`;
+            });
+
+        } catch (e) {
+            console.error("Firebase 初始化失敗", e);
         }
     </script>
 </body>
