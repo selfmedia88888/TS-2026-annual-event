@@ -17,13 +17,11 @@
         body { font-family: 'Inter', 'Noto Sans TC', sans-serif; background-color: var(--color-bg); color: #1e293b; }
         .dragging { opacity: 0.5; background-color: #f1f5f9 !important; border: 2px dashed var(--color-primary) !important; }
         
-        /* 🔴 ⚡ 核心功能修正：強制所有可編輯欄位支援 Enter 換行，並保持排版美觀 */
         [contenteditable="true"] { 
             white-space: pre-wrap !important; 
             word-break: break-word !important;
         }
         
-        /* 手機版卡片與客製化區塊的純文本也同步支援換行顯示 */
         .sync-pre-wrap {
             white-space: pre-wrap !important;
         }
@@ -39,7 +37,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // 🎯 完美綁定組長專屬的雲端密鑰
         const firebaseConfig = {
             apiKey: "AIzaSyBQdnW16U1OxpDR05hvAv2fcZ4aMKXsyfM",
             authDomain: "test-fee8d.firebaseapp.com",
@@ -56,12 +53,10 @@
             const db = getDatabase(app);
             const dataRef = ref(db, 'ts_2026_realtime_data');
 
-            // 註冊全域雲端儲存大腦
             window.cloudSaveEngine = function(data) {
-                set(dataRef, data).catch(e => console.log("雲端同步暫時受阻，已自動轉為在地備份：", e));
+                set(dataRef, data).catch(e => console.log("雲端同步暫時受阻：", e));
             };
 
-            // 監聽雲端大腦
             onValue(dataRef, (snapshot) => {
                 const cloudData = snapshot.val();
                 const statusBadge = document.getElementById('cloud-status-badge');
@@ -77,14 +72,13 @@
                     statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-500"></span> 本地舊資料已成功同步至雲端`;
                 }
             }, (error) => {
-                console.log("Firebase 權限尚未開啟，目前正啟用「在地離線保險模式」正常運作中。");
                 const statusBadge = document.getElementById('cloud-status-badge');
                 statusBadge.className = "text-xs text-amber-600 bg-amber-50 border border-amber-100 px-4 py-2 rounded-full font-medium shadow-inner flex items-center gap-1.5 shrink-0";
                 statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500"></span> 在地保險模式（雲端權限待開啟）`;
             });
 
         } catch (e) {
-            console.error("Firebase 初始化失敗，已自動轉為全在地安全模式", e);
+            console.error("Firebase 初始化失敗", e);
         }
     </script>
 
@@ -321,19 +315,24 @@
             const panel = window.appData.panels.find(p => p.id === window.appData.currentTab);
             if(panel) { panel.members = text; window.saveData(); }
         }
+        
+        // 🔴 ⚡ 核心優化：改為醒目的紅色叉叉/垃圾桶標示，並內建彈出對話框進行防誤刪二次確認
         window.renderTeamModules = function(panel) {
             const grid = document.getElementById('team-modules-grid');
             if(!panel.modules) panel.modules = [];
             grid.innerHTML = panel.modules.map((mod, mIdx) => `
-                <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm group">
+                <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm relative group card-shadow">
                     <div class="flex justify-between items-center mb-2">
                         <h4 class="text-xs font-bold text-[#052659]" contenteditable="true" onblur="updateModuleData(${mIdx}, 'title', this.innerText)">${mod.title}</h4>
-                        <button onclick="deleteModuleFromTeam(${mIdx})" class="text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity text-xs"><i class="fa-solid fa-minus"></i></button>
+                        <button onclick="deleteModuleFromTeam(${mIdx})" class="text-rose-500 hover:text-rose-700 transition-colors text-xs p-1" title="刪除此工作塊">
+                            <i class="fa-solid fa-circle-xmark text-sm"></i>
+                        </button>
                     </div>
                     <div class="text-xs text-slate-500 leading-relaxed bg-slate-50 p-2 rounded-lg min-h-[50px] sync-pre-wrap" contenteditable="true" onblur="updateModuleData(${mIdx}, 'content', this.innerText)">${mod.content}</div>
                 </div>
             `).join('');
         }
+        
         window.updateModuleData = function(mIdx, field, value) {
             const panel = window.appData.panels.find(p => p.id === window.appData.currentTab);
             if(panel) { panel.modules[mIdx][field] = value; window.saveData(); }
@@ -342,10 +341,20 @@
             const panel = window.appData.panels.find(p => p.id === window.appData.currentTab);
             if(panel) { panel.modules.push({ title: "新自訂任務塊", content: "點擊編輯內容細節..." }); window.saveData(); renderTeamModules(panel); }
         }
+        
+        // 🔴 ⚡ 核心防呆：新增二次確認提示框，防範高壓環境下手滑誤刪
         window.deleteModuleFromTeam = function(mIdx) {
             const panel = window.appData.panels.find(p => p.id === window.appData.currentTab);
-            if(panel) { panel.modules.splice(mIdx, 1); window.saveData(); renderTeamModules(panel); }
+            if(panel) {
+                const targetTitle = panel.modules[mIdx].title || "此任務塊";
+                if(confirm(`⚠️ 【大會防誤刪安全警告】\n\n您確定要刪除「${targetTitle}」嗎？\n此操作將同步刪除雲端數據，全台所有組員的畫面也會同步消失！`)) {
+                    panel.modules.splice(mIdx, 1); 
+                    window.saveData(); 
+                    renderTeamModules(panel);
+                }
+            }
         }
+        
         window.createNewPanelPrompt = function() {
             const name = prompt("請輸入全新協作組別名稱："); if(!name) return;
             const id = "team_" + Date.now();
