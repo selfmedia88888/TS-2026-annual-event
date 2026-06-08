@@ -15,7 +15,6 @@
             --color-light: #C1E8FF;
         }
         body { font-family: 'Inter', 'Noto Sans TC', sans-serif; background-color: var(--color-bg); color: #1e293b; }
-        .dragging { opacity: 0.5; background-color: #f1f5f9 !important; border: 2px dashed var(--color-primary) !important; }
         
         [contenteditable="true"] { 
             white-space: pre-wrap !important; 
@@ -124,7 +123,8 @@
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-slate-50/70 border-b border-slate-200 text-xs font-semibold text-slate-500">
-                                <th class="p-4 w-12 text-center">排</th>
+                                <th class="p-4 w-24 text-center">調整排序</th>
+                                <th class="p-4 w-12 text-center">序</th>
                                 <th class="p-4 w-32">時間段</th>
                                 <th class="p-4 w-44">核心節目模組</th>
                                 <th class="p-4 w-64">內容與舞台設定 (T台運用)</th>
@@ -184,7 +184,7 @@
             { id: "team_game", name: "遊戲組工作盤", icon: "fa-dice", type: "team", members: "柏任 (組長)", modules: [{title: "賭博默示錄機制", content: "負責設計初始籌碼配比與決賽大道具。"}] }
         ];
 
-        // 數據安全救援連鎖
+        // 數據安全平穩落地
         const localTimeline = JSON.parse(localStorage.getItem('ts_v3_timeline') || localStorage.getItem('ts_fresh_timeline') || localStorage.getItem('ts_v2_timeline') || localStorage.getItem('ts_timeline'));
         const localChecklist = JSON.parse(localStorage.getItem('ts_v3_checklist') || localStorage.getItem('ts_fresh_checklist') || localStorage.getItem('ts_v2_checklist') || localStorage.getItem('ts_checklist'));
         const localPanels = JSON.parse(localStorage.getItem('ts_v3_panels') || localStorage.getItem('ts_fresh_panels') || localStorage.getItem('ts_v2_panels') || localStorage.getItem('ts_teams'));
@@ -245,11 +245,20 @@
             localStorage.setItem('ts_v3_current_tab', tabId);
         }
 
+        // 🔴 ⚡ 核心優化：改掉模糊的拖曳，全面注入「上下按鈕」與「自動精準卡牌序號」
         window.renderTimelineTable = function() {
             const desktopTbody = document.getElementById('timeline-desktop-tbody');
             desktopTbody.innerHTML = window.appData.timeline.map((row, idx) => `
-                <tr class="hover:bg-slate-50 transition-all" draggable="true" ondragstart="handleDragStart(event, ${idx})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${idx})" ondragend="handleDragEnd(event)">
-                    <td class="p-4 text-center cursor-grab text-slate-300 hover:text-[#5483B3] text-sm"><i class="fa-solid fa-grip-lines"></i></td>
+                <tr class="hover:bg-slate-50 transition-all">
+                    <td class="p-3 text-center space-x-1 select-none">
+                        <button onclick="moveTimelineRow(${idx}, -1)" class="bg-slate-100 hover:bg-[#5483B3]/20 text-[#5483B3] w-7 h-7 rounded-lg transition-colors border border-slate-200" title="上移">
+                            <i class="fa-solid fa-arrow-up text-[11px]"></i>
+                        </button>
+                        <button onclick="moveTimelineRow(${idx}, 1)" class="bg-slate-100 hover:bg-[#5483B3]/20 text-[#5483B3] w-7 h-7 rounded-lg transition-colors border border-slate-200" title="下移">
+                            <i class="fa-solid fa-arrow-down text-[11px]"></i>
+                        </button>
+                    </td>
+                    <td class="p-4 text-center font-bold text-slate-400 bg-slate-50/40">${idx + 1}</td>
                     <td class="p-4 font-mono font-bold text-[#5483B3]" contenteditable="true" onblur="updateTimelineCell(${idx}, 'time', this.innerText)">${row.time}</td>
                     <td class="p-4 font-bold text-slate-800" contenteditable="true" onblur="updateTimelineCell(${idx}, 'module', this.innerText)">${row.module}</td>
                     <td class="p-4 text-slate-600 leading-relaxed sync-pre-wrap" contenteditable="true" onblur="updateTimelineCell(${idx}, 'stage', this.innerText)">${row.stage}</td>
@@ -263,13 +272,20 @@
 
             const mobileContainer = document.getElementById('timeline-mobile-container');
             mobileContainer.innerHTML = window.appData.timeline.map((row, idx) => `
-                <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3">
+                <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3 relative">
                     <div class="flex justify-between items-start border-b border-slate-100 pb-2">
-                        <div>
-                            <span class="text-xs font-mono font-bold text-[#5483B3] block" contenteditable="true" onblur="updateTimelineCell(${idx}, 'time', this.innerText)">${row.time}</span>
-                            <h3 class="text-sm font-bold text-slate-800 mt-0.5" contenteditable="true" onblur="updateTimelineCell(${idx}, 'module', this.innerText)">${row.module}</h3>
+                        <div class="flex items-center gap-2">
+                            <span class="bg-[#052659] text-white w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold">${idx + 1}</span>
+                            <div>
+                                <span class="text-xs font-mono font-bold text-[#5483B3] block" contenteditable="true" onblur="updateTimelineCell(${idx}, 'time', this.innerText)">${row.time}</span>
+                                <h3 class="text-sm font-bold text-slate-800 mt-0.5" contenteditable="true" onblur="updateTimelineCell(${idx}, 'module', this.innerText)">${row.module}</h3>
+                            </div>
                         </div>
-                        <button onclick="deleteTimelineRow(${idx})" class="text-slate-300 hover:text-rose-500 text-xs"><i class="fa-solid fa-trash-can"></i></button>
+                        <div class="flex items-center gap-1.5 select-none">
+                            <button onclick="moveTimelineRow(${idx}, -1)" class="bg-slate-50 p-1 px-2 rounded border border-slate-200 text-[#5483B3] text-xs"><i class="fa-solid fa-arrow-up"></i></button>
+                            <button onclick="moveTimelineRow(${idx}, 1)" class="bg-slate-50 p-1 px-2 rounded border border-slate-200 text-[#5483B3] text-xs"><i class="fa-solid fa-arrow-down"></i></button>
+                            <button onclick="deleteTimelineRow(${idx})" class="text-slate-300 hover:text-rose-500 text-xs ml-1"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
                     </div>
                     <div class="text-xs text-slate-600">
                         <span class="font-bold text-slate-400 block text-[10px] uppercase tracking-wider mb-1">🎬 內容與動線設定：</span>
@@ -294,18 +310,21 @@
             `).join('');
         }
 
-        let dragStartIndex = null;
-        window.handleDragStart = function(e, index) { dragStartIndex = index; e.currentTarget.classList.add('dragging'); }
-        window.handleDragOver = function(e) { e.preventDefault(); }
-        window.handleDrop = function(e, index) {
-            e.preventDefault();
-            if(dragStartIndex === null || dragStartIndex === index) return;
-            const draggedItem = window.appData.timeline.splice(dragStartIndex, 1)[0];
-            window.appData.timeline.splice(index, 0, draggedItem);
+        // 🔴 ⚡ 全新精準排序演算大腦（按鈕位置交換邏輯）
+        window.moveTimelineRow = function(index, direction) {
+            const targetIndex = index + direction;
+            // 邊界防呆：如果是第一行不能再往上，最後一行不能再往下
+            if (targetIndex < 0 || targetIndex >= window.appData.timeline.length) return;
+
+            // 完美的交換陣列內元素位置
+            const temp = window.appData.timeline[index];
+            window.appData.timeline[index] = window.appData.timeline[targetIndex];
+            window.appData.timeline[targetIndex] = temp;
+
+            // 儲存並實時雲端推播
             window.saveData();
-            renderTimelineTable();
+            window.renderTimelineTable();
         }
-        window.handleDragEnd = function(e) { e.currentTarget.classList.remove('dragging'); }
 
         window.updateTimelineCell = function(index, field, value) { window.appData.timeline[index][field] = value; window.saveData(); }
         window.addNewTimelineRow = function() { window.appData.timeline.push({ time: "時段", module: "新項目", stage: "編輯設定...", equip: "", pa: "", photo: "", note: "" }); window.saveData(); renderTimelineTable(); }
@@ -316,7 +335,6 @@
             if(panel) { panel.members = text; window.saveData(); }
         }
         
-        // 🔴 ⚡ 核心優化：改為醒目的紅色叉叉/垃圾桶標示，並內建彈出對話框進行防誤刪二次確認
         window.renderTeamModules = function(panel) {
             const grid = document.getElementById('team-modules-grid');
             if(!panel.modules) panel.modules = [];
@@ -324,7 +342,7 @@
                 <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm relative group card-shadow">
                     <div class="flex justify-between items-center mb-2">
                         <h4 class="text-xs font-bold text-[#052659]" contenteditable="true" onblur="updateModuleData(${mIdx}, 'title', this.innerText)">${mod.title}</h4>
-                        <button onclick="deleteModuleFromTeam(${mIdx})" class="text-rose-500 hover:text-rose-700 transition-colors text-xs p-1" title="刪除此工作塊">
+                        <button onclick="deleteModuleFromTeam(${mIdx})" class="text-rose-400 hover:text-rose-600 transition-colors text-xs p-1" title="刪除此工作塊">
                             <i class="fa-solid fa-circle-xmark text-sm"></i>
                         </button>
                     </div>
@@ -342,7 +360,6 @@
             if(panel) { panel.modules.push({ title: "新自訂任務塊", content: "點擊編輯內容細節..." }); window.saveData(); renderTeamModules(panel); }
         }
         
-        // 🔴 ⚡ 核心防呆：新增二次確認提示框，防範高壓環境下手滑誤刪
         window.deleteModuleFromTeam = function(mIdx) {
             const panel = window.appData.panels.find(p => p.id === window.appData.currentTab);
             if(panel) {
@@ -385,7 +402,7 @@
         window.exportAllData = function() {
             const blob = new Blob([JSON.stringify(window.appData, null, 2)], { type: "application/json" });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = "2026_TS_年度盛會_全數據防錯版.json"; a.click();
+            const a = document.createElement('a'); a.href = url; a.download = "2026_TS_年度盛會_全數據精準排序版.json"; a.click();
         }
 
         // 初始化立即驅動
