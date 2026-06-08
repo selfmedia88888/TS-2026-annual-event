@@ -21,10 +21,7 @@
             word-break: break-word !important;
         }
         
-        .sync-pre-wrap {
-            white-space: pre-wrap !important;
-        }
-
+        .sync-pre-wrap { white-space: pre-wrap !important; }
         [contenteditable="true"]:focus { outline: 2px solid var(--color-primary); background-color: #ffffff; box-shadow: 0 0 0 4px rgba(84, 131, 179, 0.15); border-radius: 6px; }
         .card-shadow { box-shadow: 0 4px 18px -4px rgba(5, 38, 89, 0.05), 0 2px 6px -1px rgba(5, 38, 89, 0.03); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -34,7 +31,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBQdnW16U1OxpDR05hvAv2fcZ4aMKXsyfM",
@@ -51,29 +48,53 @@
             const app = initializeApp(firebaseConfig);
             const db = getDatabase(app);
             const dataRef = ref(db, 'ts_2026_realtime_data');
+            window.cloudDb = db; // 掛載全域以供細部節點操控
 
+            // 註冊全域覆蓋推播 (排序或刪除整行時使用)
             window.cloudSaveEngine = function(data) {
-                set(dataRef, data).catch(e => console.log("雲端同步暫時受阻：", e));
+                set(dataRef, data).catch(e => console.log("雲端同步受阻：", e));
             };
 
+            // 獨立節點更新大腦：誰改那一格，就只推播那一格，絕不蓋掉別人的心血！
+            window.cloudUpdateCell = function(path, value) {
+                const cellRef = ref(window.cloudDb, `ts_2026_realtime_data/${path}`);
+                set(cellRef, value).catch(e => console.log("局部同步失敗：", e));
+            };
+
+            // 監聽雲端大腦
             onValue(dataRef, (snapshot) => {
                 const cloudData = snapshot.val();
                 const statusBadge = document.getElementById('cloud-status-badge');
                 
                 if (cloudData) {
+                    // 防打架核心：如果組長正在打字，不要讓雲端資料強行覆蓋當前輸入框
+                    const activeId = document.activeElement ? document.activeElement.id : null;
+                    const activeText = document.activeElement ? document.activeElement.innerText : null;
+
                     window.appData = cloudData;
-                    window.refreshActivePanel();
+                    window.renderSidebarMenu();
+                    window.renderActivePanelOnly(); // 局部刷新，保留焦點
+
+                    // 還原輸入框焦點，防止斷字
+                    if (activeId) {
+                        const el = document.getElementById(activeId);
+                        if (el && document.activeElement !== el) {
+                            el.focus();
+                            // 保持游標在最後面
+                            const range = document.createRange();
+                            const sel = window.getSelection();
+                            range.selectNodeContents(el);
+                            range.collapse(false);
+                            sel.removeAllRanges();
+                            sel.addRange(range);
+                        }
+                    }
+
                     statusBadge.className = "text-xs text-emerald-600 bg-emerald-50 border border-emerald-100 px-4 py-2 rounded-full font-medium shadow-inner flex items-center gap-1.5 shrink-0";
-                    statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> 雲端連線・實時同步中`;
+                    statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> 雲端協作・即時防衝突監聽中`;
                 } else {
                     window.cloudSaveEngine(window.appData);
-                    statusBadge.className = "text-xs text-blue-600 bg-blue-50 border border-blue-100 px-4 py-2 rounded-full font-medium shadow-inner flex items-center gap-1.5 shrink-0";
-                    statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-500"></span> 本地舊資料已成功同步至雲端`;
                 }
-            }, (error) => {
-                const statusBadge = document.getElementById('cloud-status-badge');
-                statusBadge.className = "text-xs text-amber-600 bg-amber-50 border border-amber-100 px-4 py-2 rounded-full font-medium shadow-inner flex items-center gap-1.5 shrink-0";
-                statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500"></span> 在地保險模式（雲端權限待開啟）`;
             });
 
         } catch (e) {
@@ -90,7 +111,7 @@
             </div>
             <div>
                 <h1 class="text-base font-bold tracking-tight text-[#052659]">TS 2026 年度盛會智慧中樞</h1>
-                <p class="text-[9px] uppercase font-bold tracking-widest text-slate-400">⚡ 數據安全防丟失完全體系統</p>
+                <p class="text-[9px] uppercase font-bold tracking-widest text-slate-400">⚡ 多人同框不衝突協作系統</p>
             </div>
         </div>
         <div class="flex items-center gap-4 w-full sm:w-auto justify-end">
@@ -98,7 +119,7 @@
                 <i class="fa-solid fa-download"></i> 備份導出
             </button>
             <span id="cloud-status-badge" class="text-xs text-amber-600 bg-amber-50 border border-amber-100 px-4 py-2 rounded-full font-medium shadow-inner flex items-center gap-1.5 shrink-0">
-                <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> 正在載入本地安全數據...
+                <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> 正在建立防衝突連線...
             </span>
         </div>
     </header>
@@ -138,7 +159,6 @@
                         <tbody id="timeline-desktop-tbody" class="divide-y divide-slate-100 text-xs"></tbody>
                     </table>
                 </div>
-
                 <div class="block lg:hidden space-y-4" id="timeline-mobile-container"></div>
             </div>
 
@@ -155,7 +175,7 @@
                     <h2 class="text-lg font-bold text-[#052659]" id="team-title-display">小組盤</h2>
                     <div class="mt-4">
                         <label class="text-xs font-bold text-slate-400 block mb-2">👥 本組作戰組員名單 (直接打字換行，全台秒同步)</label>
-                        <div id="team-members-box" contenteditable="true" onblur="saveCurrentTeamMembers(this.innerText)" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-700 focus:outline-none min-h-[50px] leading-relaxed"></div>
+                        <div id="team-members-box" contenteditable="true" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-700 focus:outline-none min-h-[50px] leading-relaxed"></div>
                     </div>
                 </div>
                 <div class="flex justify-between items-center mb-4">
@@ -170,44 +190,52 @@
     </div>
 
     <script>
-        const fallbackTimeline = [
-            { time: "09:00 - 12:00", module: "前置與彩排", stage: "硬體測試、大螢幕簡報、抽獎畫面。彩排重點：主持人與長官走位、T台燈光。", equip: "無線麥克風*4、簡報筆*2", pa: "播放開場音樂、測試燈光", photo: "主要攝影、Photocall點位確認", note: "工作人員8點半到" },
-            { time: "16:00 - 17:30", module: "🎯 遊戲接口 B", stage: "全場解封！進入高互動大逃殺環節（400人社交猜拳搶星星）。", equip: "星星貼紙、計分板、大球*3", pa: "大逃殺緊張倒數音樂", photo: "全景空拍、桌間移動抓拍", note: "動線組全員維護安全" }
-        ];
-
+        // 內建基礎降級緩存大時程
+        const fallbackTimeline = [{ time: "09:00 - 12:00", module: "前置與彩排", stage: "測試流程", equip: "", pa: "", photo: "", note: "" }];
         const defaultPanels = [
             { id: "timeline", name: "大會主細流", icon: "fa-clock-history", type: "system" },
             { id: "checklist", name: "物資防線檢核", icon: "fa-list-check", type: "system" },
-            { id: "team_activity", name: "活動組工作盤", icon: "fa-users-gear", type: "team", members: "Owen (組長)", modules: [{title: "四大執行防線", content: "負責舞台執行、視訊音控、場內引導、主持控時。"}] },
-            { id: "team_admin", name: "行政組工作盤", icon: "fa-folder-open", type: "team", members: "恩安 (組長)", modules: [{title: "報到與出菜控管", content: "掌握圓桌分配與餐廳出菜進度。"}] },
-            { id: "team_design", name: "設計組工作盤", icon: "fa-palette", type: "team", members: "宇哲 (組長)", modules: [{title: "大會主视觉進度", content: "主背板輸出、手牌、海豚胸針到位進度。"}] },
-            { id: "team_game", name: "遊戲組工作盤", icon: "fa-dice", type: "team", members: "柏任 (組長)", modules: [{title: "賭博默示錄機制", content: "負責設計初始籌碼配比與決賽大道具。"}] }
+            { id: "team_activity", name: "活動組工作盤", icon: "fa-users-gear", type: "team", members: "Owen (組長)", modules: [] },
+            { id: "team_admin", name: "行政組工作盤", icon: "fa-folder-open", type: "team", members: "恩安 (組長)", modules: [] },
+            { id: "team_design", name: "設計組工作盤", icon: "fa-palette", type: "team", members: "宇哲 (組長)", modules: [] },
+            { id: "team_game", name: "遊戲組工作盤", icon: "fa-dice", type: "team", members: "柏任 (組长)", modules: [] }
         ];
 
-        // 數據安全平穩落地
-        const localTimeline = JSON.parse(localStorage.getItem('ts_v3_timeline') || localStorage.getItem('ts_fresh_timeline') || localStorage.getItem('ts_v2_timeline') || localStorage.getItem('ts_timeline'));
-        const localChecklist = JSON.parse(localStorage.getItem('ts_v3_checklist') || localStorage.getItem('ts_fresh_checklist') || localStorage.getItem('ts_v2_checklist') || localStorage.getItem('ts_checklist'));
-        const localPanels = JSON.parse(localStorage.getItem('ts_v3_panels') || localStorage.getItem('ts_fresh_panels') || localStorage.getItem('ts_v2_panels') || localStorage.getItem('ts_teams'));
-
-        window.appData = {
-            timeline: localTimeline || fallbackTimeline,
-            checklist: localChecklist || [],
-            panels: localPanels || defaultPanels,
-            currentTab: localStorage.getItem('ts_v3_current_tab') || "timeline"
-        };
+        window.appData = { timeline: fallbackTimeline, checklist: [], panels: defaultPanels, currentTab: "timeline" };
 
         window.refreshActivePanel = function() {
-            renderSidebarMenu();
-            switchTab(window.appData.currentTab || "timeline");
+            window.renderSidebarMenu();
+            window.renderActivePanelOnly();
         }
 
-        window.saveData = function() {
-            localStorage.setItem('ts_v3_timeline', JSON.stringify(window.appData.timeline));
-            localStorage.setItem('ts_v3_checklist', JSON.stringify(window.appData.checklist));
-            localStorage.setItem('ts_v3_panels', JSON.stringify(window.appData.panels));
+        // 局部重繪引擎：只更新當前分頁的元件，且絕對不干擾獲得焦點的 Input
+        window.renderActivePanelOnly = function() {
+            document.querySelectorAll('.main-panel').forEach(p => p.classList.add('hidden'));
+            const tabId = window.appData.currentTab || "timeline";
             
-            if (window.cloudSaveEngine) {
-                window.cloudSaveEngine(window.appData);
+            if(tabId === 'timeline') {
+                document.getElementById('panel-timeline').classList.remove('hidden');
+                renderTimelineTable();
+            } else if(tabId === 'checklist') {
+                document.getElementById('panel-checklist').classList.remove('hidden');
+                renderChecklist();
+            } else {
+                const panelData = window.appData.panels.find(p => p.id === tabId);
+                if(panelData) {
+                    document.getElementById('panel-team-generic').classList.remove('hidden');
+                    document.getElementById('team-title-display').innerText = panelData.name;
+                    
+                    const membersBox = document.getElementById('team-members-box');
+                    membersBox.id = `input-members-${panelData.id}`; // 賦予全域唯一識別碼
+                    if (document.activeElement !== membersBox) {
+                        membersBox.innerText = panelData.members || "點擊輸入組員...";
+                    }
+                    membersBox.onblur = function() { window.updateTeamMembersData(panelData.id, this.innerText); };
+
+                    const sysIds = ['team_activity', 'team_admin', 'team_design', 'team_game'];
+                    document.getElementById('btn-delete-panel').style.display = sysIds.includes(panelData.id) ? 'none' : 'block';
+                    renderTeamModules(panelData);
+                }
             }
         }
 
@@ -223,53 +251,39 @@
 
         window.switchTab = function(tabId) {
             window.appData.currentTab = tabId;
-            document.querySelectorAll('.main-panel').forEach(p => p.classList.add('hidden'));
-            
-            if(tabId === 'timeline') {
-                document.getElementById('panel-timeline').classList.remove('hidden');
-                renderTimelineTable();
-            } else if(tabId === 'checklist') {
-                document.getElementById('panel-checklist').classList.remove('hidden');
-                renderChecklist();
-            } else {
-                const panelData = window.appData.panels.find(p => p.id === tabId);
-                if(panelData) {
-                    document.getElementById('panel-team-generic').classList.remove('hidden');
-                    document.getElementById('team-title-display').innerText = panelData.name;
-                    document.getElementById('team-members-box').innerText = panelData.members || "點擊輸入組員...";
-                    const sysIds = ['team_activity', 'team_admin', 'team_design', 'team_game', 'team_mkt'];
-                    document.getElementById('btn-delete-panel').style.display = sysIds.includes(panelData.id) ? 'none' : 'block';
-                    renderTeamModules(panelData);
-                }
-            }
             localStorage.setItem('ts_v3_current_tab', tabId);
+            window.renderSidebarMenu();
+            window.renderActivePanelOnly();
         }
 
-        // 🔴 ⚡ 核心優化：改掉模糊的拖曳，全面注入「上下按鈕」與「自動精準卡牌序號」
+        // 大會細流局部欄位細緻渲染
         window.renderTimelineTable = function() {
             const desktopTbody = document.getElementById('timeline-desktop-tbody');
-            desktopTbody.innerHTML = window.appData.timeline.map((row, idx) => `
-                <tr class="hover:bg-slate-50 transition-all">
+            desktopTbody.innerHTML = window.appData.timeline.map((row, idx) => {
+                const fields = ['time', 'module', 'stage', 'equip', 'pa', 'photo', 'note'];
+                const tdElements = fields.map(f => {
+                    const cellId = `cell-timeline-${idx}-${f}`;
+                    // 如果組長或夥伴正在編輯這一格，渲染時保持原樣，不准干擾打字
+                    if (document.activeElement && document.activeElement.id === cellId) {
+                        return `<td class="p-4" id="${cellId}" contenteditable="true">${document.activeElement.innerText}</td>`;
+                    }
+                    let textStyle = f === 'time' ? 'font-mono font-bold text-[#5483B3]' : (f === 'module' ? 'font-bold text-slate-800' : 'text-slate-600');
+                    if (f === 'pa') textStyle = 'text-[#5483B3] font-medium';
+                    return `<td class="p-4 ${textStyle} sync-pre-wrap" id="${cellId}" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, '${f}', this.innerText)">${row[f] || ''}</td>`;
+                }).join('');
+
+                return `<tr>
                     <td class="p-3 text-center space-x-1 select-none">
-                        <button onclick="moveTimelineRow(${idx}, -1)" class="bg-slate-100 hover:bg-[#5483B3]/20 text-[#5483B3] w-7 h-7 rounded-lg transition-colors border border-slate-200" title="上移">
-                            <i class="fa-solid fa-arrow-up text-[11px]"></i>
-                        </button>
-                        <button onclick="moveTimelineRow(${idx}, 1)" class="bg-slate-100 hover:bg-[#5483B3]/20 text-[#5483B3] w-7 h-7 rounded-lg transition-colors border border-slate-200" title="下移">
-                            <i class="fa-solid fa-arrow-down text-[11px]"></i>
-                        </button>
+                        <button onclick="moveTimelineRow(${idx}, -1)" class="bg-slate-100 hover:bg-[#5483B3]/20 text-[#5483B3] w-7 h-7 rounded-lg"><i class="fa-solid fa-arrow-up text-[11px]"></i></button>
+                        <button onclick="moveTimelineRow(${idx}, 1)" class="bg-slate-100 hover:bg-[#5483B3]/20 text-[#5483B3] w-7 h-7 rounded-lg"><i class="fa-solid fa-arrow-down text-[11px]"></i></button>
                     </td>
                     <td class="p-4 text-center font-bold text-slate-400 bg-slate-50/40">${idx + 1}</td>
-                    <td class="p-4 font-mono font-bold text-[#5483B3]" contenteditable="true" onblur="updateTimelineCell(${idx}, 'time', this.innerText)">${row.time}</td>
-                    <td class="p-4 font-bold text-slate-800" contenteditable="true" onblur="updateTimelineCell(${idx}, 'module', this.innerText)">${row.module}</td>
-                    <td class="p-4 text-slate-600 leading-relaxed sync-pre-wrap" contenteditable="true" onblur="updateTimelineCell(${idx}, 'stage', this.innerText)">${row.stage}</td>
-                    <td class="p-4 text-slate-600 sync-pre-wrap" contenteditable="true" onblur="updateTimelineCell(${idx}, 'equip', this.innerText)">${row.equip || ''}</td>
-                    <td class="p-4 text-[#5483B3] font-medium sync-pre-wrap" contenteditable="true" onblur="updateTimelineCell(${idx}, 'pa', this.innerText)">${row.pa || ''}</td>
-                    <td class="p-4 text-slate-600 sync-pre-wrap" contenteditable="true" onblur="updateTimelineCell(${idx}, 'photo', this.innerText)">${row.photo || ''}</td>
-                    <td class="p-4 text-slate-400 italic sync-pre-wrap" contenteditable="true" onblur="updateTimelineCell(${idx}, 'note', this.innerText)">${row.note || ''}</td>
+                    ${tdElements}
                     <td class="p-4 text-center"><button onclick="deleteTimelineRow(${idx})" class="text-slate-300 hover:text-rose-500 p-1"><i class="fa-solid fa-trash-can"></i></button></td>
-                </tr>
-            `).join('');
+                </tr>`;
+            }).join('');
 
+            // 手機版也套用獨立 ID 機制
             const mobileContainer = document.getElementById('timeline-mobile-container');
             mobileContainer.innerHTML = window.appData.timeline.map((row, idx) => `
                 <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3 relative">
@@ -277,8 +291,8 @@
                         <div class="flex items-center gap-2">
                             <span class="bg-[#052659] text-white w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold">${idx + 1}</span>
                             <div>
-                                <span class="text-xs font-mono font-bold text-[#5483B3] block" contenteditable="true" onblur="updateTimelineCell(${idx}, 'time', this.innerText)">${row.time}</span>
-                                <h3 class="text-sm font-bold text-slate-800 mt-0.5" contenteditable="true" onblur="updateTimelineCell(${idx}, 'module', this.innerText)">${row.module}</h3>
+                                <span class="text-xs font-mono font-bold text-[#5483B3] block" id="m-cell-${idx}-time" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'time', this.innerText)">${row.time}</span>
+                                <h3 class="text-sm font-bold text-slate-800 mt-0.5" id="m-cell-${idx}-module" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'module', this.innerText)">${row.module}</h3>
                             </div>
                         </div>
                         <div class="flex items-center gap-1.5 select-none">
@@ -289,175 +303,145 @@
                     </div>
                     <div class="text-xs text-slate-600">
                         <span class="font-bold text-slate-400 block text-[10px] uppercase tracking-wider mb-1">🎬 內容與動線設定：</span>
-                        <p class="focus:bg-slate-50 p-1 rounded sync-pre-wrap" contenteditable="true" onblur="updateTimelineCell(${idx}, 'stage', this.innerText)">${row.stage}</p>
+                        <p class="focus:bg-slate-50 p-1 rounded sync-pre-wrap" id="m-cell-${idx}-stage" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'stage', this.innerText)">${row.stage}</p>
                     </div>
                     <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-50 text-[11px]">
                         <div class="bg-slate-50 p-2 rounded-xl">
                             <span class="font-bold text-slate-400 block text-[9px] uppercase mb-0.5">🛠 器材清單：</span>
-                            <span class="text-slate-700 block min-h-[15px] sync-pre-wrap" contenteditable="true" onblur="updateTimelineCell(${idx}, 'equip', this.innerText)">${row.equip || ''}</span>
+                            <span class="text-slate-700 block min-h-[15px] sync-pre-wrap" id="m-cell-${idx}-equip" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'equip', this.innerText)">${row.equip || ''}</span>
                         </div>
                         <div class="bg-blue-50/60 p-2 rounded-xl">
                             <span class="font-bold text-[#5483B3] block text-[9px] uppercase mb-0.5">🎵 PA / 音控：</span>
-                            <span class="text-[#5483B3] font-medium block min-h-[15px] sync-pre-wrap" contenteditable="true" onblur="updateTimelineCell(${idx}, 'pa', this.innerText)">${row.pa || ''}</span>
+                            <span class="text-[#5483B3] font-medium block min-h-[15px] sync-pre-wrap" id="m-cell-${idx}-pa" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'pa', this.innerText)">${row.pa || ''}</span>
                         </div>
                     </div>
-                    <div class="text-[11px] text-slate-700 bg-slate-50 p-2 rounded-xl">
-                        <span class="font-bold text-slate-400 block text-[9px] uppercase mb-0.5">📸 攝影畫面：</span>
-                        <span class="block min-h-[15px] sync-pre-wrap" contenteditable="true" onblur="updateTimelineCell(${idx}, 'photo', this.innerText)">${row.photo || ''}</span>
-                    </div>
-                    <div class="text-[11px] text-slate-400 italic pt-1 sync-pre-wrap" contenteditable="true" onblur="updateTimelineCell(${idx}, 'note', this.innerText)">📝 備註：${row.note || ''}</div>
                 </div>
             `).join('');
         }
 
-        // 🔴 ⚡ 全新精準排序演算大腦（按鈕位置交換邏輯）
-        window.moveTimelineRow = function(index, direction) {
-            const targetIndex = index + direction;
-            // 邊界防呆：如果是第一行不能再往上，最後一行不能再往下
-            if (targetIndex < 0 || targetIndex >= window.appData.timeline.length) return;
-
-            // 完美的交換陣列內元素位置
-            const temp = window.appData.timeline[index];
-            window.appData.timeline[index] = window.appData.timeline[targetIndex];
-            window.appData.timeline[targetIndex] = temp;
-
-            // 儲存並實時雲端推播
-            window.saveData();
-            window.renderTimelineTable();
+        // 🎯 局部微操控：精準推送「特定儲存路徑」，絕不打架
+        window.updateTimelineCellData = function(index, field, value) {
+            window.appData.timeline[index][field] = value;
+            if (window.cloudUpdateCell) {
+                window.cloudUpdateCell(`timeline/${index}/${field}`, value);
+            }
         }
 
-        window.updateTimelineCell = function(index, field, value) { window.appData.timeline[index][field] = value; window.saveData(); }
-        window.addNewTimelineRow = function() { window.appData.timeline.push({ time: "時段", module: "新項目", stage: "編輯設定...", equip: "", pa: "", photo: "", note: "" }); window.saveData(); renderTimelineTable(); }
-        window.deleteTimelineRow = function(index) { if(confirm("確定刪除此段時程？")) { window.appData.timeline.splice(index, 1); window.saveData(); renderTimelineTable(); } }
-
-        window.saveCurrentTeamMembers = function(text) {
-            const panel = window.appData.panels.find(p => p.id === window.appData.currentTab);
-            if(panel) { panel.members = text; window.saveData(); }
-        }
-        
-        window.renderTeamModules = function(panel) {
-            const grid = document.getElementById('team-modules-grid');
-            if(!panel.modules) panel.modules = [];
-            grid.innerHTML = panel.modules.map((mod, mIdx) => `
-                <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm relative group card-shadow">
-                    <div class="flex justify-between items-center mb-2">
-                        <h4 class="text-xs font-bold text-[#052659]" contenteditable="true" onblur="updateModuleData(${mIdx}, 'title', this.innerText)">${mod.title}</h4>
-                        <button onclick="deleteModuleFromTeam(${mIdx})" class="text-rose-400 hover:text-rose-600 transition-colors text-xs p-1" title="刪除此工作塊">
-                            <i class="fa-solid fa-circle-xmark text-sm"></i>
-                        </button>
-                    </div>
-                    <div class="text-xs text-slate-500 leading-relaxed bg-slate-50 p-2 rounded-lg min-h-[50px] sync-pre-wrap" contenteditable="true" onblur="updateModuleData(${mIdx}, 'content', this.innerText)">${mod.content}</div>
-                </div>
-            `).join('');
-        }
-        
-        window.updateModuleData = function(mIdx, field, value) {
-            const panel = window.appData.panels.find(p => p.id === window.appData.currentTab);
-            if(panel) { panel.modules[mIdx][field] = value; window.saveData(); }
-        }
-        window.addNewModuleToTeam = function() {
-            const panel = window.appData.panels.find(p => p.id === window.appData.currentTab);
-            if(panel) { panel.modules.push({ title: "新自訂任務塊", content: "點擊編輯內容細節..." }); window.saveData(); renderTeamModules(panel); }
-        }
-        
-        window.deleteModuleFromTeam = function(mIdx) {
-            const panel = window.appData.panels.find(p => p.id === window.appData.currentTab);
-            if(panel) {
-                const targetTitle = panel.modules[mIdx].title || "此任務塊";
-                if(confirm(`⚠️ 【大會防誤刪安全警告】\n\n您確定要刪除「${targetTitle}」嗎？\n此操作將同步刪除雲端數據，全台所有組員的畫面也會同步消失！`)) {
-                    panel.modules.splice(mIdx, 1); 
-                    window.saveData(); 
-                    renderTeamModules(panel);
+        window.updateTeamMembersData = function(panelId, value) {
+            const pIdx = window.appData.panels.findIndex(p => p.id === panelId);
+            if (pIdx !== -1) {
+                window.appData.panels[pIdx].members = value;
+                if (window.cloudUpdateCell) {
+                    window.cloudUpdateCell(`panels/${pIdx}/members`, value);
                 }
             }
         }
+
+        window.updateModuleCellData = function(panelId, mIdx, field, value) {
+            const pIdx = window.appData.panels.findIndex(p => p.id === panelId);
+            if (pIdx !== -1) {
+                window.appData.panels[pIdx].modules[mIdx][field] = value;
+                if (window.cloudUpdateCell) {
+                    window.cloudUpdateCell(`panels/${pIdx}/modules/${mIdx}/${field}`, value);
+                }
+            }
+        }
+
+        window.moveTimelineRow = function(index, direction) {
+            const targetIndex = index + direction;
+            if (targetIndex < 0 || targetIndex >= window.appData.timeline.length) return;
+            const temp = window.appData.timeline[index];
+            window.appData.timeline[index] = window.appData.timeline[targetIndex];
+            window.appData.timeline[targetIndex] = temp;
+            if (window.cloudSaveEngine) window.cloudSaveEngine(window.appData);
+        }
+
+        window.addNewTimelineRow = function() { 
+            window.appData.timeline.push({ time: "時段", module: "新項目", stage: "編輯設定...", equip: "", pa: "", photo: "", note: "" }); 
+            if (window.cloudSaveEngine) window.cloudSaveEngine(window.appData); 
+        }
         
+        window.deleteTimelineRow = function(index) { 
+            if(confirm("確定刪除此段時程？")) { 
+                window.appData.timeline.splice(index, 1); 
+                if (window.cloudSaveEngine) window.cloudSaveEngine(window.appData); 
+            } 
+        }
+
+        // 小組工作方塊渲染
+        window.renderTeamModules = function(panel) {
+            const grid = document.getElementById('team-modules-grid');
+            if(!panel.modules) panel.modules = [];
+            grid.innerHTML = panel.modules.map((mod, mIdx) => {
+                const titleId = `mod-title-${panel.id}-${mIdx}`;
+                const contentId = `mod-content-${panel.id}-${mIdx}`;
+                
+                return `<div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm relative group card-shadow">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="text-xs font-bold text-[#052659]" id="${titleId}" contenteditable="true" onblur="window.updateModuleCellData('${panel.id}', ${mIdx}, 'title', this.innerText)">${mod.title}</h4>
+                        <button onclick="window.deleteModuleFromTeam('${panel.id}', ${mIdx})" class="text-rose-400 hover:text-rose-600 transition-colors text-xs p-1">
+                            <i class="fa-solid fa-circle-xmark text-sm"></i>
+                        </button>
+                    </div>
+                    <div class="text-xs text-slate-500 leading-relaxed bg-slate-50 p-2 rounded-lg min-h-[50px] sync-pre-wrap" id="${contentId}" contenteditable="true" onblur="window.updateModuleCellData('${panel.id}', ${mIdx}, 'content', this.innerText)">${mod.content}</div>
+                </div>`;
+            }).join('');
+        }
+
+        window.addNewModuleToTeam = function() {
+            const panel = window.appData.panels.find(p => p.id === window.appData.currentTab);
+            if(panel) { 
+                if(!panel.modules) panel.modules = [];
+                panel.modules.push({ title: "新自訂任務塊", content: "點擊編輯內容..." }); 
+                if (window.cloudSaveEngine) window.cloudSaveEngine(window.appData);
+            }
+        }
+        window.deleteModuleFromTeam = function(panelId, mIdx) {
+            const panel = window.appData.panels.find(p => p.id === panelId);
+            if(panel && confirm("確定刪除此工作塊？")) {
+                panel.modules.splice(mIdx, 1);
+                if (window.cloudSaveEngine) window.cloudSaveEngine(window.appData);
+            }
+        }
         window.createNewPanelPrompt = function() {
             const name = prompt("請輸入全新協作組別名稱："); if(!name) return;
             const id = "team_" + Date.now();
-            window.appData.panels.push({ id, name: name+"工作盤", icon: "fa-users-rectangle", type: "team", members: "編輯組員...", modules: [{ title: "主控任務指標", content: "編輯內容..." }] });
-            window.saveData(); switchTab(id);
+            window.appData.panels.push({ id, name: name+"工作盤", icon: "fa-users-rectangle", type: "team", members: "編輯組員...", modules: [] });
+            if (window.cloudSaveEngine) window.cloudSaveEngine(window.appData);
+            switchTab(id);
         }
         window.deleteCurrentCustomPanel = function() {
-            if(confirm("確定刪除此分組？")) { window.appData.panels = window.appData.panels.filter(p => p.id !== window.appData.currentTab); window.appData.currentTab = "timeline"; window.saveData(); switchTab("timeline"); }
+            if(confirm("確定刪除此分組？")) { window.appData.panels = window.appData.panels.filter(p => p.id !== window.appData.currentTab); window.appData.currentTab = "timeline"; if (window.cloudSaveEngine) window.cloudSaveEngine(window.appData); switchTab("timeline"); }
         }
 
+        // 物資防線
         window.renderChecklist = function() {
             const box = document.getElementById('checklist-box');
             box.innerHTML = window.appData.checklist.map((item, idx) => `
                 <div class="flex items-center p-4 gap-4 ${item.done ? 'bg-slate-50 opacity-50' : ''}">
-                    <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleCheckItem(${idx})" class="w-4 h-4 rounded border-slate-300 text-[#5483B3] focus:ring-0">
-                    <div class="flex-1 text-xs font-bold text-slate-800 ${item.done ? 'line-through text-slate-400' : ''} sync-pre-wrap" contenteditable="true" onblur="updateCheckCell(${idx}, 'item', this.innerText)">${item.item}</div>
-                    <span class="bg-blue-50 text-[#5483B3] text-[10px] px-2 py-0.5 rounded border border-[#5483B3]/20" contenteditable="true" onblur="updateCheckCell(${idx}, 'team', this.innerText)">${item.team}</span>
-                    <div class="flex-1 text-xs text-slate-400 hidden sm:block sync-pre-wrap" contenteditable="true" onblur="updateCheckCell(${idx}, 'note', this.innerText)">${item.note}</div>
+                    <input type="checkbox" ${item.done ? 'checked' : ''} onchange="window.toggleCheckItem(${idx})" class="w-4 h-4 rounded border-slate-300 text-[#5483B3] focus:ring-0">
+                    <div class="flex-1 text-xs font-bold text-slate-800 ${item.done ? 'line-through text-slate-400' : ''} sync-pre-wrap" contenteditable="true" onblur="window.updateCheckCellData(${idx}, 'item', this.innerText)">${item.item}</div>
+                    <span class="bg-blue-50 text-[#5483B3] text-[10px] px-2 py-0.5 rounded border border-[#5483B3]/20" contenteditable="true" onblur="window.updateCheckCellData(${idx}, 'team', this.innerText)">${item.team}</span>
+                    <div class="flex-1 text-xs text-slate-400 hidden sm:block sync-pre-wrap" contenteditable="true" onblur="window.updateCheckCellData(${idx}, 'note', this.innerText)">${item.note}</div>
                     <button onclick="deleteCheckItem(${idx})" class="text-slate-300 hover:text-rose-500 text-xs"><i class="fa-solid fa-trash-can"></i></button>
                 </div>
             `).join('');
         }
-        window.toggleCheckItem = function(idx) { window.appData.checklist[idx].done = !window.appData.checklist[idx].done; window.saveData(); renderChecklist(); }
-        window.updateCheckCell = function(idx, field, val) { window.appData.checklist[idx][field] = val; window.saveData(); }
-        window.addNewChecklistItem = function() { window.appData.checklist.push({ id: Date.now(), done: false, item: "新防線項目", team: "主控組", note: "點擊修改..." }); window.saveData(); renderChecklist(); }
-        window.deleteCheckItem = function(idx) { window.appData.checklist.splice(idx, 1); window.saveData(); renderChecklist(); }
+        window.toggleCheckItem = function(idx) { window.appData.checklist[idx].done = !window.appData.checklist[idx].done; if (window.cloudUpdateCell) window.cloudUpdateCell(`checklist/${idx}/done`, window.appData.checklist[idx].done); }
+        window.updateCheckCellData = function(idx, field, val) { window.appData.checklist[idx][field] = val; if (window.cloudUpdateCell) window.cloudUpdateCell(`checklist/${idx}/${field}`, val); }
+        window.addNewChecklistItem = function() { window.appData.checklist.push({ id: Date.now(), done: false, item: "新物資項目", team: "主控組", note: "點擊修改..." }); if (window.cloudSaveEngine) window.cloudSaveEngine(window.appData); }
+        window.deleteCheckItem = function(idx) { window.appData.checklist.splice(idx, 1); if (window.cloudSaveEngine) window.cloudSaveEngine(window.appData); }
 
         window.exportAllData = function() {
             const blob = new Blob([JSON.stringify(window.appData, null, 2)], { type: "application/json" });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = "2026_TS_年度盛會_全數據精準排序版.json"; a.click();
+            const a = document.createElement('a'); a.href = url; a.download = "2026_TS_年度盛會_全實時防打架版.json"; a.click();
         }
 
-        // 初始化立即驅動
         document.addEventListener("DOMContentLoaded", () => {
+            if(localStorage.getItem('ts_v3_current_tab')) window.appData.currentTab = localStorage.getItem('ts_v3_current_tab');
             window.refreshActivePanel();
         });
-    </script>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyBQdnW16U1OxpDR05hvAv2fcZ4aMKXsyfM",
-            authDomain: "test-fee8d.firebaseapp.com",
-            projectId: "test-fee8d",
-            storageBucket: "test-fee8d.firebasestorage.app",
-            messagingSenderId: "415299571304",
-            appId: "1:415299571304:web:391ce6ecb4d8e2f19035dd",
-            measurementId: "G-EL7VKT97L4",
-            databaseURL: "https://test-fee8d-default-rtdb.firebaseio.com" 
-        };
-
-        try {
-            const app = initializeApp(firebaseConfig);
-            const db = getDatabase(app);
-            const dataRef = ref(db, 'ts_2026_realtime_data');
-
-            window.cloudSaveEngine = function(data) {
-                set(dataRef, data).catch(e => console.log("雲端同步暫時受阻：", e));
-            };
-
-            onValue(dataRef, (snapshot) => {
-                const cloudData = snapshot.val();
-                const statusBadge = document.getElementById('cloud-status-badge');
-                
-                if (cloudData) {
-                    window.appData = cloudData;
-                    window.refreshActivePanel();
-                    statusBadge.className = "text-xs text-emerald-600 bg-emerald-50 border border-emerald-100 px-4 py-2 rounded-full font-medium shadow-inner flex items-center gap-1.5 shrink-0";
-                    statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> 雲端連線・實時同步中`;
-                } else {
-                    window.cloudSaveEngine(window.appData);
-                    statusBadge.className = "text-xs text-blue-600 bg-blue-50 border border-blue-100 px-4 py-2 rounded-full font-medium shadow-inner flex items-center gap-1.5 shrink-0";
-                    statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-500"></span> 本地舊資料已成功同步至雲端`;
-                }
-            }, (error) => {
-                const statusBadge = document.getElementById('cloud-status-badge');
-                statusBadge.className = "text-xs text-amber-600 bg-amber-50 border border-amber-100 px-4 py-2 rounded-full font-medium shadow-inner flex items-center gap-1.5 shrink-0";
-                statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500"></span> 在地保險模式（雲端權限待開啟）`;
-            });
-
-        } catch (e) {
-            console.error("Firebase 初始化失敗", e);
-        }
     </script>
 </body>
 </html>
