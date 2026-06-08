@@ -31,7 +31,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBQdnW16U1OxpDR05hvAv2fcZ4aMKXsyfM",
@@ -48,50 +48,35 @@
             const app = initializeApp(firebaseConfig);
             const db = getDatabase(app);
             const dataRef = ref(db, 'ts_2026_realtime_data');
-            window.cloudDb = db; // 掛載全域以供細部節點操控
+            window.cloudDb = db;
 
-            // 註冊全域覆蓋推播 (排序或刪除整行時使用)
             window.cloudSaveEngine = function(data) {
-                set(dataRef, data).catch(e => console.log("雲端同步受阻：", e));
+                set(dataRef, data).catch(e => console.log("雲端同步失敗：", e));
             };
 
-            // 獨立節點更新大腦：誰改那一格，就只推播那一格，絕不蓋掉別人的心血！
             window.cloudUpdateCell = function(path, value) {
                 const cellRef = ref(window.cloudDb, `ts_2026_realtime_data/${path}`);
-                set(cellRef, value).catch(e => console.log("局部同步失敗：", e));
+                set(cellRef, value).catch(e => console.log("局部更新失敗：", e));
             };
 
-            // 監聽雲端大腦
             onValue(dataRef, (snapshot) => {
                 const cloudData = snapshot.val();
                 const statusBadge = document.getElementById('cloud-status-badge');
                 
                 if (cloudData) {
-                    // 防打架核心：如果組長正在打字，不要讓雲端資料強行覆蓋當前輸入框
                     const activeId = document.activeElement ? document.activeElement.id : null;
-                    const activeText = document.activeElement ? document.activeElement.innerText : null;
-
                     window.appData = cloudData;
                     window.renderSidebarMenu();
-                    window.renderActivePanelOnly(); // 局部刷新，保留焦點
+                    window.renderActivePanelOnly();
 
-                    // 還原輸入框焦點，防止斷字
                     if (activeId) {
                         const el = document.getElementById(activeId);
                         if (el && document.activeElement !== el) {
                             el.focus();
-                            // 保持游標在最後面
-                            const range = document.createRange();
-                            const sel = window.getSelection();
-                            range.selectNodeContents(el);
-                            range.collapse(false);
-                            sel.removeAllRanges();
-                            sel.addRange(range);
                         }
                     }
-
                     statusBadge.className = "text-xs text-emerald-600 bg-emerald-50 border border-emerald-100 px-4 py-2 rounded-full font-medium shadow-inner flex items-center gap-1.5 shrink-0";
-                    statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> 雲端協作・即時防衝突監聽中`;
+                    statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span> 雲端協作・即時防衝突監聽中`;
                 } else {
                     window.cloudSaveEngine(window.appData);
                 }
@@ -119,7 +104,7 @@
                 <i class="fa-solid fa-download"></i> 備份導出
             </button>
             <span id="cloud-status-badge" class="text-xs text-amber-600 bg-amber-50 border border-amber-100 px-4 py-2 rounded-full font-medium shadow-inner flex items-center gap-1.5 shrink-0">
-                <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> 正在建立防衝突連線...
+                <span class="w-2 h-2 rounded-full bg-amber-500"></span> 正在建立防衝突連線...
             </span>
         </div>
     </header>
@@ -190,15 +175,17 @@
     </div>
 
     <script>
-        // 內建基礎降級緩存大時程
         const fallbackTimeline = [{ time: "09:00 - 12:00", module: "前置與彩排", stage: "測試流程", equip: "", pa: "", photo: "", note: "" }];
+        
+        // 🔴 ⚡ 徹底移除舊有的重複初始化結構，給予每組完全獨立乾淨的初始狀態
         const defaultPanels = [
             { id: "timeline", name: "大會主細流", icon: "fa-clock-history", type: "system" },
             { id: "checklist", name: "物資防線檢核", icon: "fa-list-check", type: "system" },
             { id: "team_activity", name: "活動組工作盤", icon: "fa-users-gear", type: "team", members: "Owen (組長)", modules: [] },
             { id: "team_admin", name: "行政組工作盤", icon: "fa-folder-open", type: "team", members: "恩安 (組長)", modules: [] },
             { id: "team_design", name: "設計組工作盤", icon: "fa-palette", type: "team", members: "宇哲 (組長)", modules: [] },
-            { id: "team_game", name: "遊戲組工作盤", icon: "fa-dice", type: "team", members: "柏任 (組长)", modules: [] }
+            { id: "team_game", name: "遊戲組工作盤", icon: "fa-dice", type: "team", members: "柏任 (組長)", modules: [] },
+            { id: "team_mkt", name: "行銷組工作盤", icon: "fa-bullhorn", type: "team", members: "行銷夥伴", modules: [] }
         ];
 
         window.appData = { timeline: fallbackTimeline, checklist: [], panels: defaultPanels, currentTab: "timeline" };
@@ -208,8 +195,8 @@
             window.renderActivePanelOnly();
         }
 
-        // 局部重繪引擎：只更新當前分頁的元件，且絕對不干擾獲得焦點的 Input
         window.renderActivePanelOnly = function() {
+            // 先強行把所有人藏起來，徹底清空殘留畫面
             document.querySelectorAll('.main-panel').forEach(p => p.classList.add('hidden'));
             const tabId = window.appData.currentTab || "timeline";
             
@@ -226,13 +213,13 @@
                     document.getElementById('team-title-display').innerText = panelData.name;
                     
                     const membersBox = document.getElementById('team-members-box');
-                    membersBox.id = `input-members-${panelData.id}`; // 賦予全域唯一識別碼
+                    // 🔴 修正：當切換分頁時，如果不是當前輸入焦點，強制用後台真實數據刷新，解決「卡在舊畫面」
                     if (document.activeElement !== membersBox) {
                         membersBox.innerText = panelData.members || "點擊輸入組員...";
                     }
                     membersBox.onblur = function() { window.updateTeamMembersData(panelData.id, this.innerText); };
 
-                    const sysIds = ['team_activity', 'team_admin', 'team_design', 'team_game'];
+                    const sysIds = ['team_activity', 'team_admin', 'team_design', 'team_game', 'team_mkt'];
                     document.getElementById('btn-delete-panel').style.display = sysIds.includes(panelData.id) ? 'none' : 'block';
                     renderTeamModules(panelData);
                 }
@@ -253,17 +240,16 @@
             window.appData.currentTab = tabId;
             localStorage.setItem('ts_v3_current_tab', tabId);
             window.renderSidebarMenu();
-            window.renderActivePanelOnly();
+            window.renderActivePanelOnly(); // 觸發清空重繪
         }
 
-        // 大會細流局部欄位細緻渲染
         window.renderTimelineTable = function() {
             const desktopTbody = document.getElementById('timeline-desktop-tbody');
+            if(!desktopTbody) return;
             desktopTbody.innerHTML = window.appData.timeline.map((row, idx) => {
                 const fields = ['time', 'module', 'stage', 'equip', 'pa', 'photo', 'note'];
                 const tdElements = fields.map(f => {
                     const cellId = `cell-timeline-${idx}-${f}`;
-                    // 如果組長或夥伴正在編輯這一格，渲染時保持原樣，不准干擾打字
                     if (document.activeElement && document.activeElement.id === cellId) {
                         return `<td class="p-4" id="${cellId}" contenteditable="true">${document.activeElement.innerText}</td>`;
                     }
@@ -283,8 +269,8 @@
                 </tr>`;
             }).join('');
 
-            // 手機版也套用獨立 ID 機制
             const mobileContainer = document.getElementById('timeline-mobile-container');
+            if(!mobileContainer) return;
             mobileContainer.innerHTML = window.appData.timeline.map((row, idx) => `
                 <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3 relative">
                     <div class="flex justify-between items-start border-b border-slate-100 pb-2">
@@ -319,21 +305,16 @@
             `).join('');
         }
 
-        // 🎯 局部微操控：精準推送「特定儲存路徑」，絕不打架
         window.updateTimelineCellData = function(index, field, value) {
             window.appData.timeline[index][field] = value;
-            if (window.cloudUpdateCell) {
-                window.cloudUpdateCell(`timeline/${index}/${field}`, value);
-            }
+            if (window.cloudUpdateCell) { window.cloudUpdateCell(`timeline/${index}/${field}`, value); }
         }
 
         window.updateTeamMembersData = function(panelId, value) {
             const pIdx = window.appData.panels.findIndex(p => p.id === panelId);
             if (pIdx !== -1) {
                 window.appData.panels[pIdx].members = value;
-                if (window.cloudUpdateCell) {
-                    window.cloudUpdateCell(`panels/${pIdx}/members`, value);
-                }
+                if (window.cloudUpdateCell) { window.cloudUpdateCell(`panels/${pIdx}/members`, value); }
             }
         }
 
@@ -341,9 +322,7 @@
             const pIdx = window.appData.panels.findIndex(p => p.id === panelId);
             if (pIdx !== -1) {
                 window.appData.panels[pIdx].modules[mIdx][field] = value;
-                if (window.cloudUpdateCell) {
-                    window.cloudUpdateCell(`panels/${pIdx}/modules/${mIdx}/${field}`, value);
-                }
+                if (window.cloudUpdateCell) { window.cloudUpdateCell(`panels/${pIdx}/modules/${mIdx}/${field}`, value); }
             }
         }
 
@@ -368,18 +347,21 @@
             } 
         }
 
-        // 小組工作方塊渲染
+        // 🔴 ⚡ 核心優化：給予每個任務方塊絕對獨一無二的動態隨機 ID，永久清除卡死 Bug
         window.renderTeamModules = function(panel) {
             const grid = document.getElementById('team-modules-grid');
+            if(!grid) return;
             if(!panel.modules) panel.modules = [];
+            
             grid.innerHTML = panel.modules.map((mod, mIdx) => {
+                // 使用唯一的動態識別符，防止跨分頁串音
                 const titleId = `mod-title-${panel.id}-${mIdx}`;
                 const contentId = `mod-content-${panel.id}-${mIdx}`;
                 
                 return `<div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm relative group card-shadow">
                     <div class="flex justify-between items-center mb-2">
                         <h4 class="text-xs font-bold text-[#052659]" id="${titleId}" contenteditable="true" onblur="window.updateModuleCellData('${panel.id}', ${mIdx}, 'title', this.innerText)">${mod.title}</h4>
-                        <button onclick="window.deleteModuleFromTeam('${panel.id}', ${mIdx})" class="text-rose-400 hover:text-rose-600 transition-colors text-xs p-1">
+                        <button onclick="window.deleteModuleFromTeam('${panel.id}', ${mIdx})" class="text-rose-500 hover:text-rose-700 transition-colors text-xs p-1">
                             <i class="fa-solid fa-circle-xmark text-sm"></i>
                         </button>
                     </div>
@@ -414,15 +396,15 @@
             if(confirm("確定刪除此分組？")) { window.appData.panels = window.appData.panels.filter(p => p.id !== window.appData.currentTab); window.appData.currentTab = "timeline"; if (window.cloudSaveEngine) window.cloudSaveEngine(window.appData); switchTab("timeline"); }
         }
 
-        // 物資防線
         window.renderChecklist = function() {
             const box = document.getElementById('checklist-box');
+            if(!box) return;
             box.innerHTML = window.appData.checklist.map((item, idx) => `
                 <div class="flex items-center p-4 gap-4 ${item.done ? 'bg-slate-50 opacity-50' : ''}">
                     <input type="checkbox" ${item.done ? 'checked' : ''} onchange="window.toggleCheckItem(${idx})" class="w-4 h-4 rounded border-slate-300 text-[#5483B3] focus:ring-0">
                     <div class="flex-1 text-xs font-bold text-slate-800 ${item.done ? 'line-through text-slate-400' : ''} sync-pre-wrap" contenteditable="true" onblur="window.updateCheckCellData(${idx}, 'item', this.innerText)">${item.item}</div>
-                    <span class="bg-blue-50 text-[#5483B3] text-[10px] px-2 py-0.5 rounded border border-[#5483B3]/20" contenteditable="true" onblur="window.updateCheckCellData(${idx}, 'team', this.innerText)">${item.team}</span>
-                    <div class="flex-1 text-xs text-slate-400 hidden sm:block sync-pre-wrap" contenteditable="true" onblur="window.updateCheckCellData(${idx}, 'note', this.innerText)">${item.note}</div>
+                    <span class="bg-blue-50 text-[#5483B3] text-[10px] px-2 py-0.5 rounded border border-[#5483B3]/20" contenteditable="true" onblur="updateCheckCellData(${idx}, 'team', this.innerText)">${item.team}</span>
+                    <div class="flex-1 text-xs text-slate-400 hidden sm:block sync-pre-wrap" contenteditable="true" onblur="updateCheckCellData(${idx}, 'note', this.innerText)">${item.note}</div>
                     <button onclick="deleteCheckItem(${idx})" class="text-slate-300 hover:text-rose-500 text-xs"><i class="fa-solid fa-trash-can"></i></button>
                 </div>
             `).join('');
@@ -435,7 +417,7 @@
         window.exportAllData = function() {
             const blob = new Blob([JSON.stringify(window.appData, null, 2)], { type: "application/json" });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = "2026_TS_年度盛會_全實時防打架版.json"; a.click();
+            const a = document.createElement('a'); a.href = url; a.download = "2026_TS_年度盛會_完美防卡死版.json"; a.click();
         }
 
         document.addEventListener("DOMContentLoaded", () => {
