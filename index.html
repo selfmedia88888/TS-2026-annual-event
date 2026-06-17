@@ -34,7 +34,7 @@
     <header class="border-b bg-white px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-2 shadow-sm sticky top-0 z-50">
         <div>
             <h1 class="text-xl font-bold text-[#052659]">TS 2026 年度盛會智慧中樞</h1>
-            <p class="text-xs text-emerald-600 font-bold">📡 歷史文字大歸位・細流與素食局部刷新永不跳頁版</p>
+            <p class="text-xs text-emerald-600 font-bold">📡 歷史心血完全歸位・大字體橫向表格・局部刷新永不跳頁版</p>
         </div>
         <div class="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto border-t md:border-t-0 pt-2 md:pt-0">
             <span id="display-user-name" class="text-sm bg-slate-100 px-3 py-1.5 rounded-xl text-slate-600 font-bold">👤 載入中...</span>
@@ -175,13 +175,7 @@
                         }
                         if (!window.appData.checklist) window.appData.checklist = [];
 
-                        // 🔴 ⚡ 終極救命接線：強制對應資料庫原始五大組抽屜，心血文字全體原地歸位！
-                        if (!window.appData.team_activity) window.appData.team_activity = { name: "活動組工作盤", icon: "fa-users-gear", members: "", modules: [] };
-                        if (!window.appData.team_admin) window.appData.team_admin = { name: "行政組工作盤", icon: "fa-folder-open", members: "", modules: [] };
-                        if (!window.appData.team_design) window.appData.team_design = { name: "設計組工作盤", icon: "fa-palette", members: "", modules: [] };
-                        if (!window.appData.team_game) window.appData.team_game = { name: "遊戲組工作盤", icon: "fa-dice", members: "", modules: [] };
-                        if (!window.appData.team_marketing) window.appData.team_marketing = { name: "行銷組工作盤", icon: "fa-bullhorn", members: "", modules: [] };
-
+                        // 🔴 ⚡ 核心修正：將選單識別字串百分之百對齊資料庫真實底線名稱（team_activity等）
                         window.panelList = [
                             { id: "timeline", name: "大會主細流", icon: "fa-clock-history" },
                             { id: "team_activity", name: "活動組工作盤", icon: "fa-users-gear" },
@@ -224,7 +218,6 @@
                     if (document.activeElement !== membersBox) { membersBox.innerText = teamData.members || ""; }
                     membersBox.onblur = function() { if(window.cloudUpdateCell) window.cloudUpdateCell(`${tabId}/members`, this.innerText); };
                     
-                    // 行政組直接觸發 40桌次管理矩陣
                     if (tabId === 'team_admin' || teamData.name.includes("行政組")) {
                         document.getElementById('admin-venue-seating-dashboard').classList.remove('hidden');
                         renderVenueTablesGrid();
@@ -254,8 +247,8 @@
 
             if (window.appData.panels) {
                 window.appData.panels.forEach(p => {
-                    const coreIds = ['timeline', 'checklist', 'team_activity', 'team_admin', 'team_design', 'team_game', 'team_marketing', 'tunnel', 'arsenal'];
-                    if (coreIds.includes(p.id) || p.name.includes("時光隧道") || p.name.includes("軍火庫")) return;
+                    const coreIds = ['timeline', 'checklist', 'team_activity', 'team_admin', 'team_design', 'team_game', 'team_marketing'];
+                    if (coreIds.includes(p.id)) return;
                     const isActive = currentTabId === p.id;
                     html += `<button onclick="window.switchTab('${p.id}')" class="text-left px-3 py-2 rounded-xl text-sm ${isActive ? 'bg-[#5483B3]/10 text-[#5483B3] font-bold border-l-4 border-[#5483B3]' : 'text-slate-500 hover:bg-slate-50'}"><i class="fa-solid fa-folder mr-1.5 w-4 text-center"></i><span>${p.name}</span></button>`;
                 });
@@ -263,14 +256,13 @@
             menu.innerHTML = html;
         }
 
-        // 🔴 ⚡ 鎖死分頁路由切換線路（不跳頁的核心）
         window.switchTab = function(tabId) { 
             window.appData.currentTab = tabId; 
             window.renderSidebarMenu(); 
             window.renderActivePanelOnly(); 
         }
 
-        // 📊 大會主細流橫向科技大表格（排序不跳頁）
+        // 📊 表格版大會主細流 (排序、打字局部刷新、絕不跳頁)
         window.renderTimelineTable = function() {
             const tbody = document.getElementById('timeline-desktop-tbody'); if(!tbody || !window.appData.timeline) return;
             tbody.innerHTML = window.appData.timeline.map((row, idx) => `
@@ -319,7 +311,7 @@
         window.addNewChecklistItem = function() { if(!window.appData.checklist) window.appData.checklist = []; window.appData.checklist.push({ done: false, item: "點擊編輯新物資檢核條目..." }); if (window.cloudUpdateCell) window.cloudUpdateCell(`checklist`, window.appData.checklist); }
         window.deleteCheckItem = function(idx) { if(confirm("確定刪除此物資？")) { window.appData.checklist.splice(idx, 1); if (window.cloudUpdateCell) window.cloudUpdateCell(`checklist`, window.appData.checklist); } }
 
-        // 🪑 行政組：1-40 桌座位亮燈控制
+        // 🪑 行政組內置：1-40桌亮燈與座位控制（局部刷新、絕不跳頁）
         window.renderVenueTablesGrid = function() {
             const grid = document.getElementById('venue-tables-grid'); const totalInput = document.getElementById('input-total-tables'); if (!grid || !window.appData.tablesConfig) return;
             const config = window.appData.tablesConfig; totalInput.value = config.totalTables || 40;
@@ -368,7 +360,7 @@
             if (tEl) tEl.innerText = total; if (vEl) vEl.innerText = veg; if (mEl) mEl.innerText = total - veg;
         }
 
-        // 📦 歷史方塊解鎖與新增
+        // 📦 歷史方塊渲染大腦
         window.renderTeamModules = function(teamData, tabId) { 
             const grid = document.getElementById('team-modules-grid'); if(!grid) return; 
             const modules = teamData.modules || []; 
