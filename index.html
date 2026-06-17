@@ -2,8 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026 TS 年度盛會｜指揮中樞</title>
+    <title>TS 2026 年度盛會｜最終修復定案版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -11,8 +10,10 @@
         .main-panel.active { display: block; }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-    <div id="content" class="p-6">載入中...</div>
+<body class="bg-gray-100 p-4">
+    <div id="content" class="max-w-4xl mx-auto">
+        <h1 class="text-xl font-bold text-blue-900 mb-4">系統同步中...</h1>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -27,19 +28,41 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        // 鎖定這個路徑，這是你 Firebase 裡面所有資料的根目錄
-        const dataRef = ref(db, 'ts_2026_realtime_data');
+        
+        // 直接讀取 panels 陣列，這就是你截圖裡看到的那些資料
+        const dataRef = ref(db, 'ts_2026_realtime_data/panels');
 
         onValue(dataRef, (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                window.appData = data;
-                console.log("資料庫已成功同步，內容為：", data);
-                // 這裡會觸發你原本寫好的 renderSidebarMenu() 和 renderActivePanelOnly()
-                // 為了確保你的 UI 能動，我建議你直接呼叫你原本寫好的渲染函數：
-                if(window.renderSidebarMenu) window.renderSidebarMenu();
-                if(window.renderActivePanelOnly) window.renderActivePanelOnly();
-                document.getElementById('content').innerHTML = "系統已載入完畢，請點選選單。";
+            const panels = snapshot.val();
+            const content = document.getElementById('content');
+            content.innerHTML = '<h1 class="text-xl font-bold mb-4">各組作戰面板</h1>';
+
+            if (panels && Array.isArray(panels)) {
+                panels.forEach((p) => {
+                    if (!p) return;
+                    // 這裡直接暴力渲染所有欄位，保證字絕對會出來
+                    let html = `
+                        <div class="bg-white p-6 rounded-xl shadow-lg border border-blue-200 mb-6">
+                            <h2 class="text-2xl font-bold text-blue-900 border-b pb-2 mb-4">${p.name || '未命名'}</h2>
+                            <div class="mb-4">
+                                <p class="text-sm font-bold text-gray-500">👤 組員名單:</p>
+                                <div class="bg-gray-50 p-3 rounded mt-1">${p.members || '尚無名單'}</div>
+                            </div>
+                            <div class="space-y-3">
+                                <p class="text-sm font-bold text-gray-500">📦 任務模塊:</p>`;
+                    
+                    if (p.modules && Array.isArray(p.modules)) {
+                        p.modules.forEach(m => {
+                            html += `
+                                <div class="bg-white p-3 rounded border border-gray-200">
+                                    <h3 class="font-bold text-blue-700">${m.title || '任務'}</h3>
+                                    <p class="text-gray-700 text-sm mt-1 whitespace-pre-wrap">${m.content || ''}</p>
+                                </div>`;
+                        });
+                    }
+                    html += `</div></div>`;
+                    content.innerHTML += html;
+                });
             }
         });
     </script>
