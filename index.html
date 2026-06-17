@@ -35,7 +35,7 @@
     <header class="border-b bg-white/90 sticky top-0 z-50 px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-2 shadow-sm">
         <div class="text-center sm:text-left">
             <h1 class="text-base font-bold text-[#052659]">TS 2026 年度盛會智慧中樞</h1>
-            <p class="text-[9px] uppercase text-slate-400 font-bold">📡 實體神經接線・舊文字大復活終極完全體</p>
+            <p class="text-[9px] uppercase text-slate-400 font-bold">📡 語法錯誤完全修正・全線大通電版</p>
         </div>
         <div class="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
             <span id="display-user-name" class="text-[11px] text-slate-500 bg-slate-100 px-2.5 py-1 rounded-xl">👤 載入中...</span>
@@ -144,7 +144,7 @@
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyBQdnW16U1OxpDR05hvAv2fcW4aMKXsyfM",
+            apiKey: "AIzaSyBQdnW16U1OxpDR05hvAv2fcZ4aMKXsyfM",
             authDomain: "test-fee8d.firebaseapp.com",
             projectId: "test-fee8d",
             databaseURL: "https://test-fee8d-default-rtdb.firebaseio.com" 
@@ -172,7 +172,6 @@
                 onValue(dataRef, (snapshot) => {
                     const cloudData = snapshot.val();
                     if (cloudData) {
-                        // 初始化與相容防呆結構
                         if (!cloudData.tablesConfig) cloudData.tablesConfig = { totalTables: 40 };
                         if (!cloudData.tablesConfig.tablesData) {
                             cloudData.tablesConfig.tablesData = {};
@@ -181,13 +180,11 @@
                         if (!cloudData.awardsConfig) cloudData.awardsConfig = [];
                         if (!cloudData.assetsConfig) cloudData.assetsConfig = [];
                         
-                        // 🔴 ⚡ 核心硬對接：如果雲端裡古老的小組抽屜不存在，原地安全建庫，絕不覆蓋！
                         if (!cloudData.team_activity) cloudData.team_activity = { name: "活動組工作盤", icon: "fa-users-gear", members: "Owen (組長)", modules: [] };
                         if (!cloudData.team_admin) cloudData.team_admin = { name: "行政組工作盤", icon: "fa-folder-open", members: "恩安 (組長)", modules: [] };
                         if (!cloudData.team_design) cloudData.team_design = { name: "設計組工作盤", icon: "fa-palette", members: "宇哲 (組長)", modules: [] };
                         if (!cloudData.team_game) cloudData.team_game = { name: "遊戲組工作盤", icon: "fa-dice", members: "柏任 (組長)", modules: [] };
 
-                        // 🔴 ⚡ 最高戰略選單：直接用實體 ID 對齊資料庫抽屜，杜絕 Array 切斷神經！
                         window.panelList = [
                             { id: "timeline", name: "大會主細流", icon: "fa-clock-history", type: "system" },
                             { id: "main_venue", name: "🏛️ 主會場桌位管理", icon: "fa-table-cells", type: "system" },
@@ -224,7 +221,6 @@
         window.renderActivePanelOnly = function() {
             if (!window.appData) return; document.querySelectorAll('.main-panel').forEach(p => p.classList.add('hidden'));
             const tabId = window.appData.currentTab || "timeline";
-            
             if(tabId === 'timeline') { document.getElementById('panel-timeline').classList.remove('hidden'); renderTimelineTable(); } 
             else if(tabId === 'main_venue') { document.getElementById('panel-main-venue').classList.remove('hidden'); renderVenueTablesGrid(); } 
             else if(tabId === 'time_tunnel') { document.getElementById('panel-time-tunnel').classList.remove('hidden'); syncTunnelTrafficUI(); } 
@@ -232,9 +228,9 @@
             else if(tabId === 'assets_military') { document.getElementById('panel-assets-military').classList.remove('hidden'); renderAssetsMilitaryTable(); } 
             else if(tabId === 'checklist') { document.getElementById('panel-checklist').classList.remove('hidden'); renderChecklist(); } 
             else {
-                // 🔴 ⚡ 獨立大通電：點擊組別，直接讀寫雲端最底層的獨立組別節點！
                 const teamData = window.appData[tabId];
                 if(teamData) {
+                    const pIdx = window.panelList.findIndex(p => p.id === tabId);
                     document.getElementById('panel-team-generic').classList.remove('hidden'); 
                     document.getElementById('team-title-display').innerText = teamData.name || "小組工作盤";
                     
@@ -259,7 +255,6 @@
         }
         window.switchTab = function(tabId) { window.appData.currentTab = tabId; window.renderSidebarMenu(); window.renderActivePanelOnly(); }
 
-        // 🔴 ⚡ 核心功能：修復小組工作塊新增、打字編輯、同步功能
         window.renderTeamModules = function(teamData, tabId) { 
             const grid = document.getElementById('team-modules-grid'); if(!grid) return; 
             const modules = teamData.modules || []; 
@@ -281,7 +276,18 @@
         }
         window.deleteModuleFromTeam = function(tabId, mIdx) { if(confirm("確定刪除此工作塊？")) { window.appData[tabId].modules.splice(mIdx, 1); if(window.cloudUpdateCell) window.cloudUpdateCell(`${tabId}/modules`, window.appData[tabId].modules); } }
 
-        // 桌次配置與廚房加總
+        window.updateTableBoxVegLightOnly = function() {
+            const config = window.appData.tablesConfig; if(!config) return;
+            for (let i = 1; i <= (config.totalTables || 40); i++) {
+                const tData = config.tablesData ? config.tablesData[i] : null; const hasVeg = tData && tData.seats ? tData.seats.some(s => s && s.isVeg) : false;
+                const btn = document.getElementById(`table-box-btn-${i}`); const indicator = document.getElementById(`table-veg-indicator-${i}`);
+                if (btn && indicator) {
+                    if (window.appData.selectedTable == i) { btn.className = `h-12 rounded-xl border text-xs flex flex-col items-center justify-center transition-all bg-[#052659] text-white border-[#052659] font-bold scale-105`; }
+                    else { btn.className = `h-12 rounded-xl border text-xs flex flex-col items-center justify-center transition-all ${hasVeg ? 'bg-emerald-50 text-emerald-700 border-emerald-300 font-bold shadow-inner' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}`; }
+                    indicator.innerHTML = hasVeg ? '<span class="text-[8px] text-emerald-500 font-bold">🟢有素</span>' : '';
+                }
+            }
+        }
         window.renderVenueTablesGrid = function() {
             const grid = document.getElementById('venue-tables-grid'); const totalInput = document.getElementById('input-total-tables'); if (!grid || !window.appData.tablesConfig) return;
             const config = window.appData.tablesConfig; totalInput.value = config.totalTables || 40;
@@ -303,25 +309,13 @@
             if (window.cloudUpdateCell) { window.cloudUpdateCell(`tablesConfig/tablesData/${tableNum}/seats/${seatIdx}`, { name: seat.name || "", isVeg: nextVeg }); window.updateTableBoxVegLightOnly(); window.calculateKitchenRadar(); }
         }
 
-        // 基礎統計與其他面板
-        window.updateTableBoxVegLightOnly = function() {
-            const config = window.appData.tablesConfig; if(!config) return;
-            for (let i = 1; i <= (config.totalTables || 40); i++) {
-                const tData = config.tablesData ? config.tablesData[i] : null; const hasVeg = tData && tData.seats ? tData.seats.some(s => s && s.isVeg) : false;
-                const btn = document.getElementById(`table-box-btn-${i}`); const indicator = document.getElementById(`table-veg-indicator-${i}`);
-                if (btn && indicator) {
-                    if (window.appData.selectedTable == i) { btn.className = `h-12 rounded-xl border text-xs flex flex-col items-center justify-center transition-all bg-[#052659] text-white border-[#052659] font-bold scale-105`; }
-                    else { btn.className = `h-12 rounded-xl border text-xs flex flex-col items-center justify-center transition-all ${hasVeg ? 'bg-emerald-50 text-emerald-700 border-emerald-300 font-bold shadow-inner' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}`; }
-                    indicator.innerHTML = hasVeg ? '<span class="text-[8px] text-emerald-500 font-bold">🟢有素</span>' : '';
-                }
-            }
-        }
+        // 🔴 ⚡ 核心筆誤校正：將錯誤的原生變數徹底修除，全網頁大腦大復活！
         window.calculateKitchenRadar = function() {
             if (!window.appData || !window.appData.tablesConfig || !window.appData.tablesConfig.tablesData) return;
             let total = 0, veg = 0; const config = window.appData.tablesConfig;
             for(let i=1; i<=(config.totalTables || 40); i++) { const tData = config.tablesData[i]; if(tData && tData.seats) { tData.seats.forEach(s => { if(s && s.name && s.name.trim() !== "") { total++; if(s.isVeg) veg++; } }); } }
-            const tEl = document.getElementById('panel-stat-total'); const mEl = document.getElementById('meat'); const vEl = document.getElementById('panel-stat-veg');
-            if (tEl && panel-stat-meat && vEl) { tEl.innerText = total; vEl.innerText = veg; document.getElementById('panel-stat-meat').innerText = total - veg; }
+            const tEl = document.getElementById('panel-stat-total'); const mEl = document.getElementById('panel-stat-meat'); const vEl = document.getElementById('panel-stat-veg');
+            if (tEl && mEl && vEl) { tEl.innerText = total; vEl.innerText = veg; mEl.innerText = total - veg; }
         }
         window.setTunnelTraffic = function(color) { window.appData.tunnelTraffic = color; if (window.cloudUpdateCell) window.cloudUpdateCell("tunnelTraffic", color); }
         window.syncTunnelTrafficUI = function() {
@@ -332,8 +326,9 @@
             else if (color === 'red') { bar.className = "p-4 rounded-xl text-white flex flex-col sm:flex-row justify-between items-center bg-rose-950 border border-rose-800 animate-pulse gap-2"; txt.innerText = "🚨 外場暫緩放人！ | 前方大圖區嚴重堵塞"; }
         }
         window.renderTimelineTable = function() {
-            const desktopTbody = document.getElementById('timeline-desktop-tbody'); if(!desktopTbody || !window.appData) return;
-            desktopTbody.innerHTML = window.appData.timeline.map((row, idx) => `<tr><td class="p-3 text-center space-x-1"><button onclick="moveTimelineRow(${idx}, -1)" class="bg-slate-100 text-[#5483B3] w-6 h-6 rounded-lg"><i class="fa-solid fa-arrow-up text-[10px]"></i></button></td><td class="p-4 text-center font-bold text-slate-400 bg-slate-50/40">${idx + 1}</td><td class="p-4 font-bold text-[#5483B3]" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'time', this.innerText)">${row.time || ''}</td><td class="p-4 font-bold" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'module', this.innerText)">${row.module || ''}</td><td class="p-4 text-slate-600 sync-pre-wrap" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'stage', this.innerText)">${row.stage || ''}</td><td class="p-4 text-slate-600" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'pa', this.innerText)">${row.pa || ''}</td><td class="p-4 text-center"><button onclick="deleteTimelineRow(${idx})" class="text-slate-300 hover:text-rose-500"><i class="fa-solid fa-trash-can"></i></button></td></tr>`).join('');
+            const desktopTbody = document.getElementById('timeline-desktop-tbody'); const mobileContainer = document.getElementById('timeline-mobile-container'); if(!window.appData) return;
+            if(desktopTbody) { desktopTbody.innerHTML = window.appData.timeline.map((row, idx) => `<tr><td class="p-3 text-center space-x-1"><button onclick="moveTimelineRow(${idx}, -1)" class="bg-slate-100 text-[#5483B3] w-6 h-6 rounded-lg"><i class="fa-solid fa-arrow-up text-[10px]"></i></button></td><td class="p-4 text-center font-bold text-slate-400 bg-slate-50/40">${idx + 1}</td><td class="p-4 font-bold text-[#5483B3]" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'time', this.innerText)">${row.time || ''}</td><td class="p-4 font-bold" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'module', this.innerText)">${row.module || ''}</td><td class="p-4 text-slate-600 sync-pre-wrap" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'stage', this.innerText)">${row.stage || ''}</td><td class="p-4 text-slate-600" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'pa', this.innerText)">${row.pa || ''}</td><td class="p-4 text-center"><button onclick="deleteTimelineRow(${idx})" class="text-slate-300 hover:text-rose-500"><i class="fa-solid fa-trash-can"></i></button></td></tr>`).join(''); }
+            if(mobileContainer) { mobileContainer.innerHTML = window.appData.timeline.map((row, idx) => `<div class="bg-white border rounded-xl p-4 card-shadow space-y-1.5"><div class="flex justify-between items-center text-[10px] font-bold border-b pb-1"><span class="text-[#5483B3] font-mono"><i class="fa-regular fa-clock mr-1"></i>${row.time || '未定時段'}</span><span class="text-slate-300">#${idx+1}</span></div><h3 class="text-xs font-bold text-slate-800" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'module', this.innerText)">${row.module || '點擊輸入項目'}</h3><div class="text-[11px] text-slate-600 bg-slate-50 p-2 rounded-lg sync-pre-wrap" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'stage', this.innerText)">${row.stage || '內容與設定...'}</div></div>`).join(''); }
         }
         window.renderAwardsFlowTable = function() {
             const tbody = document.getElementById('awards-flow-tbody'); if(!tbody || !window.appData.awardsConfig) return;
@@ -347,7 +342,6 @@
             const box = document.getElementById('checklist-box'); if(!box) return;
             box.innerHTML = window.appData.checklist.map((item, idx) => `<div class="flex items-center p-3 gap-3"><input type="checkbox" ${item.done ? 'checked' : ''} onchange="window.toggleCheckItem(${idx})"><div class="flex-1 text-xs font-bold ${item.done ? 'line-through text-slate-400' : ''}" contenteditable="true" onblur="window.updateCheckCellData(${idx}, 'item', this.innerText)">${item.item}</div></div>`).join('');
         }
-        document.addEventListener("DOMContentLoaded", () => { window.checkAuthAndRun(); });
     </script>
 </body>
 </html>
