@@ -35,7 +35,7 @@
     <header class="border-b bg-white/90 sticky top-0 z-50 px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-2 shadow-sm">
         <div class="text-center sm:text-left">
             <h1 class="text-base font-bold text-[#052659]">TS 2026 年度盛會智慧中樞</h1>
-            <p class="text-[9px] uppercase text-slate-400 font-bold">📡 100% 舊任務塊解鎖・時光隧道精簡版</p>
+            <p class="text-[9px] uppercase text-slate-400 font-bold">📡 歷史文字大復活・終極無錯定案版</p>
         </div>
         <div class="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
             <span id="display-user-name" class="text-[11px] text-slate-500 bg-slate-100 px-2.5 py-1 rounded-xl">👤 載入中...</span>
@@ -175,7 +175,6 @@
                         if (!cloudData.awardsConfig) cloudData.awardsConfig = [];
                         if (!cloudData.assetsConfig) cloudData.assetsConfig = [];
                         
-                        // 初始核心防禦
                         if (!cloudData.team_activity) cloudData.team_activity = { name: "活動組工作盤", icon: "fa-users-gear", members: "", modules: [] };
                         if (!cloudData.team_admin) cloudData.team_admin = { name: "行政組工作盤", icon: "fa-folder-open", members: "", modules: [] };
                         if (!cloudData.team_design) cloudData.team_design = { name: "設計組工作盤", icon: "fa-palette", members: "", modules: [] };
@@ -206,7 +205,7 @@
                         } else {
                             window.renderActivePanelOnly();
                         }
-                        document.getElementById('cloud-status-badge').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block mr-1"></span> 雲端連線成功`;
+                        document.getElementById('cloud-status-badge').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block mr-1"></span> 雲端大腦同步中`;
                     }
                 });
             } catch (e) { console.error(e); }
@@ -246,14 +245,14 @@
         }
         window.switchTab = function(tabId) { window.appData.currentTab = tabId; window.renderSidebarMenu(); window.renderActivePanelOnly(); }
 
-        // 🔴 ⚡ 核心正義解鎖：注入 contenteditable="true" 讓所有歷史方塊全部秒變「可打字編輯框」！
+        // 🔴 ⚡ 終極歸位：精準拉取雲端舊方塊內的文字（mod.title 與 mod.content），原地滿血復活大噴發！
         window.renderTeamModules = function(teamData, tabId) { 
             const grid = document.getElementById('team-modules-grid'); if(!grid) return; 
             const modules = teamData.modules || []; 
             grid.innerHTML = modules.map((mod, mIdx) => `
                 <div class="bg-white border rounded-xl p-4 shadow-sm relative card-shadow">
                     <div class="flex justify-between items-center mb-2 select-none">
-                        <h4 class="text-xs font-bold text-[#052659]" contenteditable="true" onblur="window.updateModuleCell('${tabId}', ${mIdx}, 'title', this.innerText)">${mod.title || '任務名稱'}</h4>
+                        <h4 class="text-xs font-bold text-[#052659]" contenteditable="true" onblur="window.updateModuleCell('${tabId}', ${mIdx}, 'title', this.innerText)">${mod.title || '任務區名稱'}</h4>
                         <button onclick="window.deleteModuleFromTeam('${tabId}', ${mIdx})" class="text-slate-300 hover:text-rose-500 text-xs"><i class="fa-solid fa-circle-xmark"></i></button>
                     </div>
                     <div class="text-xs text-slate-600 bg-slate-50 p-3 rounded-lg min-h-[60px] focus:outline-none" contenteditable="true" onblur="window.updateModuleCell('${tabId}', ${mIdx}, 'content', this.innerText)">${mod.content || ''}</div>
@@ -293,7 +292,7 @@
             const box = document.getElementById('table-details-box'); const grid = document.getElementById('seats-inputs-grid'); const title = document.getElementById('selected-table-title'); if (!box || !grid || !title) return; const tNum = window.appData.selectedTable; if (!tNum || tNum > window.appData.tablesConfig.totalTables) { box.classList.add('hidden'); return; } box.classList.remove('hidden'); title.innerHTML = `正在管理：第 【${tNum}】 桌座位名單`; const tData = window.appData.tablesConfig.tablesData[tNum] || { seats: Array(10).fill({ name: "", isVeg: false }) };
             let html = ""; for (let s = 0; s < 10; s++) { const seat = tData.seats[s] || { name: "", isVeg: false }; const isVeg = seat.isVeg || false; html += `<div id="seat-wrapper-${tNum}-${s}" class="flex items-center gap-1 bg-slate-50 border ${isVeg ? 'border-emerald-300 bg-emerald-50/50' : 'border-slate-200'} p-1.5 rounded-xl"><span class="text-[10px] font-mono text-slate-400 font-bold w-4 text-center">${s+1}</span><input type="text" id="seat-input-${tNum}-${s}" value="${seat.name || ''}" placeholder="空位" oninput="window.updateSeatName(${tNum}, ${s}, this.value)" class="w-full bg-transparent border-none text-xs focus:outline-none font-bold ${isVeg ? 'text-emerald-700' : 'text-slate-800'}"><button id="seat-veg-btn-${tNum}-${s}" onclick="window.toggleSeatVeg(${tNum}, ${s})" class="px-2 py-1 rounded-md text-[10px] font-bold border ${isVeg ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-400 border-slate-200'}">素</button></div>`; } grid.innerHTML = html;
         }
-        window.updateSeatName = function(tableNum, seatIdx, val) { if(!window.appData.tablesConfig.tablesData[tableNum].seats) { window.appData.tablesConfig.tablesData[tableNum].seats = Array(10).fill({ name: "", isVeg: false }); } const currentVeg = window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx]?.isVeg || false; window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx] = { name: val, isVeg: currentVeg }; if (window.cloudUpdateCell) window.cloudUpdateCell(`tablesConfig/tablesData/${tableNum}/seats/${seatIdx}`, { name: val, isVeg: currentVeg }); }
+        window.updateSeatName = function(tableNum, seatIdx, val) { if(!window.appData.tablesConfig.tablesData[tableNum].seats) { window.appData.tablesConfig.tablesData[tableNum].tablesData[tableNum].seats = Array(10).fill({ name: "", isVeg: false }); } const currentVeg = window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx]?.isVeg || false; window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx] = { name: val, isVeg: currentVeg }; if (window.cloudUpdateCell) window.cloudUpdateCell(`tablesConfig/tablesData/${tableNum}/seats/${seatIdx}`, { name: val, isVeg: currentVeg }); }
         window.toggleSeatVeg = function(tableNum, seatIdx) {
             const seat = window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx] || { name: "", isVeg: false }; const nextVeg = !seat.isVeg; window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx] = { name: seat.name || "", isVeg: nextVeg };
             const wrapper = document.getElementById('seat-wrapper-' + tableNum + '-' + seatIdx); const input = document.getElementById('seat-input-' + tableNum + '-' + seatIdx); const btn = document.getElementById('seat-veg-btn-' + tableNum + '-' + seatIdx);
