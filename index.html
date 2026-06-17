@@ -11,8 +11,12 @@
         body { font-family: 'Inter', 'Noto Sans TC', sans-serif; background-color: #F8FAFC; color: #1e293b; }
         [contenteditable="true"] { white-space: pre-wrap !important; word-break: break-word !important; }
         [contenteditable="true"]:focus { outline: 2px solid #5483B3; background-color: #ffffff; box-shadow: 0 0 0 4px rgba(84, 131, 179, 0.15); border-radius: 6px; }
-        th, td { font-size: 14px !important; }
-        .main-panel h2 { font-size: 20px !important; }
+        /* 現場戰術大字體優化 */
+        th, td { font-size: 15px !important; font-weight: 500 !important; }
+        thead th { font-size: 15px !important; font-weight: 700 !important; }
+        .main-panel h2 { font-size: 22px !important; font-weight: 700 !important; }
+        .card-shadow { box-shadow: 0 4px 18px -4px rgba(5, 38, 89, 0.05); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col pb-32">
@@ -28,8 +32,8 @@
 
     <header class="border-b bg-white px-6 py-4 flex justify-between items-center shadow-sm">
         <div>
-            <h1 class="text-lg font-bold text-[#052659]">TS 2026 年度盛會智慧中樞</h1>
-            <p class="text-xs text-emerald-600 font-bold">📡 真・功能完全體（左側自訂新增歸位、桌位獨立修復）</p>
+            <h1 class="text-xl font-bold text-[#052659]">TS 2026 年度盛會智慧中樞</h1>
+            <p class="text-xs text-emerald-600 font-bold">📡 一步到位定案版：功能大復活・細流規格修正・大字體</p>
         </div>
         <div class="flex items-center gap-3 text-sm text-slate-500">
             <span id="display-user-name">👤 載入中...</span>
@@ -37,7 +41,7 @@
     </header>
 
     <div class="flex flex-1">
-        <aside class="w-64 border-r bg-white p-4 flex flex-col justify-between select-none shadow-sm">
+        <aside class="w-64 border-r bg-white p-4 flex flex-col justify-between select-none shadow-sm shrink-0">
             <div class="flex flex-col gap-1.5" id="sidebar-menu"></div>
             <div class="pt-4 border-t mt-4">
                 <button onclick="window.createNewCustomPanel()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition-all">
@@ -46,25 +50,26 @@
             </div>
         </aside>
 
-        <main class="flex-1 p-8">
+        <main class="flex-1 p-8 overflow-x-auto">
+            
             <div id="panel-timeline" class="main-panel hidden">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="font-bold text-[#052659]">大會核心時程主骨架</h2>
-                    <button onclick="addNewTimelineRow()" class="bg-[#5483B3] text-white text-sm px-5 py-2.5 rounded-xl shadow-sm">＋ 新增時段</button>
+                    <button onclick="addNewTimelineRow()" class="bg-[#5483B3] text-white text-sm font-bold px-5 py-2.5 rounded-xl shadow-sm">＋ 新增時段</button>
                 </div>
-                <div class="overflow-x-auto bg-white border rounded-2xl shadow-sm">
-                    <table class="w-full text-left bg-white border-collapse">
+                <div class="overflow-x-auto bg-white border border-slate-200 rounded-2xl shadow-sm">
+                    <table class="w-full text-left bg-white border-collapse min-w-[1000px]">
                         <thead>
                             <tr class="bg-slate-100 border-b border-slate-200 text-[#052659] font-bold">
-                                <th class="p-4 w-12 text-center border-r border-slate-200">序</th>
-                                <th class="p-4 w-32 border-r border-slate-200">時間段</th>
-                                <th class="p-4 w-40 border-r border-slate-200">流程</th>
-                                <th class="p-4 min-w-[150px] border-r border-slate-200">內容</th>
-                                <th class="p-4 min-w-[120px] border-r border-slate-200">器材清單</th>
-                                <th class="p-4 min-w-[120px] border-r border-slate-200">備註</th>
-                                <th class="p-4 w-32 border-r border-slate-200">PA/音控</th>
-                                <th class="p-4 w-32 border-r border-slate-200">攝影</th>
-                                <th class="p-4 w-12 text-center">刪</th>
+                                <th class="p-4 w-16 text-center border-r border-slate-200">序</th>
+                                <th class="p-4 w-36 border-r border-slate-200">時間段</th>
+                                <th class="p-4 w-48 border-r border-slate-200">流程</th>
+                                <th class="p-4 min-w-[200px] border-r border-slate-200">內容</th>
+                                <th class="p-4 min-w-[150px] border-r border-slate-200">器材清單</th>
+                                <th class="p-4 min-w-[150px] border-r border-slate-200">備註</th>
+                                <th class="p-4 w-40 border-r border-slate-200">PA/音控</th>
+                                <th class="p-4 w-40 border-r border-slate-200">攝影</th>
+                                <th class="p-4 w-16 text-center">刪</th>
                             </tr>
                         </thead>
                         <tbody id="timeline-desktop-tbody" class="divide-y divide-slate-200"></tbody>
@@ -73,35 +78,33 @@
             </div>
 
             <div id="panel-seating" class="main-panel hidden">
-                <div class="bg-white border rounded-2xl p-6 shadow-sm mb-6">
+                <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-6">
                     <h2 class="font-bold text-[#052659] mb-2"><i class="fa-solid fa-chair mr-2 text-[#5483B3]"></i>主會場核心主桌桌次安排控制</h2>
-                    <p class="text-xs text-slate-400 mb-6">在此編輯核心主桌名單與桌位設定，全大會指揮官將同步更新。</p>
+                    <p class="text-sm text-slate-400 mb-6">在此編輯核心主桌名單與桌位設定，大會將實時同步存檔。</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 shadow-inner">
                             <label class="text-sm font-bold text-rose-600 block mb-3"><i class="fa-solid fa-circle mr-1.5"></i> 核心主桌 1 號桌名單及設定</label>
-                            <div id="seating-panel-table-1" contenteditable="true" class="bg-white border rounded-xl p-4 text-sm min-h-[150px] shadow-sm focus:outline-none"></div>
+                            <div id="seating-panel-table-1" contenteditable="true" class="bg-white border border-slate-300 rounded-xl p-4 text-base min-h-[180px] shadow-sm focus:outline-none"></div>
                         </div>
                         <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 shadow-inner">
                             <label class="text-sm font-bold text-blue-600 block mb-3"><i class="fa-solid fa-circle mr-1.5"></i> 核心主桌 2 號桌名單及設定</label>
-                            <div id="seating-panel-table-2" contenteditable="true" class="bg-white border rounded-xl p-4 text-sm min-h-[150px] shadow-sm focus:outline-none"></div>
+                            <div id="seating-panel-table-2" contenteditable="true" class="bg-white border border-slate-300 rounded-xl p-4 text-base min-h-[180px] shadow-sm focus:outline-none"></div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div id="panel-team-generic" class="main-panel hidden">
-                <div class="bg-white border rounded-2xl p-6 shadow-sm mb-6 relative">
+                <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-6 relative">
                     <div class="flex justify-between items-start">
-                        <div>
-                            <h2 class="font-bold text-[#052659]" id="team-title-display">小組盤</h2>
-                        </div>
+                        <h2 class="font-bold text-[#052659]" id="team-title-display">小組盤</h2>
                         <button id="btn-delete-entire-panel" class="text-xs font-bold text-rose-500 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg transition-all hidden">
                             <i class="fa-solid fa-trash-can mr-1"></i> 刪除此面板
                         </button>
                     </div>
                     <div class="mt-4">
-                        <label class="text-xs font-bold text-slate-400 block mb-2">👥 本組組員名單</label>
-                        <div id="team-members-box" contenteditable="true" class="bg-slate-50 border rounded-xl p-4 text-sm min-h-[50px] focus:outline-none"></div>
+                        <label class="text-sm font-bold text-slate-400 block mb-2">👥 本組組員名單</label>
+                        <div id="team-members-box" contenteditable="true" class="bg-slate-50 border rounded-xl p-4 text-base min-h-[50px] focus:outline-none"></div>
                     </div>
                 </div>
                 
@@ -111,7 +114,7 @@
                         <i class="fa-solid fa-plus mr-1"></i> 新增文字方塊
                     </button>
                 </div>
-                <div class="grid grid-cols-2 gap-5" id="team-modules-grid"></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5" id="team-modules-grid"></div>
             </div>
         </main>
     </div>
@@ -180,7 +183,7 @@
                 t1.onblur = function() { if(window.cloudUpdateCell) window.cloudUpdateCell(`seating_table_1`, this.innerText); };
                 t2.onblur = function() { if(window.cloudUpdateCell) window.cloudUpdateCell(`seating_table_2`, this.innerText); };
             } 
-            // 3. 常規或新增的自訂工作盤
+            // 3. 常規或新增的小組工作盤
             else {
                 const panelData = window.appData.panels.find(p => p.id === tabId);
                 const pIdx = window.appData.panels.findIndex(p => p.id === tabId);
@@ -192,8 +195,8 @@
                     if (document.activeElement !== membersBox) { membersBox.innerText = panelData.members || ""; }
                     membersBox.onblur = function() { if(window.cloudUpdateCell) window.cloudUpdateCell(`panels/${pIdx}/members`, this.innerText); };
                     
-                    // 控制是否顯示刪除自訂面板按鈕（內建的核心組別不給刪，只有自訂的可以刪）
-                    const coreIds = ['timeline', 'seating', 'admin', 'activity', 'design', 'game', 'marketing'];
+                    // 核心小組不准刪，自訂面板可以刪
+                    const coreIds = ['timeline', 'seating', 'admin', 'activity', 'design', 'game', 'marketing', 'team_activity', 'team_admin', 'team_design', 'team_game', 'team_marketing'];
                     const delBtn = document.getElementById('btn-delete-entire-panel');
                     if (!coreIds.includes(tabId)) {
                         delBtn.classList.remove('hidden');
@@ -207,23 +210,22 @@
             }
         }
 
-        // 🔴 精準校正：單一細流、獨立桌次、砍掉隧道與軍火庫
+        // 🔴 ⚡ 100% 精準清空與去重邏輯：只允許一個主細流、一個主桌次，徹底移除隧道和軍火庫
         window.renderSidebarMenu = function() {
             if(!window.appData || !window.appData.panels) return;
             const menu = document.getElementById('sidebar-menu'); if(!menu) return;
             
-            // 建立乾淨選單（保證只有一個大會主細流與一個主會場桌位管理）
             let html = `<p class="text-xs font-bold text-slate-400 px-3 mb-2">大會總指揮面板</p>`;
             
-            // 主細流
+            // 📊 單一主細流
             html += `<button onclick="switchTab('timeline')" class="w-full text-left px-4 py-2.5 rounded-xl text-sm ${window.appData.currentTab === 'timeline' ? 'bg-[#5483B3]/10 text-[#5483B3] font-bold':''}">📊 大會主細流</button>`;
             
-            // 主會場桌位管理
+            // 🪑 獨立主會場桌位
             html += `<button onclick="switchTab('seating')" class="w-full text-left px-4 py-2.5 rounded-xl text-sm mt-1 ${window.appData.currentTab === 'seating' ? 'bg-[#5483B3]/10 text-[#5483B3] font-bold':''}">🪑 主會場桌位管理</button>`;
             
-            // 渲染所有雲端工作小組（並精準過濾掉不見的隧道和軍火庫）
+            // 渲染組別，並精準攔截隧道與軍火庫
             window.appData.panels.forEach(p => {
-                if (p.name.includes("時光隧道") || p.name.includes("軍火庫") || p.id === "tunnel" || p.id === "arsenal") return;
+                if (p.id === 'timeline' || p.id === 'seating' || p.name.includes("大會主細流") || p.name.includes("時光隧道") || p.name.includes("軍火庫") || p.id === "tunnel" || p.id === "arsenal") return;
                 const isActive = window.appData.currentTab === p.id;
                 html += `<button onclick="switchTab('${p.id}')" class="w-full text-left px-4 py-2.5 rounded-xl text-sm mt-1 ${isActive ? 'bg-[#5483B3]/10 text-[#5483B3] font-bold':''}">📁 ${p.name}</button>`;
             });
@@ -233,9 +235,9 @@
         
         window.switchTab = function(tabId) { window.appData.currentTab = tabId; window.renderSidebarMenu(); window.renderActivePanelOnly(); }
 
-        // ⚡ 復活功能：在雲端建立全新左側自訂面板
+        // ⚡ 復活：左側自訂面板新增
         window.createNewCustomPanel = function() {
-            const panelName = prompt("請輸入全新自訂工作面板/小組名稱 (例如: 貴賓接待組):");
+            const panelName = prompt("請輸入全新自訂工作面板名稱 (例如: 行政佈達工作盤):");
             if (!panelName || !panelName.trim()) return;
             
             const newId = "custom_" + Date.now();
@@ -244,18 +246,19 @@
             window.appData.panels.push({
                 id: newId,
                 name: panelName.trim(),
-                members: "組員名單點此填寫...",
-                modules: [{ title: "核心工作任務一", content: "點擊開始編輯內文..." }]
+                members: "點擊編輯組員名單...",
+                modules: [{ title: "任務方塊標題", content: "點擊編輯內文..." }]
             });
             
             window.appData.currentTab = newId;
-            if(window.cloudUpdateCell) window.cloudUpdateCell(`panels`, window.appData.panels);
-            if(window.cloudUpdateCell) window.cloudUpdateCell(`currentTab`, newId);
+            if(window.cloudUpdateCell) {
+                window.cloudUpdateCell(`panels`, window.appData.panels);
+                window.cloudUpdateCell(`currentTab`, newId);
+            }
         }
 
-        // 刪除自訂面板功能
         window.deleteEntireCustomPanel = function(pIdx) {
-            if (confirm("確定要完全刪除這個自訂面板嗎？裡面的方塊資料也將一併移除且無法復原！")) {
+            if (confirm("確定完全刪除此自訂面板嗎？")) {
                 window.appData.panels.splice(pIdx, 1);
                 window.appData.currentTab = "timeline";
                 if(window.cloudUpdateCell) {
@@ -268,10 +271,10 @@
         window.renderTeamModules = function(panel, pIdx) {
             const grid = document.getElementById('team-modules-grid'); if(!grid) return;
             grid.innerHTML = (panel.modules || []).map((mod, mIdx) => `
-                <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm relative">
+                <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm relative card-shadow">
                     <div class="flex justify-between items-center mb-2">
                         <h4 class="text-sm font-bold text-[#052659] w-full" contenteditable="true" onblur="window.updateModuleCell(${pIdx}, ${mIdx}, 'title', this.innerText)">${mod.title || '點擊輸入標題'}</h4>
-                        <button onclick="window.deleteModuleFromTeam(${pIdx}, ${mIdx})" class="text-slate-300 hover:text-rose-500 text-sm ml-2"><i class="fa-solid fa-circle-xmark"></i></button>
+                        <button onclick="window.deleteModuleFromTeam(${pIdx}, ${mIdx})" class="text-slate-400 hover:text-rose-500 text-xs ml-2"><i class="fa-solid fa-circle-xmark"></i></button>
                     </div>
                     <div class="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg focus:outline-none min-h-[60px]" contenteditable="true" onblur="window.updateModuleCell(${pIdx}, ${mIdx}, 'content', this.innerText)">${mod.content || ''}</div>
                 </div>`).join('');
@@ -282,13 +285,13 @@
             const tabId = window.appData.currentTab; const pIdx = window.appData.panels.findIndex(p => p.id === tabId);
             if(pIdx !== -1) {
                 if(!window.appData.panels[pIdx].modules) window.appData.panels[pIdx].modules = [];
-                window.appData.panels[pIdx].modules.push({ title: "新文字方塊標題", content: "點擊開始編輯內文..." });
+                window.appData.panels[pIdx].modules.push({ title: "新自訂任務標題", content: "點擊開始編輯詳細計畫及人數..." });
                 if(window.cloudUpdateCell) window.cloudUpdateCell(`panels/${pIdx}/modules`, window.appData.panels[pIdx].modules);
             }
         }
         window.deleteModuleFromTeam = function(pIdx, mIdx) { if(confirm("確定刪除此文字方塊？")) { window.appData.panels[pIdx].modules.splice(mIdx, 1); if(window.cloudUpdateCell) window.cloudUpdateCell(`panels/${pIdx}/modules`, window.appData.panels[pIdx].modules); } }
         
-        // 主細流重繪
+        // 🔴 ⚡ 細流大復活：完美對齊 7 大分項，兼顧舊格式對照，絕不漏字！
         window.renderTimelineTable = function() {
             const tbody = document.getElementById('timeline-desktop-tbody'); if(!tbody || !window.appData.timeline) return;
             tbody.innerHTML = window.appData.timeline.map((row, idx) => `
@@ -309,7 +312,7 @@
         window.updateTimelineCellData = function(index, field, value) { if(window.cloudUpdateCell) window.cloudUpdateCell(`timeline/${index}/${field}`, value); }
         window.addNewTimelineRow = function() {
             if(!window.appData.timeline) window.appData.timeline = [];
-            window.appData.timeline.push({ time: "00:00", module: "新流程項目", stage: "內容詳情", pa: "器材需求", notes: "", audio: "", video: "" });
+            window.appData.timeline.push({ time: "12:00", module: "新項目", stage: "", pa: "", notes: "", audio: "", video: "" });
             if(window.cloudUpdateCell) window.cloudUpdateCell(`timeline`, window.appData.timeline);
         }
         document.addEventListener("DOMContentLoaded", () => { window.checkAuthAndRun(); });
