@@ -13,8 +13,8 @@
         [contenteditable="true"]:focus { outline: 2px solid #5483B3; background-color: #ffffff; box-shadow: 0 0 0 4px rgba(84, 131, 179, 0.15); border-radius: 6px; }
         .card-shadow { box-shadow: 0 4px 18px -4px rgba(5, 38, 89, 0.05); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        /* 針對手持直螢幕的強制大字體 */
-        th, td, input, div { font-size: 16px !important; }
+        /* 直螢幕手持專用戰術放大字體 */
+        th, td, input, div, button { font-size: 16px !important; }
         h2 { font-size: 22px !important; font-weight: 700 !important; }
         h3 { font-size: 18px !important; font-weight: 700 !important; }
     </style>
@@ -25,9 +25,9 @@
         <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-4">
             <h2 class="text-[#052659] text-center">TS 2026 指揮中樞身份核驗</h2>
             <div class="space-y-3">
-                <input type="password" id="input-auth-key" placeholder="輸入密碼 (ts2026)" class="w-full bg-slate-50 border rounded-xl p-3 text-sm">
-                <input type="text" id="input-auth-user" placeholder="例如：活動組-Owen" class="w-full bg-slate-50 border rounded-xl p-3 text-sm">
-                <button onclick="window.submitAuth()" class="w-full bg-[#5483B3] text-white font-bold py-3 rounded-xl text-sm">驗證身分並登錄</button>
+                <input type="password" id="input-auth-key" placeholder="輸入密碼 (ts2026)" class="w-full bg-slate-50 border rounded-xl p-3">
+                <input type="text" id="input-auth-user" placeholder="例如：活動組-Owen" class="w-full bg-slate-50 border rounded-xl p-3">
+                <button onclick="window.submitAuth()" class="w-full bg-[#5483B3] text-white font-bold py-3 rounded-xl">驗證身分並登錄</button>
             </div>
         </div>
     </div>
@@ -39,7 +39,7 @@
         </div>
         <div class="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto border-t md:border-t-0 pt-2 md:pt-0">
             <span id="display-user-name" class="text-xs bg-slate-100 px-2.5 py-1 rounded-xl text-slate-600">👤 載入中...</span>
-            <span id="cloud-status-badge" class="text-xs text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full font-medium"></span>
+            <span id="cloud-status-badge" class="text-xs text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full font-medium">● 連線成功</span>
         </div>
     </header>
 
@@ -65,14 +65,14 @@
 
             <div id="panel-checklist" class="main-panel hidden space-y-4">
                 <div class="flex justify-between items-center">
-                    <h2 class="text-[#052659]">📦 大會現場物資防線檢核表</h2>
+                    <h2 class="text-[#052659]">📦 大會現場物資防線檢核條目表</h2>
                     <button onclick="window.addNewChecklistItem()" class="bg-[#5483B3] text-white text-xs font-bold px-4 py-2 rounded-xl">＋ 新增資產物資</button>
                 </div>
                 <div class="bg-white border rounded-xl divide-y card-shadow" id="checklist-box"></div>
             </div>
 
             <div id="panel-team-generic" class="main-panel hidden space-y-5">
-                <div class="bg-white border rounded-2xl p-4 lg:p-6 shadow-sm relative">
+                <div class="bg-white border rounded-2xl p-4 shadow-sm relative">
                     <div class="flex justify-between items-start">
                         <h2 class="text-[#052659]" id="team-title-display">小組盤</h2>
                         <button id="btn-delete-entire-panel" class="text-xs font-bold text-rose-500 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg transition-all hidden"><i class="fa-solid fa-trash-can mr-1"></i> 刪除此面板</button>
@@ -172,8 +172,6 @@
                         window.updateTableBoxVegLightOnly(); 
                         window.calculateKitchenRadar();
                         window.renderActivePanelOnly();
-                        
-                        document.getElementById('cloud-status-badge').innerHTML = `● 同步中`;
                     }
                 });
             } catch (e) { console.error(e); }
@@ -240,14 +238,13 @@
             menu.innerHTML = html;
         }
 
-        // 🔴 ⚡ 關鍵修正：切換分頁直接修改本地變數，絕對不准重置雲端監聽！永不跳頁！
         window.switchTab = function(tabId) { 
             window.appData.currentTab = tabId; 
             window.renderSidebarMenu(); 
             window.renderActivePanelOnly(); 
         }
 
-        // 📱 ⚡ 核心優化：主細流改為由上到下的「直向時間軸科技卡片」，手持單手狂滑、絕不跳走！
+        // 📱 細流改為由上到下的「直向時間軸科技卡片」
         window.renderTimelineTable = function() {
             const container = document.getElementById('timeline-mobile-container'); if(!container || !window.appData.timeline) return;
             container.innerHTML = window.appData.timeline.map((row, idx) => `
@@ -288,8 +285,9 @@
             if(window.cloudUpdateCell) window.cloudUpdateCell(`timeline`, window.appData.timeline);
         }
         window.deleteTimelineRow = function(idx) { if(confirm("確定刪除此流程卡？")) { window.appData.timeline.splice(idx, 1); if(window.cloudUpdateCell) window.cloudUpdateCell(`timeline`, window.appData.timeline); } }
+        window.updateTimelineCellData = function(index, field, value) { if(window.cloudUpdateCell) window.cloudUpdateCell(`timeline/${index}/${field}`, value); }
 
-        // 📊 條列式物資檢核
+        // 物資防線檢核
         window.renderChecklist = function() {
             const box = document.getElementById('checklist-box'); if(!box) return;
             box.innerHTML = (window.appData.checklist || []).map((item, idx) => `
@@ -300,11 +298,11 @@
                 </div>`).join('');
         }
         window.toggleCheckItem = function(idx) { window.appData.checklist[idx].done = !window.appData.checklist[idx].done; if (window.cloudUpdateCell) window.cloudUpdateCell(`checklist/${idx}/done`, window.appData.checklist[idx].done); }
-        window.updateCheckItemText = function(idx, val) { window.appData.checklist[idx].item = val; if (window.cloudUpdateCell) window.cloudUpdateCell(`checklist/${idx}/${item}`, val); }
+        window.updateCheckItemText = function(idx, val) { window.appData.checklist[idx].item = val; if (window.cloudUpdateCell) window.cloudUpdateCell(`checklist/${idx}/item`, val); }
         window.addNewChecklistItem = function() { if(!window.appData.checklist) window.appData.checklist = []; window.appData.checklist.push({ done: false, item: "點擊編輯新資產物資..." }); if (window.cloudUpdateCell) window.cloudUpdateCell(`checklist`, window.appData.checklist); }
         window.deleteCheckItem = function(idx) { if(confirm("確定刪除此物資？")) { window.appData.checklist.splice(idx, 1); if (window.cloudUpdateCell) window.cloudUpdateCell(`checklist`, window.appData.checklist); } }
 
-        // 🪑 行政組內建：1-40 桌發光亮燈大方塊
+        // 🪑 行政組：1-40 桌矩陣與發光亮燈
         window.renderVenueTablesGrid = function() {
             const grid = document.getElementById('venue-tables-grid'); const totalInput = document.getElementById('input-total-tables'); if (!grid || !window.appData.tablesConfig) return;
             const config = window.appData.tablesConfig; totalInput.value = config.totalTables || 40;
@@ -313,7 +311,6 @@
                 const tData = config.tablesData ? config.tablesData[i] : null; 
                 const hasVeg = tData && tData.seats ? tData.seats.some(s => s && s.isVeg) : false; 
                 const isSelected = window.appData.selectedTable == i; 
-                // 🔴 🟢 真正發光綠色大按鈕：只要有素，手機大盤直接通電爆亮！
                 let style = isSelected ? 'bg-[#052659] text-white border-[#052659] font-bold scale-105 shadow-md' : (hasVeg ? 'bg-emerald-600 text-white border-emerald-700 font-bold shadow-lg shadow-emerald-600/30' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'); 
                 html += `<button id="table-box-btn-${i}" onclick="window.selectTableForDetails(${i})" class="h-16 rounded-2xl border flex flex-col items-center justify-center transition-all ${style}"><span>第 ${i} 桌</span><span id="table-veg-indicator-${i}">${hasVeg ? '<span class="text-[11px] text-emerald-100 underline">🟢有素食</span>' : ''}</span></button>`; 
             }
@@ -341,25 +338,26 @@
                 const btn = document.getElementById(`table-box-btn-${i}`); const indicator = document.getElementById(`table-veg-indicator-${i}`);
                 if (btn && indicator) {
                     if (window.appData.selectedTable == i) { btn.className = `h-16 rounded-2xl border flex flex-col items-center justify-center transition-all bg-[#052659] text-white border-[#052659] font-bold scale-105 shadow-md`; }
-                    else { btn.className = `h-16 rounded-2xl border flex flex-col items-center justify-center transition-all ${hasVeg ? 'bg-emerald-600 text-white border-emerald-700 font-bold shadow-lg' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}`; }
+                    else { btn.className = `h-16 rounded-2xl border flex flex-col items-center justify-center transition-all ${hasVeg ? 'bg-emerald-600 text-white border-emerald-700 font-bold shadow-lg shadow-emerald-600/30' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}`; }
                     indicator.innerHTML = hasVeg ? '<span class="text-[11px] text-white underline">🟢有素食</span>' : '';
                 }
             }
         }
+        // 🔴 ⚡ 核心修復：精準安全檢查雷達輸出，阻斷罷工斷電
         window.calculateKitchenRadar = function() {
             if (!window.appData || !window.appData.tablesConfig || !window.appData.tablesConfig.tablesData) return;
             let total = 0, veg = 0; const config = window.appData.tablesConfig;
             for(let i=1; i<=(config.totalTables || 40); i++) { const tData = config.tablesData[i]; if(tData && tData.seats) { tData.seats.forEach(s => { if(s && s.name && s.name.trim() !== "") { total++; if(s.isVeg) veg++; } }); } }
-            const tEl = document.getElementById('panel-stat-total'); const vEl = document.getElementById('panel-stat-veg');
-            if (tEl && vEl) { tEl.innerText = total; vEl.innerText = veg; document.getElementById('panel-stat-meat').innerText = total - veg; }
+            const tEl = document.getElementById('panel-stat-total'); const vEl = document.getElementById('panel-stat-veg'); const mEl = document.getElementById('panel-stat-meat');
+            if (tEl && vEl) tEl.innerText = total; if (vEl) vEl.innerText = veg; if (mEl) mEl.innerText = total - veg;
         }
 
-        // 📦 自訂任務與自訂面板新增
+        // 📦 文字方塊任務渲染與自訂面板
         window.renderTeamModules = function(teamData, tabId) { 
             const grid = document.getElementById('team-modules-grid'); if(!grid) return; 
             const modules = teamData.modules || []; 
             grid.innerHTML = modules.map((mod, mIdx) => `
-                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm relative card-shadow">
+                <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm relative card-shadow">
                     <div class="flex justify-between items-center mb-2 select-none">
                         <h4 class="text-base font-bold text-[#052659] w-full" contenteditable="true" onblur="window.updateModuleCell('${tabId}', ${mIdx}, 'title', this.innerText)">${mod.title || '任務名稱'}</h4>
                         <button onclick="window.deleteModuleFromTeam('${tabId}', ${mIdx})" class="text-slate-400 hover:text-rose-500 text-sm ml-2"><i class="fa-solid fa-circle-xmark"></i></button>
@@ -380,12 +378,12 @@
             const panelName = prompt("請輸入全新自訂工作面板名稱:"); if (!panelName || !panelName.trim()) return;
             const newId = "custom_" + Date.now(); if(!window.appData.panels) window.appData.panels = [];
             window.appData.panels.push({ id: newId, name: panelName.trim(), members: "", modules: [{ title: "自訂標題", content: "作戰內文..." }] });
-            if(window.cloudUpdateCell) { window.cloudUpdateCell(`panels`, window.appData.panels); window.switchTab(newId); }
+            if(window.cloudUpdateCell) { window.cloudUpdateCell(`panels`, window.appData.panels); window.appData.currentTab = newId; window.location.reload(); }
         }
         window.deleteEntireCustomPanel = function(tabId) {
             if (confirm("確定完全刪除此面板？")) {
                 const pIdx = window.appData.panels.findIndex(p => p.id === tabId);
-                if (pIdx !== -1) { window.appData.panels.splice(pIdx, 1); if(window.cloudUpdateCell) { window.cloudUpdateCell(`panels`, window.appData.panels); window.switchTab("timeline"); } }
+                if (pIdx !== -1) { window.appData.panels.splice(pIdx, 1); if(window.cloudUpdateCell) { window.cloudUpdateCell(`panels`, window.appData.panels); window.appData.currentTab = "timeline"; window.location.reload(); } }
             }
         }
     </script>
