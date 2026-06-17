@@ -35,7 +35,7 @@
     <header class="border-b bg-white/90 sticky top-0 z-50 px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-2 shadow-sm">
         <div class="text-center sm:text-left">
             <h1 class="text-base font-bold text-[#052659]">TS 2026 年度盛會智慧中樞</h1>
-            <p class="text-[9px] uppercase text-slate-400 font-bold">📡 歷史文字大復活・終極無錯定案版</p>
+            <p class="text-[9px] uppercase text-slate-400 font-bold">📡 行銷組歸位・五大組別滿血通電版</p>
         </div>
         <div class="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
             <span id="display-user-name" class="text-[11px] text-slate-500 bg-slate-100 px-2.5 py-1 rounded-xl">👤 載入中...</span>
@@ -92,7 +92,7 @@
             </div>
 
             <div id="panel-time-tunnel" class="main-panel hidden space-y-4">
-                <div id="tunnel-traffic-light-bar" class="p-5 rounded-2xl text-white flex flex-col sm:flex-row justify-between items-center text-xs bg-emerald-950 border border-emerald-800 gap-3">
+                <div id="tunnel-traffic-light-bar" class="p-4 rounded-xl text-white flex flex-col sm:flex-row justify-between items-start sm:items-center text-xs bg-emerald-950 border border-emerald-800 gap-3">
                     <div>
                         <h3 class="font-bold text-sm">🚶‍♂️ 外場進場流速實時連動廣播燈</h3>
                         <p id="tunnel-light-text" class="text-xs text-emerald-300 mt-1">🟢 絲滑暢通 | 依正常節奏優雅放人</p>
@@ -175,11 +175,14 @@
                         if (!cloudData.awardsConfig) cloudData.awardsConfig = [];
                         if (!cloudData.assetsConfig) cloudData.assetsConfig = [];
                         
+                        // 🔴 ⚡ 核心修復：補全行銷組（team_marketing）初始化，死守舊資料
                         if (!cloudData.team_activity) cloudData.team_activity = { name: "活動組工作盤", icon: "fa-users-gear", members: "", modules: [] };
                         if (!cloudData.team_admin) cloudData.team_admin = { name: "行政組工作盤", icon: "fa-folder-open", members: "", modules: [] };
                         if (!cloudData.team_design) cloudData.team_design = { name: "設計組工作盤", icon: "fa-palette", members: "", modules: [] };
                         if (!cloudData.team_game) cloudData.team_game = { name: "遊戲組工作盤", icon: "fa-dice", members: "", modules: [] };
+                        if (!cloudData.team_marketing) cloudData.team_marketing = { name: "行銷組工作盤", icon: "fa-bullhorn", members: "", modules: [] };
 
+                        // 🔴 ⚡ 最高選單：行銷組排進第 9 順位，權限全面解鎖！
                         window.panelList = [
                             { id: "timeline", name: "大會主細流", icon: "fa-clock-history" },
                             { id: "main_venue", name: "🏛️ 主會場桌位管理", icon: "fa-table-cells" },
@@ -190,6 +193,7 @@
                             { id: "team_admin", name: "行政組工作盤", icon: "fa-folder-open" },
                             { id: "team_design", name: "設計組工作盤", icon: "fa-palette" },
                             { id: "team_game", name: "遊戲組工作盤", icon: "fa-dice" },
+                            { id: "team_marketing", name: "行銷組工作盤", icon: "fa-bullhorn" },
                             { id: "checklist", name: "物資防線檢核", icon: "fa-list-check" }
                         ];
 
@@ -205,7 +209,7 @@
                         } else {
                             window.renderActivePanelOnly();
                         }
-                        document.getElementById('cloud-status-badge').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block mr-1"></span> 雲端大腦同步中`;
+                        document.getElementById('cloud-status-badge').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block mr-1"></span> 全線同步中`;
                     }
                 });
             } catch (e) { console.error(e); }
@@ -245,7 +249,6 @@
         }
         window.switchTab = function(tabId) { window.appData.currentTab = tabId; window.renderSidebarMenu(); window.renderActivePanelOnly(); }
 
-        // 🔴 ⚡ 終極歸位：精準拉取雲端舊方塊內的文字（mod.title 與 mod.content），原地滿血復活大噴發！
         window.renderTeamModules = function(teamData, tabId) { 
             const grid = document.getElementById('team-modules-grid'); if(!grid) return; 
             const modules = teamData.modules || []; 
@@ -267,7 +270,7 @@
         }
         window.deleteModuleFromTeam = function(tabId, mIdx) { if(confirm("確定刪除此工作塊？")) { window.appData[tabId].modules.splice(mIdx, 1); if(window.cloudUpdateCell) window.cloudUpdateCell(`${tabId}/modules`, window.appData[tabId].modules); } }
 
-        // 桌次與基礎控制配置
+        // 桌次配置
         window.updateTableBoxVegLightOnly = function() {
             const config = window.appData.tablesConfig; if(!config) return;
             for (let i = 1; i <= (config.totalTables || 40); i++) {
@@ -292,7 +295,7 @@
             const box = document.getElementById('table-details-box'); const grid = document.getElementById('seats-inputs-grid'); const title = document.getElementById('selected-table-title'); if (!box || !grid || !title) return; const tNum = window.appData.selectedTable; if (!tNum || tNum > window.appData.tablesConfig.totalTables) { box.classList.add('hidden'); return; } box.classList.remove('hidden'); title.innerHTML = `正在管理：第 【${tNum}】 桌座位名單`; const tData = window.appData.tablesConfig.tablesData[tNum] || { seats: Array(10).fill({ name: "", isVeg: false }) };
             let html = ""; for (let s = 0; s < 10; s++) { const seat = tData.seats[s] || { name: "", isVeg: false }; const isVeg = seat.isVeg || false; html += `<div id="seat-wrapper-${tNum}-${s}" class="flex items-center gap-1 bg-slate-50 border ${isVeg ? 'border-emerald-300 bg-emerald-50/50' : 'border-slate-200'} p-1.5 rounded-xl"><span class="text-[10px] font-mono text-slate-400 font-bold w-4 text-center">${s+1}</span><input type="text" id="seat-input-${tNum}-${s}" value="${seat.name || ''}" placeholder="空位" oninput="window.updateSeatName(${tNum}, ${s}, this.value)" class="w-full bg-transparent border-none text-xs focus:outline-none font-bold ${isVeg ? 'text-emerald-700' : 'text-slate-800'}"><button id="seat-veg-btn-${tNum}-${s}" onclick="window.toggleSeatVeg(${tNum}, ${s})" class="px-2 py-1 rounded-md text-[10px] font-bold border ${isVeg ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-400 border-slate-200'}">素</button></div>`; } grid.innerHTML = html;
         }
-        window.updateSeatName = function(tableNum, seatIdx, val) { if(!window.appData.tablesConfig.tablesData[tableNum].seats) { window.appData.tablesConfig.tablesData[tableNum].tablesData[tableNum].seats = Array(10).fill({ name: "", isVeg: false }); } const currentVeg = window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx]?.isVeg || false; window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx] = { name: val, isVeg: currentVeg }; if (window.cloudUpdateCell) window.cloudUpdateCell(`tablesConfig/tablesData/${tableNum}/seats/${seatIdx}`, { name: val, isVeg: currentVeg }); }
+        window.updateSeatName = function(tableNum, seatIdx, val) { if(!window.appData.tablesConfig.tablesData[tableNum].seats) { window.appData.tablesConfig.tablesData[tableNum].seats = Array(10).fill({ name: "", isVeg: false }); } const currentVeg = window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx]?.isVeg || false; window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx] = { name: val, isVeg: currentVeg }; if (window.cloudUpdateCell) window.cloudUpdateCell(`tablesConfig/tablesData/${tableNum}/seats/${seatIdx}`, { name: val, isVeg: currentVeg }); }
         window.toggleSeatVeg = function(tableNum, seatIdx) {
             const seat = window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx] || { name: "", isVeg: false }; const nextVeg = !seat.isVeg; window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx] = { name: seat.name || "", isVeg: nextVeg };
             const wrapper = document.getElementById('seat-wrapper-' + tableNum + '-' + seatIdx); const input = document.getElementById('seat-input-' + tableNum + '-' + seatIdx); const btn = document.getElementById('seat-veg-btn-' + tableNum + '-' + seatIdx);
