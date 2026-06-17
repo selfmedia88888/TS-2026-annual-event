@@ -8,227 +8,130 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap');
-        :root {
-            --color-bg: #F8FAFC;
-            --color-primary: #5483B3;
-            --color-darkblue: #052659;
-            --color-light: #C1E8FF;
-        }
+        :root { --color-bg: #F8FAFC; --color-primary: #5483B3; --color-darkblue: #052659; }
         body { font-family: 'Inter', 'Noto Sans TC', sans-serif; background-color: var(--color-bg); color: #1e293b; }
         [contenteditable="true"] { white-space: pre-wrap !important; word-break: break-word !important; }
         .sync-pre-wrap { white-space: pre-wrap !important; }
-        [contenteditable="true"]:focus { outline: 2px solid var(--color-primary); background-color: #ffffff; box-shadow: 0 0 0 4px rgba(84, 131, 179, 0.15); border-radius: 6px; }
-        .card-shadow { box-shadow: 0 4px 18px -4px rgba(5, 38, 89, 0.05), 0 2px 6px -1px rgba(5, 38, 89, 0.03); }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
+        [contenteditable="true"]:focus { outline: 2px solid var(--color-primary); background-color: #ffffff; }
+        .card-shadow { box-shadow: 0 4px 18px -4px rgba(5, 38, 89, 0.05); }
     </style>
 </head>
-<body id="main-body" class="min-h-screen flex flex-col overflow-x-hidden pb-32">
+<body class="min-h-screen flex flex-col pb-32">
 
     <div id="auth-overlay" class="fixed inset-0 bg-[#052659]/90 backdrop-blur-lg z-[9999] flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-3xl p-6 lg:p-8 max-w-sm w-full shadow-2xl space-y-4 border border-slate-100">
-            <div class="text-center space-y-1">
-                <div class="w-12 h-12 bg-[#5483B3]/10 text-[#5483B3] rounded-2xl flex items-center justify-center mx-auto text-xl"><i class="fa-solid fa-shield-halved"></i></div>
-                <h2 class="text-base font-bold text-[#052659] pt-2">TS 2026 指揮中樞身份核驗</h2>
+        <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-4">
+            <div class="text-center">
+                <h2 class="text-base font-bold text-[#052659]">TS 2026 指揮中樞身份核驗</h2>
             </div>
-            <div class="space-y-3 pt-2 text-xs">
-                <div>
-                    <label class="font-bold text-slate-500 block mb-1">🔑 大會群組通關金鑰</label>
-                    <input type="password" id="input-auth-key" placeholder="輸入密碼 (ts2026)" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:outline-none">
-                </div>
-                <div>
-                    <label class="font-bold text-slate-500 block mb-1">👤 您的稱呼 / 組別</label>
-                    <input type="text" id="input-auth-user" placeholder="例如：活動組-Owen" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:outline-none">
-                </div>
-                <button onclick="window.submitAuth()" class="w-full bg-[#5483B3] hover:bg-[#052659] text-white font-bold py-3 rounded-xl shadow-md mt-2 transition-all">
-                    驗證身分並登錄
-                </button>
+            <div class="space-y-3 text-xs">
+                <input type="password" id="input-auth-key" placeholder="輸入密碼 (ts2026)" class="w-full bg-slate-50 border rounded-xl p-3">
+                <input type="text" id="input-auth-user" placeholder="例如：活動組-Owen" class="w-full bg-slate-50 border rounded-xl p-3">
+                <button onclick="window.submitAuth()" class="w-full bg-[#5483B3] text-white font-bold py-3 rounded-xl">驗證身分並登錄</button>
             </div>
         </div>
     </div>
 
-    <header class="border-b border-slate-200 bg-white/90 backdrop-blur-md sticky top-0 z-50 px-4 lg:px-8 py-4 flex flex-col sm:flex-row gap-4 justify-between items-center shadow-sm">
-        <div class="flex items-center gap-3 w-full sm:w-auto">
-            <div class="w-10 h-10 bg-gradient-to-tr from-[#5483B3] to-[#C1E8FF] rounded-xl flex items-center justify-center shadow-md">
-                <svg viewBox="0 0 24 24" class="w-6 h-6 text-white fill-current" xmlns="http://www.w3.org/2000/svg"><path d="M2,12C2,12 5,3 12,3C16,3 22,6 22,12C22,15 18,20 12,20C8,20 5,17 4,15C5.5,15.5 7.5,15 9,14C6,13 4.5,10.5 4.5,8.5C5.5,9.5 7,10 8,9.5C5,8 4.5,5 5.5,4C6.5,6.5 9,9 13,9.5C12,8 12.5,6 14,4.5C16,3 18.5,4 19.5,5.5C18.5,5 17,5 16,5.5C17,6.5 17.5,8 17,9.5C18.5,9 20,7.5 20.5,6.5C20,8.5 18.5,10 17,11C19,11 20.5,10.5 21,10C20.5,12 18.5,13.5 16.5,14C18,15.5 19,17.5 18.5,19.5C16,18 14,15.5 13,14C10,15 6,15 2,12Z"/></svg>
-            </div>
-            <div>
-                <h1 class="text-base font-bold tracking-tight text-[#052659]">TS 2026 年度盛會智慧中樞</h1>
-                <p class="text-[9px] uppercase font-bold tracking-widest text-slate-400">📡 歷史數據吸回・完全體大防線</p>
-            </div>
+    <header class="border-b bg-white/90 sticky top-0 z-50 px-6 py-4 flex justify-between items-center shadow-sm">
+        <div>
+            <h1 class="text-base font-bold text-[#052659]">TS 2026 年度盛會智慧中樞</h1>
+            <p class="text-[9px] uppercase text-slate-400 font-bold">📡 舊資料歷史抽屜全面對接復活版</p>
         </div>
-        <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
-            <span id="display-user-name" class="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">👤 載入中...</span>
-            <button onclick="window.clearAuthLogOut()" class="text-slate-400 hover:text-rose-500 text-xs p-1"><i class="fa-solid fa-lock"></i></button>
-            <span id="cloud-status-badge" class="text-xs text-emerald-600 bg-emerald-50 border border-emerald-100 px-4 py-2 rounded-full font-medium shadow-inner flex items-center gap-1.5 shrink-0"></span>
+        <div class="flex items-center gap-3">
+            <span id="display-user-name" class="text-xs text-slate-500 bg-slate-100 px-3 py-1.5 rounded-xl">👤 載入中...</span>
+            <span id="cloud-status-badge" class="text-xs text-emerald-600 bg-emerald-50 px-4 py-2 rounded-full font-medium"></span>
         </div>
     </header>
 
-    <div class="flex flex-1 flex-col lg:flex-row">
-        <aside class="w-full lg:w-64 border-b lg:border-b-0 lg:border-r border-slate-200 bg-white p-4 flex flex-col justify-between select-none">
-            <div class="flex flex-row lg:flex-col gap-1.5 overflow-x-auto lg:overflow-x-visible no-scrollbar pb-1 lg:pb-0" id="sidebar-menu"></div>
-        </aside>
+    <div class="flex flex-1">
+        <aside class="w-64 border-r bg-white p-4 flex flex-col gap-1.5 select-none" id="sidebar-menu"></aside>
 
-        <main class="flex-1 p-4 lg:p-8 bg-[#F8FAFC]">
-            
+        <main class="flex-1 p-8">
             <div id="panel-timeline" class="main-panel hidden">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-base font-bold text-[#052659] flex items-center gap-2"><i class="fa-solid fa-clock-history text-[#5483B3]"></i> 大會核心時程主骨架</h2>
-                    <button onclick="addNewTimelineRow()" class="bg-[#5483B3] text-white text-xs font-semibold px-4 py-2 rounded-xl shadow-sm">＋ 新增時段</button>
+                    <h2 class="text-base font-bold text-[#052659]"><i class="fa-solid fa-clock-history mr-2"></i>大會核心時程主骨架</h2>
+                    <button onclick="addNewTimelineRow()" class="bg-[#5483B3] text-white text-xs font-semibold px-4 py-2 rounded-xl">＋ 新增時段</button>
                 </div>
-                <div class="hidden lg:block bg-white border border-slate-200 rounded-2xl overflow-hidden card-shadow">
-                    <table class="w-full text-left border-collapse">
+                <div class="bg-white border rounded-2xl overflow-hidden card-shadow">
+                    <table class="w-full text-left text-xs border-collapse">
                         <thead>
-                            <tr class="bg-slate-50/70 border-b border-slate-200 text-xs font-semibold text-slate-500">
-                                <th class="p-4 w-24 text-center">調整排序</th>
-                                <th class="p-4 w-12 text-center">序</th>
-                                <th class="p-4 w-32">時間段</th>
-                                <th class="p-4 w-44">核心節目模組</th>
-                                <th class="p-4 w-64">內容與舞台設定</th>
-                                <th class="p-4 w-44">器材清單</th>
-                                <th class="p-4 w-44">PA / 音控</th>
-                                <th class="p-4 w-44">攝影 / 畫面</th>
-                                <th class="p-4 w-44">備註</th>
-                                <th class="p-4 w-12 text-center">刪</th>
+                            <tr class="bg-slate-50 font-bold text-slate-500 border-b">
+                                <th class="p-4 w-24 text-center">排序</th><th class="p-4 w-12 text-center">序</th>
+                                <th class="p-4 w-32">時間段</th><th class="p-4 w-44">核心節目</th>
+                                <th class="p-4">內容與舞台設定</th><th class="p-4 w-44">PA / 音控</th><th class="p-4 w-12 text-center">刪</th>
                             </tr>
                         </thead>
-                        <tbody id="timeline-desktop-tbody" class="divide-y divide-slate-100 text-xs"></tbody>
+                        <tbody id="timeline-desktop-tbody" class="divide-y"></tbody>
                     </table>
                 </div>
             </div>
 
             <div id="panel-main-venue" class="main-panel hidden space-y-6">
-                <div id="kitchen-radar-dashboard" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-white card-shadow flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-emerald-500/10 text-emerald-400 rounded-xl flex items-center justify-center text-lg shadow-inner"><i class="fa-solid fa-utensils"></i></div>
-                        <div>
-                            <h3 class="text-xs font-bold text-slate-200">行政組專用：廚房總出菜雷達</h3>
-                            <p class="text-[10px] text-slate-500">即時加總 400 人餐食屬性 | 桌次座位變更時秒級統計</p>
-                        </div>
-                    </div>
-                    <div class="flex flex-wrap gap-4 text-xs font-mono">
-                        <div class="bg-slate-950 px-4 py-2 rounded-xl border border-slate-800"><span class="text-slate-400">總人數：</span><span id="panel-stat-total" class="font-bold text-[#C1E8FF]">0</span>人</div>
-                        <div class="bg-slate-950 px-4 py-2 rounded-xl border border-slate-800"><span class="text-slate-400">葷食：</span><span id="panel-stat-meat" class="font-bold text-amber-400">0</span>人</div>
-                        <div class="bg-slate-950 px-4 py-2 rounded-xl border border-slate-800"><span class="text-slate-400">🟢 素食：</span><span id="panel-stat-veg" class="font-bold text-emerald-400">0</span>人</div>
+                <div id="kitchen-radar-dashboard" class="bg-slate-900 rounded-2xl p-4 text-white flex justify-between items-center text-xs">
+                    <div class="font-bold">🍳 行政組專用：廚房總出菜雷達</div>
+                    <div class="flex gap-4 font-mono">
+                        <div>總人數: <span id="panel-stat-total" class="text-[#C1E8FF] font-bold">0</span></div>
+                        <div>葷食: <span id="panel-stat-meat" class="text-amber-400 font-bold">0</span></div>
+                        <div>🟢 素食: <span id="panel-stat-veg" class="text-emerald-400 font-bold">0</span></div>
                     </div>
                 </div>
-
-                <div class="bg-white border border-slate-200 rounded-2xl p-5 card-shadow flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div>
-                        <h2 class="text-sm font-bold text-[#052659] flex items-center gap-2"><i class="fa-solid fa-table-cells text-[#5483B3]"></i> 主會場桌次與吃素管理盤</h2>
-                    </div>
-                    <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200">
-                        <label class="text-xs font-bold text-slate-500">大會總桌數：</label>
-                        <input type="number" id="input-total-tables" min="1" max="100" class="w-16 bg-white border border-slate-300 rounded-lg p-1 text-center text-xs font-bold text-[#052659]" onchange="window.adjustTotalTables(this.value)">
-                        <span class="text-xs text-slate-400">桌</span>
+                <div class="bg-white border rounded-2xl p-5 flex justify-between items-center">
+                    <h2 class="text-sm font-bold text-[#052659]">🏛️ 主會場桌次與吃素管理盤</h2>
+                    <div class="flex items-center gap-2 text-xs bg-slate-50 p-2 rounded-xl border">
+                        <label class="font-bold text-slate-500">大會總桌數：</label>
+                        <input type="number" id="input-total-tables" min="1" max="100" class="w-16 bg-white border text-center font-bold text-[#052659]" onchange="window.adjustTotalTables(this.value)"> 桌
                     </div>
                 </div>
-                <div class="grid grid-cols-4 sm:grid-cols-8 lg:grid-cols-10 gap-3" id="venue-tables-grid"></div>
-                <div id="table-details-box" class="bg-white border border-slate-200 rounded-2xl p-6 card-shadow hidden">
-                    <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
-                        <h3 class="text-xs font-bold text-[#052659]" id="selected-table-title">🎯 座位名單管理</h3>
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3" id="seats-inputs-grid"></div>
+                <div class="grid grid-cols-10 gap-3" id="venue-tables-grid"></div>
+                <div id="table-details-box" class="bg-white border rounded-2xl p-6 card-shadow hidden">
+                    <h3 class="text-xs font-bold text-[#052659] border-b pb-2 mb-4" id="selected-table-title">🎯 座位名單管理</h3>
+                    <div class="grid grid-cols-5 gap-3" id="seats-inputs-grid"></div>
                 </div>
             </div>
 
             <div id="panel-time-tunnel" class="main-panel hidden space-y-6">
-                <div id="tunnel-traffic-light-bar" class="p-5 rounded-2xl card-shadow text-white flex flex-col sm:flex-row justify-between items-center gap-4 transition-all bg-emerald-950 border border-emerald-800">
-                    <div class="flex items-center gap-3">
-                        <div id="tunnel-light-icon" class="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-lg animate-pulse"><i class="fa-solid fa-traffic-light"></i></div>
-                        <div>
-                            <h3 class="text-xs font-bold text-slate-100">外場進場流速戰術控制燈</h3>
-                            <p id="tunnel-light-text" class="text-[10px] text-emerald-300">當前狀態：🟢 絲滑暢通 | 報到處依正常節奏優雅放人</p>
-                        </div>
+                <div id="tunnel-traffic-light-bar" class="p-5 rounded-2xl text-white flex justify-between items-center text-xs bg-emerald-950 border border-emerald-800">
+                    <div>
+                        <h3 class="font-bold">外場進場流速戰術控制燈</h3>
+                        <p id="tunnel-light-text" class="text-[10px] text-emerald-300">🟢 絲滑暢通 | 依正常節奏優雅放人</p>
                     </div>
-                    <div class="flex gap-2 select-none">
-                        <button onclick="window.setTunnelTraffic('green')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1"><i class="fa-solid fa-circle-check"></i>暢通</button>
-                        <button onclick="window.setTunnelTraffic('yellow')" class="bg-amber-600 hover:bg-amber-500 text-white font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1"><i class="fa-solid fa-triangle-exclamation"></i>人流減速</button>
-                        <button onclick="window.setTunnelTraffic('red')" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1"><i class="fa-solid fa-hand"></i>外場暫緩放人</button>
+                    <div class="flex gap-2">
+                        <button onclick="window.setTunnelTraffic('green')" class="bg-emerald-600 px-3 py-1.5 rounded-xl">暢通</button>
+                        <button onclick="window.setTunnelTraffic('yellow')" class="bg-amber-600 px-3 py-1.5 rounded-xl">人流減速</button>
+                        <button onclick="window.setTunnelTraffic('red')" class="bg-rose-600 px-3 py-1.5 rounded-xl">暫緩放人</button>
                     </div>
                 </div>
-
-                <div class="bg-white border border-slate-200 rounded-2xl p-5 card-shadow">
-                    <h2 class="text-base font-bold text-[#052659] flex items-center gap-2"><i class="fa-solid fa-road text-[#5483B3]"></i> 外場｜68 米沈浸式時光隧道</h2>
-                </div>
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-white card-shadow relative overflow-hidden min-h-[250px] flex flex-col justify-between">
-                    <div class="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-[#5483B3]/10 to-transparent w-32"></div>
-                    <div class="flex justify-between items-center text-xs text-slate-500 border-b border-slate-800 pb-2">
-                        <span>🚪 廊道起點</span>
-                        <span class="font-mono tracking-widest text-[#C1E8FF] font-bold">總長度 68 METERS</span>
-                        <span>會場大門 🏛️</span>
-                    </div>
-                    <div class="my-8 relative">
-                        <div class="h-2 bg-slate-800 rounded-full w-full"></div>
-                        <div class="absolute left-[5%] -top-3 text-center"><span class="w-6 h-6 rounded-full bg-[#5483B3] text-white font-bold text-[10px] flex items-center justify-center mx-auto">0m</span></div>
-                        <div class="absolute left-[35%] -top-3 text-center"><span class="w-6 h-6 rounded-full bg-purple-500 text-white font-bold text-[10px] flex items-center justify-center mx-auto">25m</span></div>
-                        <div class="absolute left-[75%] -top-3 text-center"><span class="w-6 h-6 rounded-full bg-amber-500 text-white font-bold text-[10px] flex items-center justify-center mx-auto">50m</span></div>
-                        <div class="absolute left-[95%] -top-3 text-center"><span class="w-6 h-6 rounded-full bg-emerald-500 text-white font-bold text-[10px] flex items-center justify-center mx-auto">68m</span></div>
-                    </div>
+                <div class="bg-slate-900 border rounded-2xl p-6 text-white min-h-[200px] flex flex-col justify-between text-xs">
+                    <div class="flex justify-between border-b border-slate-800 pb-2 text-slate-500"><span>🚪 廊道起點</span><span>總長度 68 METERS</span><span>會場大門 🏛️</span></div>
+                    <div class="my-6 relative"><div class="h-1 bg-slate-800 w-full"></div></div>
+                    <div class="text-slate-400">長廊規格 68m x 8.8m。宇哲大圖輸出請依此比例排定。</div>
                 </div>
             </div>
 
             <div id="panel-awards-flow" class="main-panel hidden space-y-6">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-base font-bold text-[#052659] flex items-center gap-2"><i class="fa-solid fa-trophy text-amber-500"></i> 🏆 頒獎道具與紅包流向戰術板</h2>
-                    <button onclick="window.addNewAwardRow()" class="bg-[#5483B3] text-white text-xs px-3 py-1.5 rounded-xl">＋ 新增獎項</button>
-                </div>
-                <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden card-shadow">
-                    <table class="w-full text-left border-collapse text-xs">
-                        <thead>
-                            <tr class="bg-slate-50 border-b border-slate-200 font-bold text-slate-500">
-                                <th class="p-4 w-44">大會獎項名稱</th>
-                                <th class="p-4 w-44">實體道具內容與數量</th>
-                                <th class="p-4 w-36 text-center">狀態一：行政點收</th>
-                                <th class="p-4 w-36 text-center">狀態二：交付後台Standby</th>
-                                <th class="p-4">後台對接備忘錄</th>
-                                <th class="p-4 w-12 text-center">刪</th>
-                            </tr>
-                        </thead>
-                        <tbody id="awards-flow-tbody" class="divide-y divide-slate-100"></tbody>
-                    </table>
-                </div>
+                <div class="flex justify-between items-center mb-4"><h2 class="text-base font-bold text-[#052659]">🏆 頒獎道具與紅包流向戰術板</h2><button onclick="window.addNewAwardRow()" class="bg-[#5483B3] text-white text-xs px-3 py-1.5 rounded-xl">＋ 新增獎項</button></div>
+                <div class="bg-white border rounded-2xl overflow-hidden card-shadow"><table class="w-full text-left border-collapse text-xs"><thead><tr class="bg-slate-50 border-b font-bold text-slate-500"><th class="p-4">大會獎項名稱</th><th class="p-4">實體道具內容與數量</th><th class="p-4 text-center">行政點收</th><th class="p-4 text-center">交付後台</th><th class="p-4">後台備忘錄</th><th class="p-4 text-center">刪</th></tr></thead><tbody id="awards-flow-tbody" class="divide-y"></tbody></table></div>
             </div>
 
             <div id="panel-assets-military" class="main-panel hidden space-y-6">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-base font-bold text-[#052659] flex items-center gap-2"><i class="fa-solid fa-cubes text-blue-500"></i> 📦 大會現場視覺資產與播片軍火庫</h2>
-                    <button onclick="window.addNewAssetRow()" class="bg-[#5483B3] text-white text-xs px-3 py-1.5 rounded-xl">＋ 補給新軍火</button>
-                </div>
-                <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden card-shadow">
-                    <table class="w-full text-left border-collapse text-xs">
-                        <thead>
-                            <tr class="bg-slate-50 border-b border-slate-200 font-bold text-slate-500">
-                                <th class="p-4 w-64">大會官方標準檔案名稱</th>
-                                <th class="p-4 w-44">檔案格式類別</th>
-                                <th class="p-4 w-44">大會時程切入 CUE 點</th>
-                                <th class="p-4 w-44 text-center">實時雲端下載熱鍵</th>
-                                <th class="p-4 text-center">刪</th>
-                            </tr>
-                        </thead>
-                        <tbody id="assets-military-tbody" class="divide-y divide-slate-100"></tbody>
-                    </table>
-                </div>
+                <div class="flex justify-between items-center mb-4"><h2 class="text-base font-bold text-[#052659]">📦 大會現場視覺資產與播片軍火庫</h2><button onclick="window.addNewAssetRow()" class="bg-[#5483B3] text-white text-xs px-3 py-1.5 rounded-xl">＋ 補給新軍火</button></div>
+                <div class="bg-white border rounded-2xl overflow-hidden card-shadow"><table class="w-full text-left border-collapse text-xs"><thead><tr class="bg-slate-50 border-b font-bold text-slate-500"><th class="p-4">官方標準檔案名稱</th><th class="p-4">格式</th><th class="p-4">切入 CUE 點</th><th class="p-4 text-center">下載熱鍵</th><th class="p-4 text-center">刪</th></tr></thead><tbody id="assets-military-tbody" class="divide-y"></tbody></table></div>
             </div>
 
             <div id="panel-checklist" class="main-panel hidden">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-base font-bold text-[#052659] flex items-center gap-2"><i class="fa-solid fa-shield-heart text-[#5483B3]"></i> 大會物資防線檢核</h2>
-                    <button onclick="addNewChecklistItem()" class="bg-[#5483B3] text-white text-xs px-3 py-1.5 rounded-xl">＋ 新增項目</button>
-                </div>
-                <div class="bg-white border border-slate-200 rounded-xl divide-y divide-slate-100 card-shadow" id="checklist-box"></div>
+                <div class="flex justify-between items-center mb-6"><h2 class="text-base font-bold text-[#052659]">大會物資防線檢核</h2><button onclick="addNewChecklistItem()" class="bg-[#5483B3] text-white text-xs px-3 py-1.5 rounded-xl">＋ 新增項目</button></div>
+                <div class="bg-white border rounded-xl divide-y card-shadow" id="checklist-box"></div>
             </div>
 
             <div id="panel-team-generic" class="main-panel hidden">
-                <div class="bg-white border border-slate-200 rounded-2xl p-5 card-shadow mb-6">
+                <div class="bg-white border rounded-2xl p-5 card-shadow mb-6">
                     <h2 class="text-lg font-bold text-[#052659]" id="team-title-display">小組盤</h2>
                     <div class="mt-4">
-                        <label class="text-xs font-bold text-slate-400 block mb-2">👥 本組作戰組員名單</label>
-                        <div id="team-members-box" contenteditable="true" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-700 focus:outline-none min-h-[50px] leading-relaxed"></div>
+                        <label class="text-xs font-bold text-slate-400 block mb-2">👥 本組作戰組員名單 (打字自動換行同步)</label>
+                        <div id="team-members-box" contenteditable="true" class="bg-slate-50 border rounded-xl p-3 text-xs min-h-[50px]"></div>
                     </div>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="team-modules-grid"></div>
+                <div class="grid grid-cols-2 gap-4" id="team-modules-grid"></div>
             </div>
-
         </main>
     </div>
 
@@ -240,47 +143,34 @@
             apiKey: "AIzaSyBQdnW16U1OxpDR05hvAv2fcZ4aMKXsyfM",
             authDomain: "test-fee8d.firebaseapp.com",
             projectId: "test-fee8d",
-            storageBucket: "test-fee8d.firebasestorage.app",
-            messagingSenderId: "415299571304",
-            appId: "1:415299571304:web:391ce6ecb4d8e2f19035dd",
-            measurementId: "G-EL7VKT97L4",
             databaseURL: "https://test-fee8d-default-rtdb.firebaseio.com" 
         };
 
         const CORRECT_KEY = "ts2026";
-
         window.checkAuthAndRun = function() {
-            let savedKey = localStorage.getItem('ts_auth_key');
-            let savedUser = localStorage.getItem('ts_auth_user');
+            let savedKey = localStorage.getItem('ts_auth_key'); let savedUser = localStorage.getItem('ts_auth_user');
             if (savedKey !== CORRECT_KEY || !savedUser) { document.getElementById('auth-overlay').classList.remove('hidden'); return false; }
-            window.currentUser = savedUser;
-            document.getElementById('display-user-name').innerText = `👤 當前指揮官：${savedUser}`;
-            return true;
+            window.currentUser = savedUser; document.getElementById('display-user-name').innerText = `👤 指揮官：${savedUser}`; return true;
         }
-
         window.submitAuth = function() {
-            const inputKey = document.getElementById('input-auth-key').value.trim();
-            const inputUser = document.getElementById('input-auth-user').value.trim();
-            if (inputKey !== CORRECT_KEY) { alert("❌ 金鑰密碼錯誤！"); return; }
-            if (!inputUser) { alert("❌ 請輸入組別或稱呼！"); return; }
-            localStorage.setItem('ts_auth_key', inputKey);
-            localStorage.setItem('ts_auth_user', inputUser);
-            document.getElementById('auth-overlay').classList.add('hidden');
-            window.location.reload();
+            const inputKey = document.getElementById('input-auth-key').value.trim(); const inputUser = document.getElementById('input-auth-user').value.trim();
+            if (inputKey !== CORRECT_KEY || !inputUser) { alert("密碼錯誤或未輸入稱呼！"); return; }
+            localStorage.setItem('ts_auth_key', inputKey); localStorage.setItem('ts_auth_user', inputUser); window.location.reload();
         }
 
         if (window.checkAuthAndRun()) {
             try {
-                const app = initializeApp(firebaseConfig);
-                const db = getDatabase(app);
+                const app = initializeApp(firebaseConfig); const db = getDatabase(app);
+                // 🔴 ⚡ 直連舊抽屜：不走 /timeline 分流，直接讀寫大數據最上層根路徑
                 const dataRef = ref(db, 'ts_2026_realtime_data');
                 window.cloudDb = db;
-                window.cloudSaveEngine = function(data) { set(dataRef, data); };
                 window.cloudUpdateCell = function(path, value) { set(ref(window.cloudDb, `ts_2026_realtime_data/${path}`), value); };
+                window.cloudSaveEngine = function(data) { set(dataRef, data); };
 
                 onValue(dataRef, (snapshot) => {
                     const cloudData = snapshot.val();
                     if (cloudData) {
+                        // 如果舊抽屜裡缺少新功能的欄位，就地初始化，絕對不准覆蓋舊資料！
                         if (!cloudData.tablesConfig) cloudData.tablesConfig = { totalTables: 40, tablesData: {} };
                         if (!cloudData.tablesConfig.tablesData) {
                             cloudData.tablesConfig.tablesData = {};
@@ -290,39 +180,34 @@
                         if (!cloudData.assetsConfig) cloudData.assetsConfig = [];
                         if (!cloudData.tunnelTraffic) cloudData.tunnelTraffic = "green";
 
-                        // 大會最高骨架
+                        // 建立並合併大會的頂級選單
                         const corePanels = [
-                            { id: "timeline", name: "大會主細流", icon: "fa-clock-history" },
-                            { id: "main_venue", name: "🏛️ 主會場桌位管理", icon: "fa-table-cells" },
-                            { id: "time_tunnel", name: "🌌 68米時光隧道", icon: "fa-road" },
-                            { id: "awards_flow", name: "🏆 頒獎道具流向盤", icon: "fa-trophy" },
-                            { id: "assets_military", name: "📦 大會資產軍火庫", icon: "fa-cubes" },
-                            { id: "checklist", name: "物資防線檢核", icon: "fa-list-check" }
+                            { id: "timeline", name: "大會主細流", icon: "fa-clock-history", type: "system" },
+                            { id: "main_venue", name: "🏛️ 主會場桌位管理", icon: "fa-table-cells", type: "system" },
+                            { id: "time_tunnel", name: "🌌 68米時光隧道", icon: "fa-road", type: "system" },
+                            { id: "awards_flow", name: "🏆 頒獎道具流向盤", icon: "fa-trophy", type: "system" },
+                            { id: "assets_military", name: "📦 大會資產軍火庫", icon: "fa-cubes", type: "system" },
+                            { id: "checklist", name: "物資防線檢核", icon: "fa-list-check", type: "system" }
                         ];
 
-                        // 🔴 ⚡ 關鍵相容層：把雲端原本的舊工作小組盤撈進來，確保大家打的歷史文字絕對不丟失！
-                        const cloudPanels = cloudData.panels || [
-                            { id: "team_activity", name: "活動組工作盤", icon: "fa-users-gear", type: "team", members: "Owen (組長)", modules: [] },
-                            { id: "team_admin", name: "行政組工作盤", icon: "fa-folder-open", type: "team", members: "恩安 (組長)", modules: [] },
-                            { id: "team_design", name: "設計組工作盤", icon: "fa-palette", type: "team", members: "宇哲 (組長)", modules: [] },
-                            { id: "team_game", name: "遊戲組工作盤", icon: "fa-dice", type: "team", members: "柏任 (組長)", modules: [] }
-                        ];
-                        
+                        // 讀取並承接雲端中原本存在的舊工作小組（如活動組、設計組），讓字完美重現！
+                        const cloudPanels = cloudData.panels || [];
                         const mergedPanels = [...corePanels];
-                        cloudPanels.forEach(cp => { if (!mergedPanels.some(mp => mp.id === cp.id)) { mergedPanels.push(cp); } });
+                        cloudPanels.forEach(cp => { if (!mergedPanels.some(mp => mp.id === cp.id)) mergedPanels.push(cp); });
 
                         const previousSelectedTable = window.appData ? window.appData.selectedTable : null;
                         window.appData = cloudData;
                         window.appData.panels = mergedPanels;
-                        window.appData.currentTab = localStorage.getItem('ts_v3_current_tab') || "timeline";
+                        if (!window.appData.currentTab) window.appData.currentTab = "timeline";
                         if (previousSelectedTable) { window.appData.selectedTable = previousSelectedTable; }
 
                         window.renderSidebarMenu();
-                        window.renderActivePanelOnly();
-                        window.syncTunnelTrafficUI();
-                        window.calculateKitchenRadar();
-                        
-                        document.getElementById('cloud-status-badge').innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span> 雲端連線成功`;
+                        if (window.appData.currentTab === 'main_venue') {
+                            window.updateTableBoxVegLightOnly(); window.calculateKitchenRadar();
+                        } else {
+                            window.renderActivePanelOnly();
+                        }
+                        document.getElementById('cloud-status-badge').innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 inline-block mr-1"></span> 雲端大腦同步中`;
                     }
                 });
             } catch (e) { console.error(e); }
@@ -330,30 +215,19 @@
     </script>
 
     <script>
-        window.refreshActivePanel = function() { window.renderSidebarMenu(); window.renderActivePanelOnly(); }
-
         window.renderActivePanelOnly = function() {
-            if (!window.appData) return;
-            document.querySelectorAll('.main-panel').forEach(p => p.classList.add('hidden'));
+            if (!window.appData) return; document.querySelectorAll('.main-panel').forEach(p => p.classList.add('hidden'));
             const tabId = window.appData.currentTab || "timeline";
-            
-            if(tabId === 'timeline') {
-                document.getElementById('panel-timeline').classList.remove('hidden'); renderTimelineTable();
-            } else if(tabId === 'main_venue') {
-                document.getElementById('panel-main-venue').classList.remove('hidden'); renderVenueTablesGrid();
-            } else if(tabId === 'time_tunnel') {
-                document.getElementById('panel-time-tunnel').classList.remove('hidden');
-            } else if(tabId === 'awards_flow') {
-                document.getElementById('panel-awards-flow').classList.remove('hidden'); renderAwardsFlowTable();
-            } else if(tabId === 'assets_military') {
-                document.getElementById('panel-assets-military').classList.remove('hidden'); renderAssetsMilitaryTable();
-            } else if(tabId === 'checklist') {
-                document.getElementById('panel-checklist').classList.remove('hidden'); renderChecklist();
-            } else {
+            if(tabId === 'timeline') { document.getElementById('panel-timeline').classList.remove('hidden'); renderTimelineTable(); } 
+            else if(tabId === 'main_venue') { document.getElementById('panel-main-venue').classList.remove('hidden'); renderVenueTablesGrid(); } 
+            else if(tabId === 'time_tunnel') { document.getElementById('panel-time-tunnel').classList.remove('hidden'); syncTunnelTrafficUI(); } 
+            else if(tabId === 'awards_flow') { document.getElementById('panel-awards-flow').classList.remove('hidden'); renderAwardsFlowTable(); } 
+            else if(tabId === 'assets_military') { document.getElementById('panel-assets-military').classList.remove('hidden'); renderAssetsMilitaryTable(); } 
+            else if(tabId === 'checklist') { document.getElementById('panel-checklist').classList.remove('hidden'); renderChecklist(); } 
+            else {
                 const panelData = window.appData.panels.find(p => p.id === tabId);
                 if(panelData) {
-                    document.getElementById('panel-team-generic').classList.remove('hidden');
-                    document.getElementById('team-title-display').innerText = panelData.name;
+                    document.getElementById('panel-team-generic').classList.remove('hidden'); document.getElementById('team-title-display').innerText = panelData.name;
                     const membersBox = document.getElementById('team-members-box');
                     if (document.activeElement !== membersBox) { membersBox.innerText = panelData.members || ""; }
                     membersBox.onblur = function() { window.updateTeamMembersData(panelData.id, this.innerText); };
@@ -361,24 +235,42 @@
                 }
             }
         }
-
         window.renderSidebarMenu = function() {
             const menu = document.getElementById('sidebar-menu'); if(!menu || !window.appData) return;
-            menu.innerHTML = `<p class="hidden lg:block text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3 mb-2">大會總指揮面版</p>`;
+            menu.innerHTML = `<p class="text-[11px] font-bold uppercase text-slate-400 px-3 mb-2">大會總指揮面板</p>`;
             window.appData.panels.forEach(p => {
                 const isActive = window.appData.currentTab === p.id;
-                let activeStyle = isActive ? `bg-[#5483B3]/10 text-[#5483B3] border-[#5483B3]/30 font-bold shadow-sm` : `text-slate-500 hover:bg-slate-50 border-transparent`;
-                menu.innerHTML += `<button onclick="switchTab('${p.id}')" class="w-full text-left px-4 py-2.5 rounded-xl border text-xs transition-all flex items-center gap-2 ${activeStyle}"><i class="fa-solid ${p.icon} w-4 text-center"></i><span class="whitespace-nowrap">${p.name}</span></button>`;
+                menu.innerHTML += `<button onclick="switchTab('${p.id}')" class="w-full text-left px-4 py-2.5 rounded-xl border text-xs transition-all flex items-center gap-2 ${isActive ? 'bg-[#5483B3]/10 text-[#5483B3] border-[#5483B3]/30 font-bold' : 'text-slate-500 hover:bg-slate-50 border-transparent'}"><i class="fa-solid ${p.icon || 'fa-folder'} w-4 text-center"></i><span>${p.name}</span></button>`;
             });
         }
+        window.switchTab = function(tabId) { window.appData.currentTab = tabId; window.renderSidebarMenu(); window.renderActivePanelOnly(); }
 
-        window.switchTab = function(tabId) { window.appData.currentTab = tabId; localStorage.setItem('ts_v3_current_tab', tabId); window.renderSidebarMenu(); window.renderActivePanelOnly(); }
+        // 桌次控盤
+        window.renderVenueTablesGrid = function() {
+            const grid = document.getElementById('venue-tables-grid'); const totalInput = document.getElementById('input-total-tables'); if (!grid || !window.appData.tablesConfig) return;
+            const config = window.appData.tablesConfig; totalInput.value = config.totalTables || 40;
+            let html = ""; for (let i = 1; i <= config.totalTables; i++) { const tData = config.tablesData ? config.tablesData[i] : null; const hasVeg = tData && tData.seats ? tData.seats.some(s => s && s.isVeg) : false; const isSelected = window.appData.selectedTable == i; html += `<button id="table-box-btn-${i}" onclick="window.selectTableForDetails(${i})" class="h-12 rounded-xl border text-xs flex flex-col items-center justify-center transition-all ${isSelected ? 'bg-[#052659] text-white border-[#052659] font-bold scale-105' : (hasVeg ? 'bg-emerald-50 text-emerald-700 border-emerald-300 font-bold shadow-inner' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50')}"><span>第 ${i} 桌</span><span id="table-veg-indicator-${i}">${hasVeg ? '<span class="text-[8px] text-emerald-500 font-bold">🟢有素</span>' : ''}</span></button>`; }
+            grid.innerHTML = html; window.renderTableSeatsControl();
+        }
+        window.adjustTotalTables = function(val) { const num = parseInt(val); if (num < 1 || num > 100) return; window.appData.tablesConfig.totalTables = num; if (window.cloudUpdateCell) window.cloudUpdateCell("tablesConfig/totalTables", num); }
+        window.selectTableForDetails = function(tableNum) { window.appData.selectedTable = tableNum; window.renderVenueTablesGrid(); }
+        window.renderTableSeatsControl = function() {
+            const box = document.getElementById('table-details-box'); const grid = document.getElementById('seats-inputs-grid'); const title = document.getElementById('selected-table-title'); if (!box || !grid || !title) return; const tNum = window.appData.selectedTable; if (!tNum || tNum > window.appData.tablesConfig.totalTables) { box.classList.add('hidden'); return; } box.classList.remove('hidden'); title.innerHTML = `正在管理：第 【${tNum}】 桌座位名單`; const tData = window.appData.tablesConfig.tablesData[tNum] || { seats: Array(10).fill({ name: "", isVeg: false }) };
+            let html = ""; for (let s = 0; s < 10; s++) { const seat = tData.seats[s] || { name: "", isVeg: false }; const isVeg = seat.isVeg || false; html += `<div id="seat-wrapper-${tNum}-${s}" class="flex items-center gap-1 bg-slate-50 border ${isVeg ? 'border-emerald-300 bg-emerald-50/50' : 'border-slate-200'} p-1.5 rounded-xl"><span class="text-[10px] font-mono text-slate-400 font-bold w-4 text-center">${s+1}</span><input type="text" id="seat-input-${tNum}-${s}" value="${seat.name || ''}" placeholder="空位" oninput="window.updateSeatName(${tNum}, ${s}, this.value)" class="w-full bg-transparent text-xs focus:outline-none font-bold ${isVeg ? 'text-emerald-700' : 'text-slate-800'}"><button id="seat-veg-btn-${tNum}-${s}" onclick="window.toggleSeatVeg(${tNum}, ${s})" class="px-2 py-1 rounded-lg text-[10px] font-bold border ${isVeg ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-400 border-slate-200'}">素</button></div>`; } grid.innerHTML = html;
+        }
+        window.updateSeatName = function(tableNum, seatIdx, val) { if(!window.appData.tablesConfig.tablesData[tableNum].seats) { window.appData.tablesConfig.tablesData[tableNum].seats = Array(10).fill({ name: "", isVeg: false }); } const currentVeg = window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx]?.isVeg || false; window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx] = { name: val, isVeg: currentVeg }; if (window.cloudUpdateCell) window.cloudUpdateCell(`tablesConfig/tablesData/${tableNum}/seats/${seatIdx}`, { name: val, isVeg: currentVeg }); }
+        window.toggleSeatVeg = function(tableNum, seatIdx) {
+            const seat = window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx] || { name: "", isVeg: false }; const nextVeg = !seat.isVeg; window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx] = { name: seat.name || "", isVeg: nextVeg };
+            const wrapper = document.getElementById(`seat-wrapper-${tableNum}-${seatIdx}`); const input = document.getElementById(`seat-input-${tableNum}-${seatIdx}`); const btn = document.getElementById(`seat-veg-btn-${tableNum}-${seatIdx}`);
+            if (wrapper && input && btn) { wrapper.className = `flex items-center gap-1 bg-slate-50 border ${nextVeg ? 'border-emerald-300 bg-emerald-50/50' : 'border-slate-200'} p-1.5 rounded-xl`; input.className = `w-full bg-transparent text-xs focus:outline-none font-bold ${nextVeg ? 'text-emerald-700' : 'text-slate-800'}`; btn.className = `px-2 py-1 rounded-lg text-[10px] font-bold border ${nextVeg ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-400 border-slate-200'}`; }
+            if (window.cloudUpdateCell) { window.cloudUpdateCell(`tablesConfig/tablesData/${tableNum}/seats/${seatIdx}`, { name: seat.name || "", isVeg: nextVeg }); window.updateTableBoxVegLightOnly(); window.calculateKitchenRadar(); }
+        }
 
+        // 其他功能渲染
         window.updateTableBoxVegLightOnly = function() {
             const config = window.appData.tablesConfig; if(!config) return;
             for (let i = 1; i <= (config.totalTables || 40); i++) {
-                const tData = config.tablesData ? config.tablesData[i] : null;
-                const hasVeg = tData && tData.seats ? tData.seats.some(s => s && s.isVeg) : false;
+                const tData = config.tablesData ? config.tablesData[i] : null; const hasVeg = tData && tData.seats ? tData.seats.some(s => s && s.isVeg) : false;
                 const btn = document.getElementById(`table-box-btn-${i}`); const indicator = document.getElementById(`table-veg-indicator-${i}`);
                 if (btn && indicator) {
                     if (window.appData.selectedTable == i) { btn.className = `h-12 rounded-xl border text-xs flex flex-col items-center justify-center transition-all bg-[#052659] text-white border-[#052659] font-bold scale-105`; }
@@ -387,29 +279,6 @@
                 }
             }
         }
-
-        window.renderVenueTablesGrid = function() {
-            const grid = document.getElementById('venue-tables-grid'); const totalInput = document.getElementById('input-total-tables'); if (!grid || !window.appData.tablesConfig) return;
-            const config = window.appData.tablesConfig; totalInput.value = config.totalTables || 40;
-            let html = ""; for (let i = 1; i <= config.totalTables; i++) { const tData = config.tablesData ? config.tablesData[i] : null; const hasVeg = tData && tData.seats ? tData.seats.some(s => s && s.isVeg) : false; const isSelected = window.appData.selectedTable == i; let style = isSelected ? 'bg-[#052659] text-white border-[#052659] font-bold scale-105' : (hasVeg ? 'bg-emerald-50 text-emerald-700 border-emerald-300 font-bold shadow-inner' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'); html += `<button id="table-box-btn-${i}" onclick="window.selectTableForDetails(${i})" class="h-12 rounded-xl border text-xs flex flex-col items-center justify-center transition-all ${style}"><span>第 ${i} 桌</span><span id="table-veg-indicator-${i}">${hasVeg ? '<span class="text-[8px] text-emerald-500 font-bold">🟢有素</span>' : ''}</span></button>`; }
-            grid.innerHTML = html; window.renderTableSeatsControl();
-        }
-
-        window.adjustTotalTables = function(val) { const num = parseInt(val); if (num < 1 || num > 100) return; window.appData.tablesConfig.totalTables = num; if (window.cloudUpdateCell) { window.cloudUpdateCell("tablesConfig/totalTables", num); } }
-        window.selectTableForDetails = function(tableNum) { window.appData.selectedTable = tableNum; window.renderVenueTablesGrid(); }
-        window.renderTableSeatsControl = function() {
-            const box = document.getElementById('table-details-box'); const grid = document.getElementById('seats-inputs-grid'); const title = document.getElementById('selected-table-title'); if (!box || !grid || !title) return; const tNum = window.appData.selectedTable; if (!tNum || tNum > window.appData.tablesConfig.totalTables) { box.classList.add('hidden'); return; } box.classList.remove('hidden'); title.innerHTML = `正在管理：第 【${tNum}】 桌座位名單`; const tData = window.appData.tablesConfig.tablesData[tNum] || { seats: Array(10).fill({ name: "", isVeg: false }) }; if(!tData.seats) tData.seats = Array(10).fill({ name: "", isVeg: false });
-            let html = ""; for (let s = 0; s < 10; s++) { const seat = tData.seats[s] || { name: "", isVeg: false }; const isVeg = seat.isVeg || false; html += `<div id="seat-wrapper-${tNum}-${s}" class="flex items-center gap-1 bg-slate-50 border ${isVeg ? 'border-emerald-300 bg-emerald-50/50' : 'border-slate-200'} p-1.5 rounded-xl"><span class="text-[10px] font-mono text-slate-400 font-bold w-4 text-center">${s+1}</span><input type="text" id="seat-input-${tNum}-${s}" value="${seat.name || ''}" placeholder="空位" oninput="window.updateSeatName(${tNum}, ${s}, this.value)" class="w-full bg-transparent border-none text-xs focus:outline-none font-bold ${isVeg ? 'text-emerald-700' : 'text-slate-800'}"><button id="seat-veg-btn-${tNum}-${s}" onclick="window.toggleSeatVeg(${tNum}, ${s})" class="px-2 py-1 rounded-lg text-[10px] font-bold border ${isVeg ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-400 border-slate-200'}">素</button></div>`; } grid.innerHTML = html;
-        }
-
-        window.updateSeatName = function(tableNum, seatIdx, val) { if(!window.appData.tablesConfig.tablesData[tableNum].seats) { window.appData.tablesConfig.tablesData[tableNum].seats = Array(10).fill({ name: "", isVeg: false }); } const currentVeg = window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx]?.isVeg || false; window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx] = { name: val, isVeg: currentVeg }; if (window.cloudUpdateCell) { window.cloudUpdateCell(`tablesConfig/tablesData/${tableNum}/seats/${seatIdx}`, { name: val, isVeg: currentVeg }); } }
-        window.toggleSeatVeg = function(tableNum, seatIdx) { 
-            const seat = window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx] || { name: "", isVeg: false }; const nextVeg = !seat.isVeg; window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx] = { name: seat.name || "", isVeg: nextVeg }; 
-            const wrapper = document.getElementById(`seat-wrapper-${tableNum}-${seatIdx}`); const input = document.getElementById(`seat-input-${tableNum}-${seatIdx}`); const btn = document.getElementById(`seat-veg-btn-${tableNum}-${seatIdx}`);
-            if (wrapper && input && btn) { wrapper.className = `flex items-center gap-1 bg-slate-50 border ${nextVeg ? 'border-emerald-300 bg-emerald-50/50' : 'border-slate-200'} p-1.5 rounded-xl`; input.className = `w-full bg-transparent border-none text-xs focus:outline-none font-bold ${nextVeg ? 'text-emerald-700' : 'text-slate-800'}`; btn.className = `px-2 py-1 rounded-lg text-[10px] font-bold border transition-all ${nextVeg ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-400 border-slate-200'}`; }
-            if (window.cloudUpdateCell) { window.cloudUpdateCell(`tablesConfig/tablesData/${tableNum}/seats/${seatIdx}`, { name: seat.name || "", isVeg: nextVeg }); window.updateTableBoxVegLightOnly(); window.calculateKitchenRadar(); } 
-        }
-
         window.calculateKitchenRadar = function() {
             if (!window.appData || !window.appData.tablesConfig || !window.appData.tablesConfig.tablesData) return;
             let total = 0, veg = 0; const config = window.appData.tablesConfig;
@@ -417,55 +286,38 @@
             const tEl = document.getElementById('panel-stat-total'); const mEl = document.getElementById('panel-stat-meat'); const vEl = document.getElementById('panel-stat-veg');
             if (tEl && mEl && vEl) { tEl.innerText = total; vEl.innerText = veg; mEl.innerText = total - veg; }
         }
-
         window.setTunnelTraffic = function(color) { window.appData.tunnelTraffic = color; if (window.cloudUpdateCell) window.cloudUpdateCell("tunnelTraffic", color); }
         window.syncTunnelTrafficUI = function() {
             const bar = document.getElementById('tunnel-traffic-light-bar'); const icon = document.getElementById('tunnel-light-icon'); const txt = document.getElementById('tunnel-light-text'); if(!bar || !icon || !txt || !window.appData.tunnelTraffic) return;
             const color = window.appData.tunnelTraffic;
-            if (color === 'green') { bar.className = "p-5 rounded-2xl card-shadow text-white flex flex-col sm:flex-row justify-between items-center gap-4 transition-all bg-emerald-950 border border-emerald-800"; icon.className = "w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-lg animate-pulse"; txt.innerText = "當前狀態：🟢 絲滑暢通 | 報到處依正常節奏優雅放人"; } 
-            else if (color === 'yellow') { bar.className = "p-5 rounded-2xl card-shadow text-white flex flex-col sm:flex-row justify-between items-center gap-4 transition-all bg-amber-950 border border-amber-800"; icon.className = "w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center text-lg animate-pulse"; txt.innerText = "當前狀態：🟡 人流減速 | 前方拍照區略微回堵，外場請適度放慢放人節奏"; } 
-            else if (color === 'red') { bar.className = "p-5 rounded-2xl card-shadow text-white flex flex-col sm:flex-row justify-between items-center gap-4 transition-all bg-rose-950 border border-rose-800 animate-pulse"; icon.className = "w-10 h-10 rounded-full bg-rose-500 flex items-center justify-center text-lg shadow-rose-500/30 animate-bounce"; txt.innerText = "當前狀態：🚨 外場暫緩放人！ | 前方大圖區嚴重堵塞，入口處請立刻暫停放人！"; }
+            if (color === 'green') { bar.className = "p-5 rounded-2xl text-white flex justify-between items-center text-xs bg-emerald-950 border border-emerald-800"; txt.innerText = "🟢 絲滑暢通 | 依正常節奏優雅放人"; } 
+            else if (color === 'yellow') { bar.className = "p-5 rounded-2xl text-white flex justify-between items-center text-xs bg-amber-950 border border-amber-800"; txt.innerText = "🟡 人流減速 | 前方拍照區略微回堵"; } 
+            else if (color === 'red') { bar.className = "p-5 rounded-2xl text-white flex justify-between items-center text-xs bg-rose-950 border border-rose-800 animate-pulse"; txt.innerText = "🚨 外場暫緩放人！ | 前方大圖區嚴重堵塞"; }
         }
-
         window.renderTimelineTable = function() {
             const desktopTbody = document.getElementById('timeline-desktop-tbody'); if(!desktopTbody || !window.appData) return;
-            desktopTbody.innerHTML = window.appData.timeline.map((row, idx) => {
-                const fields = ['time', 'module', 'stage', 'equip', 'pa', 'photo', 'note'];
-                const tdElements = fields.map(f => {
-                    const cellId = `cell-timeline-${idx}-${f}`; if (document.activeElement && document.activeElement.id === cellId) { return `<td class="p-4" id="${cellId}" contenteditable="true">${document.activeElement.innerText}</td>`; }
-                    let textStyle = f === 'time' ? 'font-mono font-bold text-[#5483B3]' : (f === 'module' ? 'font-bold text-slate-800' : 'text-slate-600');
-                    return `<td class="p-4 ${textStyle} sync-pre-wrap" id="${cellId}" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, '${f}', this.innerText)">${row[f] || ''}</td>`;
-                }).join('');
-                return `<tr><td class="p-3 text-center space-x-1 select-none"><button onclick="moveTimelineRow(${idx}, -1)" class="bg-slate-100 hover:bg-[#5483B3]/20 text-[#5483B3] w-7 h-7 rounded-lg"><i class="fa-solid fa-arrow-up text-[11px]"></i></button><button onclick="moveTimelineRow(${idx}, 1)" class="bg-slate-100 hover:bg-[#5483B3]/20 text-[#5483B3] w-7 h-7 rounded-lg"><i class="fa-solid fa-arrow-down text-[11px]"></i></button></td><td class="p-4 text-center font-bold text-slate-400 bg-slate-50/40">${idx + 1}</td>${tdElements}<td class="p-4 text-center"><button onclick="deleteTimelineRow(${idx})" class="text-slate-300 hover:text-rose-500 p-1"><i class="fa-solid fa-trash-can"></i></button></td></tr>`;
-            }).join('');
+            desktopTbody.innerHTML = window.appData.timeline.map((row, idx) => `<tr><td class="p-3 text-center space-x-1 select-none"><button onclick="moveTimelineRow(${idx}, -1)" class="bg-slate-100 text-[#5483B3] w-6 h-6 rounded-lg"><i class="fa-solid fa-arrow-up"></i></button></td><td class="p-4 text-center font-bold text-slate-400 bg-slate-50/40">${idx + 1}</td><td class="p-4 font-bold text-[#5483B3]" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'time', this.innerText)">${row.time || ''}</td><td class="p-4 font-bold" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'module', this.innerText)">${row.module || ''}</td><td class="p-4 text-slate-600 sync-pre-wrap" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'stage', this.innerText)">${row.stage || ''}</td><td class="p-4 text-slate-600" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'pa', this.innerText)">${row.pa || ''}</td><td class="p-4 text-center"><button onclick="deleteTimelineRow(${idx})" class="text-slate-300 hover:text-rose-500"><i class="fa-solid fa-trash-can"></i></button></td></tr>`).join('');
         }
         window.renderAwardsFlowTable = function() {
-            const tbody = document.getElementById('awards-flow-tbody'); if(!tbody || !window.appData || !window.appData.awardsConfig) return;
-            tbody.innerHTML = window.appData.awardsConfig.map((row, idx) => `<tr class="${row.step1 && row.step2 ? 'bg-slate-50 opacity-60' : ''}"><td class="p-4 font-bold text-slate-800" contenteditable="true" onblur="window.updateAwardCell(${idx}, 'name', this.innerText)">${row.name}</td><td class="p-4 text-amber-700 font-semibold" contenteditable="true" onblur="window.updateAwardCell(${idx}, 'type', this.innerText)">${row.type}</td><td class="p-4 text-center"><input type="checkbox" ${row.step1 ? 'checked' : ''} onchange="window.toggleAwardStep(${idx}, 'step1')" class="w-4 h-4 text-[#5483B3] rounded border-slate-300"></td><td class="p-4 text-center"><input type="checkbox" ${row.step2 ? 'checked' : ''} onchange="window.toggleAwardStep(${idx}, 'step2')" class="w-4 h-4 text-emerald-600 rounded border-slate-300"></td><td class="p-4 text-slate-500 sync-pre-wrap" contenteditable="true" onblur="window.updateAwardCell(${idx}, 'note', this.innerText)">${row.note || ''}</td><td class="p-4 text-center"><button onclick="window.deleteAwardRow(${idx})" class="text-slate-300 hover:text-rose-500"><i class="fa-solid fa-trash-can"></i></button></td></tr>`).join('');
+            const tbody = document.getElementById('awards-flow-tbody'); if(!tbody || !window.appData.awardsConfig) return;
+            tbody.innerHTML = window.appData.awardsConfig.map((row, idx) => `<tr><td class="p-4 font-bold" contenteditable="true" onblur="window.updateAwardCell(${idx}, 'name', this.innerText)">${row.name}</td><td class="p-4 text-amber-700" contenteditable="true" onblur="window.updateAwardCell(${idx}, 'type', this.innerText)">${row.type}</td><td class="p-4 text-center"><input type="checkbox" ${row.step1 ? 'checked' : ''} onchange="window.toggleAwardStep(${idx}, 'step1')"></td><td class="p-4 text-center"><input type="checkbox" ${row.step2 ? 'checked' : ''} onchange="window.toggleAwardStep(${idx}, 'step2')"></td><td class="p-4" contenteditable="true" onblur="window.updateAwardCell(${idx}, 'note', this.innerText)">${row.note || ''}</td><td class="p-4 text-center"><button onclick="window.deleteAwardRow(${idx})"><i class="fa-solid fa-trash-can text-slate-300"></i></button></td></tr>`).join('');
         }
         window.renderAssetsMilitaryTable = function() {
-            const tbody = document.getElementById('assets-military-tbody'); if(!tbody || !window.appData || !window.appData.assetsConfig) return;
-            tbody.innerHTML = window.appData.assetsConfig.map((row, idx) => `<tr><td class="p-4 font-bold text-slate-800" contenteditable="true" onblur="window.updateAssetCell(${idx}, 'name', this.innerText)">${row.name}</td><td class="p-4 text-slate-500 font-mono" contenteditable="true" onblur="window.updateAssetCell(${idx}, 'type', this.innerText)">${row.type}</td><td class="p-4 text-[#5483B3] font-semibold" contenteditable="true" onblur="window.updateAssetCell(${idx}, 'time', this.innerText)">${row.time}</td><td class="p-4 text-center"><div class="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-xl p-1 max-w-xs mx-auto"><input type="text" value="${row.url || ''}" placeholder="貼上雲端連結" oninput="window.updateAssetCell(${idx}, 'url', this.value)" class="w-full bg-transparent border-none text-[10px] text-slate-400 focus:outline-none px-1"><a href="${row.url || '#'}" target="_blank" class="bg-[#052659] text-white px-3 py-1 rounded-lg text-[10px] font-bold hover:bg-[#5483B3] whitespace-nowrap"><i class="fa-solid fa-cloud-arrow-down mr-1"></i>下載</a></div></td><td class="p-4 text-center"><button onclick="window.deleteAssetRow(${idx})" class="text-slate-300 hover:text-rose-500"><i class="fa-solid fa-trash-can"></i></button></td></tr>`).join('');
+            const tbody = document.getElementById('assets-military-tbody'); if(!tbody || !window.appData.assetsConfig) return;
+            tbody.innerHTML = window.appData.assetsConfig.map((row, idx) => `<tr><td class="p-4 font-bold" contenteditable="true" onblur="window.updateAssetCell(${idx}, 'name', this.innerText)">${row.name}</td><td class="p-4" contenteditable="true" onblur="window.updateAssetCell(${idx}, 'type', this.innerText)">${row.type}</td><td class="p-4 text-[#5483B3]" contenteditable="true" onblur="window.updateAssetCell(${idx}, 'time', this.innerText)">${row.time}</td><td class="p-4 text-center"><input type="text" value="${row.url || ''}" oninput="window.updateAssetCell(${idx}, 'url', this.value)" class="border p-1 rounded w-32 text-xs"><a href="${row.url || '#'}" target="_blank" class="bg-[#052659] text-white p-1 px-2 rounded ml-1">下載</a></td><td class="p-4 text-center"><button onclick="window.deleteAssetRow(${idx})"><i class="fa-solid fa-trash-can text-slate-300"></i></button></td></tr>`).join('');
         }
-        window.renderChecklist = function() { const box = document.getElementById('checklist-box'); if(!box) return; box.innerHTML = window.appData.checklist.map((item, idx) => `<div class="flex items-center p-4 gap-4 ${item.done ? 'bg-slate-50 opacity-50' : ''}"><input type="checkbox" ${item.done ? 'checked' : ''} onchange="window.toggleCheckItem(${idx})" class="w-4 h-4 rounded border-slate-300 text-[#5483B3] focus:ring-0"><div class="flex-1 text-xs font-bold text-slate-800 ${item.done ? 'line-through text-slate-400' : ''} sync-pre-wrap" contenteditable="true" onblur="window.updateCheckCellData(${idx}, 'item', this.innerText)">${item.item}</div><span class="bg-blue-50 text-[#5483B3] text-[10px] px-2 py-0.5 rounded border border-[#5483B3]/20" contenteditable="true" onblur="window.updateCheckCellData(${idx}, 'team', this.innerText)">${item.team}</span><div class="flex-1 text-xs text-slate-400 hidden sm:block sync-pre-wrap" contenteditable="true" onblur="window.updateCheckCellData(${idx}, 'note', this.innerText)">${item.note}</div></div>`).join(''); }
-        window.renderTeamModules = function(panel) { const grid = document.getElementById('team-modules-grid'); if(!grid) return; if(!panel.modules) panel.modules = []; grid.innerHTML = panel.modules.map((mod, mIdx) => `<div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm relative group"><div class="flex justify-between items-center mb-2"><h4 class="text-xs font-bold text-[#052659]" id="mod-title-${panel.id}-${mIdx}" contenteditable="true" onblur="window.updateModuleCellData('${panel.id}', ${mIdx}, 'title', this.innerText)">${mod.title}</h4></div><div class="text-xs text-slate-500 leading-relaxed bg-slate-50 p-2 rounded-lg min-h-[50px] sync-pre-wrap" id="mod-content-${panel.id}-${mIdx}" contenteditable="true" onblur="window.updateModuleCellData('${panel.id}', ${mIdx}, 'content', this.innerText)">${mod.content}</div></div>`).join(''); }
-
-        window.updateAwardCell = function(idx, field, val) { window.appData.awardsConfig[idx][field] = val; if(window.cloudUpdateCell) window.cloudUpdateCell(`awardsConfig/${idx}/${field}`, val); }
-        window.toggleAwardStep = function(idx, field) { window.appData.awardsConfig[idx][field] = !window.appData.awardsConfig[idx][field]; if(window.cloudUpdateCell) window.cloudUpdateCell(`awardsConfig/${idx}/${field}`, window.appData.awardsConfig[idx][field]); }
-        window.addNewAwardRow = function() { if(!window.appData.awardsConfig) window.appData.awardsConfig = []; window.appData.awardsConfig.push({ id: Date.now(), name: "新大會獎項", type: "🏆 數量內容", step1: false, step2: false, note: "交接備忘錄..." }); if(window.cloudSaveEngine) window.cloudSaveEngine(window.appData); }
-        window.deleteAwardRow = function(idx) { if(confirm("確定刪除此獎項流向？")) { window.appData.awardsConfig.splice(idx, 1); if(window.cloudSaveEngine) window.cloudSaveEngine(window.appData); } }
-        window.updateAssetCell = function(idx, field, val) { window.appData.assetsConfig[idx][field] = val; if(window.cloudUpdateCell) window.cloudUpdateCell(`assetsConfig/${idx}/${field}`, val); }
-        window.addNewAssetRow = function() { if(!window.appData.assetsConfig) window.appData.assetsConfig = []; window.appData.assetsConfig.push({ id: Date.now(), name: "新官方標準大會檔案", type: "🎬 格式", time: "時程切入CUE點", url: "" }); if(window.cloudSaveEngine) window.cloudSaveEngine(window.appData); }
-        window.deleteAssetRow = function(idx) { if(confirm("確定移除此軍火檔案？")) { window.appData.assetsConfig.splice(idx, 1); if(window.cloudSaveEngine) window.cloudSaveEngine(window.appData); } }
-        window.updateTimelineCellData = function(index, field, value) { window.appData.timeline[index][field] = value; if (window.cloudUpdateCell) { window.cloudUpdateCell(`timeline/${index}/${field}`, value); } }
-        window.updateTeamMembersData = function(panelId, value) { const pIdx = window.appData.panels.findIndex(p => p.id === panelId); if (pIdx !== -1) { window.appData.panels[pIdx].members = value; if (window.cloudUpdateCell) { window.cloudUpdateCell(`panels/${pIdx}/members`, value); } } }
-        window.updateModuleCellData = function(panelId, mIdx, field, value) { const pIdx = window.appData.panels.findIndex(p => p.id === panelId); if (pIdx !== -1) { window.appData.panels[pIdx].modules[mIdx][field] = value; if (window.cloudUpdateCell) { window.cloudUpdateCell(`panels/${pIdx}/modules/${mIdx}/${field}`, value); } } }
-        window.moveTimelineRow = function(index, direction) { const targetIndex = index + direction; if (targetIndex < 0 || targetIndex >= window.appData.timeline.length) return; const temp = window.appData.timeline[index]; window.appData.timeline[index] = window.appData.timeline[targetIndex]; window.appData.timeline[targetIndex] = temp; if (window.cloudSaveEngine) { window.cloudSaveEngine(window.appData); } }
-        window.addNewTimelineRow = function() { window.appData.timeline.push({ time: "時段", module: "新項目", stage: "編輯設定...", equip: "", pa: "", photo: "", note: "" }); if (window.cloudSaveEngine) { window.cloudSaveEngine(window.appData); } }
-        window.deleteTimelineRow = function(index) { if(confirm("確定刪除此段時程？")) { window.appData.timeline.splice(index, 1); if (window.cloudSaveEngine) { window.cloudSaveEngine(window.appData); } } }
+        window.renderChecklist = function() {
+            const box = document.getElementById('checklist-box'); if(!box) return;
+            box.innerHTML = window.appData.checklist.map((item, idx) => `<div class="flex items-center p-4 gap-4"><input type="checkbox" ${item.done ? 'checked' : ''} onchange="window.toggleCheckItem(${idx})"><div class="flex-1 text-xs font-bold ${item.done ? 'line-through text-slate-400' : ''}" contenteditable="true" onblur="window.updateCheckCellData(${idx}, 'item', this.innerText)">${item.item}</div></div>`).join('');
+        }
+        window.renderTeamModules = function(panel) { const grid = document.getElementById('team-modules-grid'); if(!grid) return; grid.innerHTML = (panel.modules || []).map((mod, mIdx) => `<div class="bg-white border rounded-xl p-4 shadow-sm"><h4 class="text-xs font-bold text-[#052659] mb-1">${mod.title}</h4><div class="text-xs text-slate-500 bg-slate-50 p-2 rounded-lg">${mod.content}</div></div>`).join(''); }
+        window.updateTeamMembersData = function(panelId, value) { const pIdx = window.appData.panels.findIndex(p => p.id === panelId); if (pIdx !== -1) { window.appData.panels[pIdx].members = value; if (window.cloudUpdateCell) window.cloudUpdateCell(`panels/${pIdx}/members`, value); } }
+        window.addNewTimelineRow = function() { window.appData.timeline.push({ time: "時段", module: "新節目" }); if (window.cloudSaveEngine) window.cloudSaveEngine(window.appData); }
+        window.deleteTimelineRow = function(index) { window.appData.timeline.splice(index, 1); if (window.cloudSaveEngine) window.cloudSaveEngine(window.appData); }
         window.toggleCheckItem = function(idx) { window.appData.checklist[idx].done = !window.appData.checklist[idx].done; if (window.cloudUpdateCell) window.cloudUpdateCell(`checklist/${idx}/done`, window.appData.checklist[idx].done); }
         window.updateCheckCellData = function(idx, field, val) { window.appData.checklist[idx][field] = val; if (window.cloudUpdateCell) window.cloudUpdateCell(`checklist/${idx}/${field}`, val); }
-        window.addNewChecklistItem = function() { window.appData.checklist.push({ id: Date.now(), done: false, item: "新物資項目", team: "主控組", note: "點擊修改..." }); if (window.cloudSaveEngine) { window.cloudSaveEngine(window.appData); } }
+        window.addNewChecklistItem = function() { if(!window.appData.checklist) window.appData.checklist = []; window.appData.checklist.push({ done: false, item: "新項目" }); if (window.cloudSaveEngine) window.cloudSaveEngine(window.appData); }
+        document.addEventListener("DOMContentLoaded", () => { window.checkAuthAndRun(); });
     </script>
 </body>
 </html>
