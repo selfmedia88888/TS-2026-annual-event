@@ -1,73 +1,53 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <title>TS 2026 最終資料還原版</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 p-6">
-    <div id="content" class="max-w-4xl mx-auto space-y-8">
-        <h1 class="text-2xl font-bold text-blue-900">正在緊急撈取所有原始資料...</h1>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyBQdnW16U1OxpDR05hvAv2fcZ4aMKXsyfM",
-            authDomain: "test-fee8d.firebaseapp.com",
-            projectId: "test-fee8d",
-            databaseURL: "https://test-fee8d-default-rtdb.firebaseio.com" 
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const dataRef = ref(db, 'ts_2026_realtime_data');
-
+// 覆蓋掉你原本的 onValue 區塊，這是最穩定的讀取路徑
         onValue(dataRef, (snapshot) => {
-            const data = snapshot.val();
-            const content = document.getElementById('content');
-            content.innerHTML = '<h1 class="text-2xl font-bold mb-4">資料救援顯示區</h1>';
-
-            if (data) {
-                // 暴力讀取所有資料
-                for (let key in data) {
-                    // 如果是 team_ 開頭或者在 panels 裡面的，全部顯示出來
-                    if (key.includes('team_') || key === 'panels') {
-                        renderPanel(key, data[key]);
+            const cloudData = snapshot.val();
+            if (cloudData) {
+                window.appData = cloudData;
+                window.dynamicPanels = [];
+                
+                // 核心修正：強制遍歷所有資料夾，不管名稱為何
+                for (let key in cloudData) {
+                    if (['timeline', 'seating', 'checklist', 'tablesConfig', 'timelineConfig'].includes(key)) continue;
+                    
+                    // 只要該節點有 name，就當作一個面板，不管它是什麼名字
+                    if (cloudData[key] && typeof cloudData[key] === 'object') {
+                        window.dynamicPanels.push({
+                            id: key,
+                            name: cloudData[key].name || key, // 如果沒名稱，就顯示 ID
+                            icon: cloudData[key].icon || "fa-folder"
+                        });
                     }
                 }
+                window.renderSidebarMenu();
+                window.renderActivePanelOnly();
             }
         });
 
-        function renderPanel(key, p) {
-            const content = document.getElementById('content');
-            let items = Array.isArray(p) ? p : [p]; // 處理陣列或單一物件
-            
-            items.forEach(item => {
-                if (!item || typeof item !== 'object') return;
+        // 修正渲染邏輯，確保資料沒對齊時不會顯示空白
+        window.renderActivePanelOnly = function() {
+            if (!window.appData) return;
+            const tabId = window.currentActiveTab || "timeline";
+            document.querySelectorAll('.main-panel').forEach(p => p.classList.add('hidden'));
+
+            if(tabId === 'timeline') {
+                document.getElementById('panel-timeline').classList.remove('hidden'); renderTimelineTable();
+            } else if(tabId === 'seating') {
+                document.getElementById('panel-seating').classList.remove('hidden'); renderVenueTablesGrid();
+            } else if(tabId === 'checklist') {
+                document.getElementById('panel-checklist').classList.remove('hidden'); renderChecklist();
+            } else {
+                // 這裡：直接讀取節點，如果結構不同，它會自動抓取裡面的 members 和 modules
+                const teamData = window.appData[tabId] || {};
+                document.getElementById('panel-team-generic').classList.remove('hidden'); 
+                document.getElementById('team-title-display').innerText = teamData.name || tabId;
                 
-                let html = `
-                    <div class="bg-white p-6 rounded-xl shadow-lg border-l-8 border-green-500 mb-6">
-                        <h2 class="text-2xl font-bold text-gray-900 mb-2">${item.name || key}</h2>
-                        <p class="text-gray-600 mb-4">組員: ${item.members || '無內容'}</p>
-                        <div class="space-y-3">`;
-                
-                if (item.modules) {
-                    const modules = Array.isArray(item.modules) ? item.modules : Object.values(item.modules);
-                    modules.forEach(m => {
-                        html += `
-                            <div class="bg-gray-50 p-4 rounded border">
-                                <h3 class="font-bold text-blue-700">${m.title || '任務'}</h3>
-                                <p class="text-gray-700 text-sm whitespace-pre-wrap">${m.content || ''}</p>
-                            </div>`;
-                    });
-                }
-                html += `</div></div>`;
-                content.innerHTML += html;
-            });
+                const membersBox = document.getElementById('team-members-box');
+                membersBox.innerText = teamData.members || "尚無成員紀錄...";
+                membersBox.onblur = function() { if(window.cloudUpdateCell) window.cloudUpdateCell(`${tabId}/members`, this.innerText); };
+
+                const delBtn = document.getElementById('btn-delete-entire-panel');
+                delBtn.onclick = function() { window.deleteEntireCustomPanel(tabId); };
+
+                renderTeamModules(teamData, tabId);
+            }
         }
-    </script>
-</body>
-</html>
