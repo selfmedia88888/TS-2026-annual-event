@@ -14,6 +14,7 @@
         .sync-pre-wrap { white-space: pre-wrap !important; }
         [contenteditable="true"]:focus { outline: 2px solid var(--color-primary); background-color: #ffffff; }
         .card-shadow { box-shadow: 0 4px 18px -4px rgba(5, 38, 89, 0.05); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col pb-32">
@@ -31,27 +32,28 @@
         </div>
     </div>
 
-    <header class="border-b bg-white/90 sticky top-0 z-50 px-6 py-4 flex justify-between items-center shadow-sm">
-        <div>
+    <header class="border-b bg-white/90 sticky top-0 z-50 px-4 lg:px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-2 shadow-sm">
+        <div class="text-center sm:text-left w-full sm:w-auto">
             <h1 class="text-base font-bold text-[#052659]">TS 2026 年度盛會智慧中樞</h1>
-            <p class="text-[9px] uppercase text-slate-400 font-bold">📡 舊資料歷史抽屜全面對接復活版</p>
+            <p class="text-[9px] uppercase text-slate-400 font-bold">📱 手機直向持握移動優化完全體</p>
         </div>
-        <div class="flex items-center gap-3">
-            <span id="display-user-name" class="text-xs text-slate-500 bg-slate-100 px-3 py-1.5 rounded-xl">👤 載入中...</span>
-            <span id="cloud-status-badge" class="text-xs text-emerald-600 bg-emerald-50 px-4 py-2 rounded-full font-medium"></span>
+        <div class="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto border-t sm:border-t-0 pt-2 sm:pt-0">
+            <span id="display-user-name" class="text-[11px] text-slate-500 bg-slate-100 px-2.5 py-1 rounded-xl">👤 載入中...</span>
+            <span id="cloud-status-badge" class="text-[11px] text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full font-medium"></span>
         </div>
     </header>
 
-    <div class="flex flex-1">
-        <aside class="w-64 border-r bg-white p-4 flex flex-col gap-1.5 select-none" id="sidebar-menu"></aside>
+    <div class="flex flex-1 flex-col lg:flex-row">
+        <aside class="w-full lg:w-64 border-b lg:border-b-0 lg:border-r bg-white p-2 lg:p-4 flex flex-row lg:flex-col gap-1.5 overflow-x-auto lg:overflow-x-visible no-scrollbar shrink-0 select-none" id="sidebar-menu"></aside>
 
-        <main class="flex-1 p-8">
+        <main class="flex-1 p-4 lg:p-8">
+            
             <div id="panel-timeline" class="main-panel hidden">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-base font-bold text-[#052659]"><i class="fa-solid fa-clock-history mr-2"></i>大會核心時程主骨架</h2>
-                    <button onclick="addNewTimelineRow()" class="bg-[#5483B3] text-white text-xs font-semibold px-4 py-2 rounded-xl">＋ 新增時段</button>
+                <div class="flex justify-between items-center mb-4 lg:mb-6">
+                    <h2 class="text-sm lg:text-base font-bold text-[#052659]"><i class="fa-solid fa-clock-history mr-2"></i>大會主細流</h2>
+                    <button onclick="addNewTimelineRow()" class="bg-[#5483B3] text-white text-xs px-3 py-1.5 rounded-xl">＋ 新增時段</button>
                 </div>
-                <div class="bg-white border rounded-2xl overflow-hidden card-shadow">
+                <div class="hidden lg:block bg-white border rounded-2xl overflow-hidden card-shadow">
                     <table class="w-full text-left text-xs border-collapse">
                         <thead>
                             <tr class="bg-slate-50 font-bold text-slate-500 border-b">
@@ -63,74 +65,77 @@
                         <tbody id="timeline-desktop-tbody" class="divide-y"></tbody>
                     </table>
                 </div>
+                <div class="block lg:hidden space-y-3" id="timeline-mobile-container"></div>
             </div>
 
-            <div id="panel-main-venue" class="main-panel hidden space-y-6">
-                <div id="kitchen-radar-dashboard" class="bg-slate-900 rounded-2xl p-4 text-white flex justify-between items-center text-xs">
-                    <div class="font-bold">🍳 行政組專用：廚房總出菜雷達</div>
-                    <div class="flex gap-4 font-mono">
-                        <div>總人數: <span id="panel-stat-total" class="text-[#C1E8FF] font-bold">0</span></div>
+            <div id="panel-main-venue" class="main-panel hidden space-y-4 lg:space-y-6">
+                <div id="kitchen-radar-dashboard" class="bg-slate-900 rounded-xl p-3 lg:p-4 text-white flex flex-col sm:flex-row justify-between items-start sm:items-center text-xs gap-2">
+                    <div class="font-bold"><i class="fa-solid fa-utensils mr-1"></i> 🍳 廚房總出菜雷達</div>
+                    <div class="flex gap-3 lg:gap-4 font-mono w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 border-slate-800 pt-1.5 sm:pt-0">
+                        <div>總數: <span id="panel-stat-total" class="text-[#C1E8FF] font-bold">0</span></div>
                         <div>葷食: <span id="panel-stat-meat" class="text-amber-400 font-bold">0</span></div>
                         <div>🟢 素食: <span id="panel-stat-veg" class="text-emerald-400 font-bold">0</span></div>
                     </div>
                 </div>
-                <div class="bg-white border rounded-2xl p-5 flex justify-between items-center">
-                    <h2 class="text-sm font-bold text-[#052659]">🏛️ 主會場桌次與吃素管理盤</h2>
-                    <div class="flex items-center gap-2 text-xs bg-slate-50 p-2 rounded-xl border">
-                        <label class="font-bold text-slate-500">大會總桌數：</label>
-                        <input type="number" id="input-total-tables" min="1" max="100" class="w-16 bg-white border text-center font-bold text-[#052659]" onchange="window.adjustTotalTables(this.value)"> 桌
+                <div class="bg-white border rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                    <h2 class="text-xs lg:text-sm font-bold text-[#052659]">🏛️ 主會場桌次與吃素管理盤</h2>
+                    <div class="flex items-center gap-2 text-xs bg-slate-50 p-1.5 rounded-lg border w-full sm:w-auto justify-between">
+                        <label class="font-bold text-slate-500">總桌數：</label>
+                        <div>
+                            <input type="number" id="input-total-tables" min="1" max="100" class="w-14 bg-white border text-center font-bold text-[#052659]" onchange="window.adjustTotalTables(this.value)"> 桌
+                        </div>
                     </div>
                 </div>
-                <div class="grid grid-cols-10 gap-3" id="venue-tables-grid"></div>
-                <div id="table-details-box" class="bg-white border rounded-2xl p-6 card-shadow hidden">
-                    <h3 class="text-xs font-bold text-[#052659] border-b pb-2 mb-4" id="selected-table-title">🎯 座位名單管理</h3>
-                    <div class="grid grid-cols-5 gap-3" id="seats-inputs-grid"></div>
+                <div class="grid grid-cols-4 lg:grid-cols-10 gap-2 lg:gap-3" id="venue-tables-grid"></div>
+                <div id="table-details-box" class="bg-white border rounded-xl p-4 lg:p-6 card-shadow hidden">
+                    <h3 class="text-xs font-bold text-[#052659] border-b pb-2 mb-3 lg:mb-4" id="selected-table-title">🎯 座位名單管理</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 lg:gap-3" id="seats-inputs-grid"></div>
                 </div>
             </div>
 
-            <div id="panel-time-tunnel" class="main-panel hidden space-y-6">
-                <div id="tunnel-traffic-light-bar" class="p-5 rounded-2xl text-white flex justify-between items-center text-xs bg-emerald-950 border border-emerald-800">
+            <div id="panel-time-tunnel" class="main-panel hidden space-y-4">
+                <div id="tunnel-traffic-light-bar" class="p-4 rounded-xl text-white flex flex-col sm:flex-row justify-between items-start sm:items-center text-xs bg-emerald-950 border border-emerald-800 gap-3">
                     <div>
                         <h3 class="font-bold">外場進場流速戰術控制燈</h3>
                         <p id="tunnel-light-text" class="text-[10px] text-emerald-300">🟢 絲滑暢通 | 依正常節奏優雅放人</p>
                     </div>
-                    <div class="flex gap-2">
-                        <button onclick="window.setTunnelTraffic('green')" class="bg-emerald-600 px-3 py-1.5 rounded-xl">暢通</button>
-                        <button onclick="window.setTunnelTraffic('yellow')" class="bg-amber-600 px-3 py-1.5 rounded-xl">人流減速</button>
-                        <button onclick="window.setTunnelTraffic('red')" class="bg-rose-600 px-3 py-1.5 rounded-xl">暫緩放人</button>
+                    <div class="flex gap-1 w-full sm:w-auto">
+                        <button onclick="window.setTunnelTraffic('green')" class="flex-1 bg-emerald-600 px-2.5 py-1.5 rounded-lg text-[11px]">暢通</button>
+                        <button onclick="window.setTunnelTraffic('yellow')" class="flex-1 bg-amber-600 px-2.5 py-1.5 rounded-lg text-[11px]">減速</button>
+                        <button onclick="window.setTunnelTraffic('red')" class="flex-1 bg-rose-600 px-2.5 py-1.5 rounded-lg text-[11px]">暫停</button>
                     </div>
                 </div>
-                <div class="bg-slate-900 border rounded-2xl p-6 text-white min-h-[200px] flex flex-col justify-between text-xs">
-                    <div class="flex justify-between border-b border-slate-800 pb-2 text-slate-500"><span>🚪 廊道起點</span><span>總長度 68 METERS</span><span>會場大門 🏛️</span></div>
-                    <div class="my-6 relative"><div class="h-1 bg-slate-800 w-full"></div></div>
-                    <div class="text-slate-400">長廊規格 68m x 8.8m。宇哲大圖輸出請依此比例排定。</div>
+                <div class="bg-slate-900 border rounded-xl p-4 text-white flex flex-col justify-between text-xs min-h-[160px]">
+                    <div class="flex justify-between border-b border-slate-800 pb-2 text-[10px] text-slate-500"><span>🚪 起點</span><span>總長 68 米</span><span>大門 🏛️</span></div>
+                    <div class="my-4 relative"><div class="h-1 bg-slate-800 w-full"></div></div>
+                    <div class="text-[11px] text-slate-400">長廊規格 68m x 8.8m。宇哲大圖輸出請依此比例排定。</div>
                 </div>
             </div>
 
-            <div id="panel-awards-flow" class="main-panel hidden space-y-6">
-                <div class="flex justify-between items-center mb-4"><h2 class="text-base font-bold text-[#052659]">🏆 頒獎道具與紅包流向戰術板</h2><button onclick="window.addNewAwardRow()" class="bg-[#5483B3] text-white text-xs px-3 py-1.5 rounded-xl">＋ 新增獎項</button></div>
-                <div class="bg-white border rounded-2xl overflow-hidden card-shadow"><table class="w-full text-left border-collapse text-xs"><thead><tr class="bg-slate-50 border-b font-bold text-slate-500"><th class="p-4">大會獎項名稱</th><th class="p-4">實體道具內容與數量</th><th class="p-4 text-center">行政點收</th><th class="p-4 text-center">交付後台</th><th class="p-4">後台備忘錄</th><th class="p-4 text-center">刪</th></tr></thead><tbody id="awards-flow-tbody" class="divide-y"></tbody></table></div>
+            <div id="panel-awards-flow" class="main-panel hidden space-y-4">
+                <div class="flex justify-between items-center"><h2 class="text-xs lg:text-base font-bold text-[#052659]">🏆 頒獎道具與紅包流向板</h2><button onclick="window.addNewAwardRow()" class="bg-[#5483B3] text-white text-xs px-2.5 py-1.5 rounded-lg">＋ 新增</button></div>
+                <div class="bg-white border rounded-xl overflow-x-auto card-shadow no-scrollbar"><table class="w-full text-left border-collapse text-xs min-w-[600px]"><thead><tr class="bg-slate-50 border-b font-bold text-slate-500"><th class="p-3">大會獎項名稱</th><th class="p-3">實體道具內容與數量</th><th class="p-3 text-center w-20">點收</th><th class="p-3 text-center w-20">後台</th><th class="p-3">後台備忘錄</th><th class="p-3 text-center w-12"></th></tr></thead><tbody id="awards-flow-tbody" class="divide-y"></tbody></table></div>
             </div>
 
-            <div id="panel-assets-military" class="main-panel hidden space-y-6">
-                <div class="flex justify-between items-center mb-4"><h2 class="text-base font-bold text-[#052659]">📦 大會現場視覺資產與播片軍火庫</h2><button onclick="window.addNewAssetRow()" class="bg-[#5483B3] text-white text-xs px-3 py-1.5 rounded-xl">＋ 補給新軍火</button></div>
-                <div class="bg-white border rounded-2xl overflow-hidden card-shadow"><table class="w-full text-left border-collapse text-xs"><thead><tr class="bg-slate-50 border-b font-bold text-slate-500"><th class="p-4">官方標準檔案名稱</th><th class="p-4">格式</th><th class="p-4">切入 CUE 點</th><th class="p-4 text-center">下載熱鍵</th><th class="p-4 text-center">刪</th></tr></thead><tbody id="assets-military-tbody" class="divide-y"></tbody></table></div>
+            <div id="panel-assets-military" class="main-panel hidden space-y-4">
+                <div class="flex justify-between items-center"><h2 class="text-xs lg:text-base font-bold text-[#052659]">📦 大會視覺資產與播片軍火庫</h2><button onclick="window.addNewAssetRow()" class="bg-[#5483B3] text-white text-xs px-2.5 py-1.5 rounded-lg">＋ 補給</button></div>
+                <div class="bg-white border rounded-xl overflow-x-auto card-shadow no-scrollbar"><table class="w-full text-left border-collapse text-xs min-w-[600px]"><thead><tr class="bg-slate-50 border-b font-bold text-slate-500"><th class="p-3">官方標準檔案名稱</th><th class="p-3">格式</th><th class="p-3">CUE 點</th><th class="p-3 text-center w-48">下載熱鍵</th><th class="p-3 text-center w-12"></th></tr></thead><tbody id="assets-military-tbody" class="divide-y"></tbody></table></div>
             </div>
 
             <div id="panel-checklist" class="main-panel hidden">
-                <div class="flex justify-between items-center mb-6"><h2 class="text-base font-bold text-[#052659]">大會物資防線檢核</h2><button onclick="addNewChecklistItem()" class="bg-[#5483B3] text-white text-xs px-3 py-1.5 rounded-xl">＋ 新增項目</button></div>
+                <div class="flex justify-between items-center mb-4"><h2 class="text-xs lg:text-base font-bold text-[#052659]">大會物資防線檢核</h2><button onclick="addNewChecklistItem()" class="bg-[#5483B3] text-white text-xs px-2.5 py-1.5 rounded-lg">＋ 新增</button></div>
                 <div class="bg-white border rounded-xl divide-y card-shadow" id="checklist-box"></div>
             </div>
 
-            <div id="panel-team-generic" class="main-panel hidden">
-                <div class="bg-white border rounded-2xl p-5 card-shadow mb-6">
-                    <h2 class="text-lg font-bold text-[#052659]" id="team-title-display">小組盤</h2>
-                    <div class="mt-4">
-                        <label class="text-xs font-bold text-slate-400 block mb-2">👥 本組作戰組員名單 (打字自動換行同步)</label>
-                        <div id="team-members-box" contenteditable="true" class="bg-slate-50 border rounded-xl p-3 text-xs min-h-[50px]"></div>
+            <div id="panel-team-generic" class="main-panel hidden space-y-4">
+                <div class="bg-white border rounded-xl p-4 card-shadow">
+                    <h2 class="text-sm font-bold text-[#052659]" id="team-title-display">小組盤</h2>
+                    <div class="mt-3">
+                        <label class="text-[11px] font-bold text-slate-400 block mb-1">👥 本組組員名單</label>
+                        <div id="team-members-box" contenteditable="true" class="bg-slate-50 border rounded-xl p-2.5 text-xs min-h-[45px]"></div>
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-4" id="team-modules-grid"></div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="team-modules-grid"></div>
             </div>
         </main>
     </div>
@@ -154,14 +159,13 @@
         }
         window.submitAuth = function() {
             const inputKey = document.getElementById('input-auth-key').value.trim(); const inputUser = document.getElementById('input-auth-user').value.trim();
-            if (inputKey !== CORRECT_KEY || !inputUser) { alert("密碼錯誤或未輸入稱呼！"); return; }
+            if (inputKey !== CORRECT_KEY || !inputUser) { alert("暗號錯誤！"); return; }
             localStorage.setItem('ts_auth_key', inputKey); localStorage.setItem('ts_auth_user', inputUser); window.location.reload();
         }
 
         if (window.checkAuthAndRun()) {
             try {
                 const app = initializeApp(firebaseConfig); const db = getDatabase(app);
-                // 🔴 ⚡ 直連舊抽屜：不走 /timeline 分流，直接讀寫大數據最上層根路徑
                 const dataRef = ref(db, 'ts_2026_realtime_data');
                 window.cloudDb = db;
                 window.cloudUpdateCell = function(path, value) { set(ref(window.cloudDb, `ts_2026_realtime_data/${path}`), value); };
@@ -170,7 +174,6 @@
                 onValue(dataRef, (snapshot) => {
                     const cloudData = snapshot.val();
                     if (cloudData) {
-                        // 如果舊抽屜裡缺少新功能的欄位，就地初始化，絕對不准覆蓋舊資料！
                         if (!cloudData.tablesConfig) cloudData.tablesConfig = { totalTables: 40, tablesData: {} };
                         if (!cloudData.tablesConfig.tablesData) {
                             cloudData.tablesConfig.tablesData = {};
@@ -180,17 +183,15 @@
                         if (!cloudData.assetsConfig) cloudData.assetsConfig = [];
                         if (!cloudData.tunnelTraffic) cloudData.tunnelTraffic = "green";
 
-                        // 建立並合併大會的頂級選單
                         const corePanels = [
-                            { id: "timeline", name: "大會主細流", icon: "fa-clock-history", type: "system" },
-                            { id: "main_venue", name: "🏛️ 主會場桌位管理", icon: "fa-table-cells", type: "system" },
-                            { id: "time_tunnel", name: "🌌 68米時光隧道", icon: "fa-road", type: "system" },
-                            { id: "awards_flow", name: "🏆 頒獎道具流向盤", icon: "fa-trophy", type: "system" },
-                            { id: "assets_military", name: "📦 大會資產軍火庫", icon: "fa-cubes", type: "system" },
-                            { id: "checklist", name: "物資防線檢核", icon: "fa-list-check", type: "system" }
+                            { id: "timeline", name: "大會主細流", icon: "fa-clock-history" },
+                            { id: "main_venue", name: "🏛️ 主會場桌位管理", icon: "fa-table-cells" },
+                            { id: "time_tunnel", name: "🌌 68米時光隧道", icon: "fa-road" },
+                            { id: "awards_flow", name: "🏆 頒獎道具流向盤", icon: "fa-trophy" },
+                            { id: "assets_military", name: "📦 大會資產軍火庫", icon: "fa-cubes" },
+                            { id: "checklist", name: "物資防線檢核", icon: "fa-list-check" }
                         ];
 
-                        // 讀取並承接雲端中原本存在的舊工作小組（如活動組、設計組），讓字完美重現！
                         const cloudPanels = cloudData.panels || [];
                         const mergedPanels = [...corePanels];
                         cloudPanels.forEach(cp => { if (!mergedPanels.some(mp => mp.id === cp.id)) mergedPanels.push(cp); });
@@ -207,7 +208,7 @@
                         } else {
                             window.renderActivePanelOnly();
                         }
-                        document.getElementById('cloud-status-badge').innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 inline-block mr-1"></span> 雲端大腦同步中`;
+                        document.getElementById('cloud-status-badge').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block mr-1"></span> 連線中`;
                     }
                 });
             } catch (e) { console.error(e); }
@@ -237,36 +238,38 @@
         }
         window.renderSidebarMenu = function() {
             const menu = document.getElementById('sidebar-menu'); if(!menu || !window.appData) return;
-            menu.innerHTML = `<p class="text-[11px] font-bold uppercase text-slate-400 px-3 mb-2">大會總指揮面板</p>`;
+            menu.innerHTML = "";
             window.appData.panels.forEach(p => {
                 const isActive = window.appData.currentTab === p.id;
-                menu.innerHTML += `<button onclick="switchTab('${p.id}')" class="w-full text-left px-4 py-2.5 rounded-xl border text-xs transition-all flex items-center gap-2 ${isActive ? 'bg-[#5483B3]/10 text-[#5483B3] border-[#5483B3]/30 font-bold' : 'text-slate-500 hover:bg-slate-50 border-transparent'}"><i class="fa-solid ${p.icon || 'fa-folder'} w-4 text-center"></i><span>${p.name}</span></button>`;
+                menu.innerHTML += `<button onclick="switchTab('${p.id}')" class="text-left px-3 py-2 rounded-xl border text-xs transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 lg:w-full ${isActive ? 'bg-[#5483B3]/10 text-[#5483B3] border-[#5483B3]/30 font-bold' : 'text-slate-500 hover:bg-slate-50 border-transparent'}"><i class="fa-solid ${p.icon || 'fa-folder'} w-4 text-center"></i><span>${p.name}</span></button>`;
             });
         }
         window.switchTab = function(tabId) { window.appData.currentTab = tabId; window.renderSidebarMenu(); window.renderActivePanelOnly(); }
 
-        // 桌次控盤
-        window.renderVenueTablesGrid = function() {
-            const grid = document.getElementById('venue-tables-grid'); const totalInput = document.getElementById('input-total-tables'); if (!grid || !window.appData.tablesConfig) return;
-            const config = window.appData.tablesConfig; totalInput.value = config.totalTables || 40;
-            let html = ""; for (let i = 1; i <= config.totalTables; i++) { const tData = config.tablesData ? config.tablesData[i] : null; const hasVeg = tData && tData.seats ? tData.seats.some(s => s && s.isVeg) : false; const isSelected = window.appData.selectedTable == i; html += `<button id="table-box-btn-${i}" onclick="window.selectTableForDetails(${i})" class="h-12 rounded-xl border text-xs flex flex-col items-center justify-center transition-all ${isSelected ? 'bg-[#052659] text-white border-[#052659] font-bold scale-105' : (hasVeg ? 'bg-emerald-50 text-emerald-700 border-emerald-300 font-bold shadow-inner' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50')}"><span>第 ${i} 桌</span><span id="table-veg-indicator-${i}">${hasVeg ? '<span class="text-[8px] text-emerald-500 font-bold">🟢有素</span>' : ''}</span></button>`; }
-            grid.innerHTML = html; window.renderTableSeatsControl();
-        }
-        window.adjustTotalTables = function(val) { const num = parseInt(val); if (num < 1 || num > 100) return; window.appData.tablesConfig.totalTables = num; if (window.cloudUpdateCell) window.cloudUpdateCell("tablesConfig/totalTables", num); }
-        window.selectTableForDetails = function(tableNum) { window.appData.selectedTable = tableNum; window.renderVenueTablesGrid(); }
-        window.renderTableSeatsControl = function() {
-            const box = document.getElementById('table-details-box'); const grid = document.getElementById('seats-inputs-grid'); const title = document.getElementById('selected-table-title'); if (!box || !grid || !title) return; const tNum = window.appData.selectedTable; if (!tNum || tNum > window.appData.tablesConfig.totalTables) { box.classList.add('hidden'); return; } box.classList.remove('hidden'); title.innerHTML = `正在管理：第 【${tNum}】 桌座位名單`; const tData = window.appData.tablesConfig.tablesData[tNum] || { seats: Array(10).fill({ name: "", isVeg: false }) };
-            let html = ""; for (let s = 0; s < 10; s++) { const seat = tData.seats[s] || { name: "", isVeg: false }; const isVeg = seat.isVeg || false; html += `<div id="seat-wrapper-${tNum}-${s}" class="flex items-center gap-1 bg-slate-50 border ${isVeg ? 'border-emerald-300 bg-emerald-50/50' : 'border-slate-200'} p-1.5 rounded-xl"><span class="text-[10px] font-mono text-slate-400 font-bold w-4 text-center">${s+1}</span><input type="text" id="seat-input-${tNum}-${s}" value="${seat.name || ''}" placeholder="空位" oninput="window.updateSeatName(${tNum}, ${s}, this.value)" class="w-full bg-transparent text-xs focus:outline-none font-bold ${isVeg ? 'text-emerald-700' : 'text-slate-800'}"><button id="seat-veg-btn-${tNum}-${s}" onclick="window.toggleSeatVeg(${tNum}, ${s})" class="px-2 py-1 rounded-lg text-[10px] font-bold border ${isVeg ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-400 border-slate-200'}">素</button></div>`; } grid.innerHTML = html;
-        }
-        window.updateSeatName = function(tableNum, seatIdx, val) { if(!window.appData.tablesConfig.tablesData[tableNum].seats) { window.appData.tablesConfig.tablesData[tableNum].seats = Array(10).fill({ name: "", isVeg: false }); } const currentVeg = window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx]?.isVeg || false; window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx] = { name: val, isVeg: currentVeg }; if (window.cloudUpdateCell) window.cloudUpdateCell(`tablesConfig/tablesData/${tableNum}/seats/${seatIdx}`, { name: val, isVeg: currentVeg }); }
-        window.toggleSeatVeg = function(tableNum, seatIdx) {
-            const seat = window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx] || { name: "", isVeg: false }; const nextVeg = !seat.isVeg; window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx] = { name: seat.name || "", isVeg: nextVeg };
-            const wrapper = document.getElementById(`seat-wrapper-${tableNum}-${seatIdx}`); const input = document.getElementById(`seat-input-${tableNum}-${seatIdx}`); const btn = document.getElementById(`seat-veg-btn-${tableNum}-${seatIdx}`);
-            if (wrapper && input && btn) { wrapper.className = `flex items-center gap-1 bg-slate-50 border ${nextVeg ? 'border-emerald-300 bg-emerald-50/50' : 'border-slate-200'} p-1.5 rounded-xl`; input.className = `w-full bg-transparent text-xs focus:outline-none font-bold ${nextVeg ? 'text-emerald-700' : 'text-slate-800'}`; btn.className = `px-2 py-1 rounded-lg text-[10px] font-bold border ${nextVeg ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-400 border-slate-200'}`; }
-            if (window.cloudUpdateCell) { window.cloudUpdateCell(`tablesConfig/tablesData/${tableNum}/seats/${seatIdx}`, { name: seat.name || "", isVeg: nextVeg }); window.updateTableBoxVegLightOnly(); window.calculateKitchenRadar(); }
+        // 細流渲染：支援手機卡片
+        window.renderTimelineTable = function() {
+            const desktopTbody = document.getElementById('timeline-desktop-tbody');
+            const mobileContainer = document.getElementById('timeline-mobile-container');
+            if(!window.appData) return;
+
+            if(desktopTbody) {
+                desktopTbody.innerHTML = window.appData.timeline.map((row, idx) => `<tr><td class="p-3 text-center space-x-1"><button onclick="moveTimelineRow(${idx}, -1)" class="bg-slate-100 text-[#5483B3] w-6 h-6 rounded-lg"><i class="fa-solid fa-arrow-up text-[10px]"></i></button></td><td class="p-4 text-center font-bold text-slate-400 bg-slate-50/40">${idx + 1}</td><td class="p-4 font-bold text-[#5483B3]" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'time', this.innerText)">${row.time || ''}</td><td class="p-4 font-bold" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'module', this.innerText)">${row.module || ''}</td><td class="p-4 text-slate-600 sync-pre-wrap" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'stage', this.innerText)">${row.stage || ''}</td><td class="p-4 text-slate-600" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'pa', this.innerText)">${row.pa || ''}</td><td class="p-4 text-center"><button onclick="deleteTimelineRow(${idx})" class="text-slate-300 hover:text-rose-500"><i class="fa-solid fa-trash-can"></i></button></td></tr>`).join('');
+            }
+            if(mobileContainer) {
+                mobileContainer.innerHTML = window.appData.timeline.map((row, idx) => `
+                    <div class="bg-white border rounded-xl p-4 card-shadow space-y-1.5">
+                        <div class="flex justify-between items-center text-[10px] font-bold border-b pb-1">
+                            <span class="text-[#5483B3] font-mono"><i class="fa-regular fa-clock mr-1"></i>${row.time || '未定時段'}</span>
+                            <span class="text-slate-300">#${idx+1}</span>
+                        </div>
+                        <h3 class="text-xs font-bold text-slate-800" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'module', this.innerText)">${row.module || '點擊輸入項目'}</h3>
+                        <div class="text-[11px] text-slate-600 bg-slate-50 p-2 rounded-lg sync-pre-wrap" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'stage', this.innerText)">${row.stage || '內容與設定...'}</div>
+                    </div>
+                `).join('');
+            }
         }
 
-        // 其他功能渲染
+        // 桌次配置渲染
         window.updateTableBoxVegLightOnly = function() {
             const config = window.appData.tablesConfig; if(!config) return;
             for (let i = 1; i <= (config.totalTables || 40); i++) {
@@ -279,6 +282,27 @@
                 }
             }
         }
+        window.renderVenueTablesGrid = function() {
+            const grid = document.getElementById('venue-tables-grid'); const totalInput = document.getElementById('input-total-tables'); if (!grid || !window.appData.tablesConfig) return;
+            const config = window.appData.tablesConfig; totalInput.value = config.totalTables || 40;
+            let html = ""; for (let i = 1; i <= config.totalTables; i++) { const tData = config.tablesData ? config.tablesData[i] : null; const hasVeg = tData && tData.seats ? tData.seats.some(s => s && s.isVeg) : false; const isSelected = window.appData.selectedTable == i; html += `<button id="table-box-btn-${i}" onclick="window.selectTableForDetails(${i})" class="h-12 rounded-xl border text-xs flex flex-col items-center justify-center transition-all ${isSelected ? 'bg-[#052659] text-white border-[#052659] font-bold scale-105' : (hasVeg ? 'bg-emerald-50 text-emerald-700 border-emerald-300 font-bold shadow-inner' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50')}"><span>第 ${i} 桌</span><span id="table-veg-indicator-${i}">${hasVeg ? '<span class="text-[8px] text-emerald-500 font-bold">🟢有素</span>' : ''}</span></button>`; }
+            grid.innerHTML = html; window.renderTableSeatsControl();
+        }
+        window.adjustTotalTables = function(val) { const num = parseInt(val); if (num < 1 || num > 100) return; window.appData.tablesConfig.totalTables = num; if (window.cloudUpdateCell) window.cloudUpdateCell("tablesConfig/totalTables", num); }
+        window.selectTableForDetails = function(tableNum) { window.appData.selectedTable = tableNum; window.renderVenueTablesGrid(); }
+        window.renderTableSeatsControl = function() {
+            const box = document.getElementById('table-details-box'); const grid = document.getElementById('seats-inputs-grid'); const title = document.getElementById('selected-table-title'); if (!box || !grid || !title) return; const tNum = window.appData.selectedTable; if (!tNum || tNum > window.appData.tablesConfig.totalTables) { box.classList.add('hidden'); return; } box.classList.remove('hidden'); title.innerHTML = `正在管理：第 【${tNum}】 桌座位名單`; const tData = window.appData.tablesConfig.tablesData[tNum] || { seats: Array(10).fill({ name: "", isVeg: false }) };
+            let html = ""; for (let s = 0; s < 10; s++) { const seat = tData.seats[s] || { name: "", isVeg: false }; const isVeg = seat.isVeg || false; html += `<div id="seat-wrapper-${tNum}-${s}" class="flex items-center gap-1 bg-slate-50 border ${isVeg ? 'border-emerald-300 bg-emerald-50/50' : 'border-slate-200'} p-1.5 rounded-xl"><span class="text-[10px] font-mono text-slate-400 font-bold w-4 text-center">${s+1}</span><input type="text" id="seat-input-${tNum}-${s}" value="${seat.name || ''}" placeholder="空位" oninput="window.updateSeatName(${tNum}, ${s}, this.value)" class="w-full bg-transparent border-none text-xs focus:outline-none font-bold ${isVeg ? 'text-emerald-700' : 'text-slate-800'}"><button id="seat-veg-btn-${tNum}-${s}" onclick="window.toggleSeatVeg(${tNum}, ${s})" class="px-2 py-1 rounded-md text-[10px] font-bold border ${isVeg ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-400 border-slate-200'}">素</button></div>`; } grid.innerHTML = html;
+        }
+
+        window.updateSeatName = function(tableNum, seatIdx, val) { if(!window.appData.tablesConfig.tablesData[tableNum].seats) { window.appData.tablesConfig.tablesData[tableNum].seats = Array(10).fill({ name: "", isVeg: false }); } const currentVeg = window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx]?.isVeg || false; window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx] = { name: val, isVeg: currentVeg }; if (window.cloudUpdateCell) window.cloudUpdateCell(`tablesConfig/tablesData/${tableNum}/seats/${seatIdx}`, { name: val, isVeg: currentVeg }); }
+        window.toggleSeatVeg = function(tableNum, seatIdx) {
+            const seat = window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx] || { name: "", isVeg: false }; const nextVeg = !seat.isVeg; window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx] = { name: seat.name || "", isVeg: nextVeg };
+            const wrapper = document.getElementById(`seat-wrapper-${tableNum}-${seatIdx}`); const input = document.getElementById(`seat-input-${tableNum}-${seatIdx}`); const btn = document.getElementById(`seat-veg-btn-${tableNum}-${seatIdx}`);
+            if (wrapper && input && btn) { wrapper.className = `flex items-center gap-1 bg-slate-50 border ${nextVeg ? 'border-emerald-300 bg-emerald-50/50' : 'border-slate-200'} p-1.5 rounded-xl`; input.className = `w-full bg-transparent border-none text-xs focus:outline-none font-bold ${nextVeg ? 'text-emerald-700' : 'text-slate-800'}`; btn.className = `px-2 py-1 rounded-md text-[10px] font-bold border ${nextVeg ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-400 border-slate-200'}`; }
+            if (window.cloudUpdateCell) { window.cloudUpdateCell(`tablesConfig/tablesData/${tableNum}/seats/${seatIdx}`, { name: seat.name || "", isVeg: nextVeg }); window.updateTableBoxVegLightOnly(); window.calculateKitchenRadar(); }
+        }
+
         window.calculateKitchenRadar = function() {
             if (!window.appData || !window.appData.tablesConfig || !window.appData.tablesConfig.tablesData) return;
             let total = 0, veg = 0; const config = window.appData.tablesConfig;
@@ -290,27 +314,23 @@
         window.syncTunnelTrafficUI = function() {
             const bar = document.getElementById('tunnel-traffic-light-bar'); const icon = document.getElementById('tunnel-light-icon'); const txt = document.getElementById('tunnel-light-text'); if(!bar || !icon || !txt || !window.appData.tunnelTraffic) return;
             const color = window.appData.tunnelTraffic;
-            if (color === 'green') { bar.className = "p-5 rounded-2xl text-white flex justify-between items-center text-xs bg-emerald-950 border border-emerald-800"; txt.innerText = "🟢 絲滑暢通 | 依正常節奏優雅放人"; } 
-            else if (color === 'yellow') { bar.className = "p-5 rounded-2xl text-white flex justify-between items-center text-xs bg-amber-950 border border-amber-800"; txt.innerText = "🟡 人流減速 | 前方拍照區略微回堵"; } 
-            else if (color === 'red') { bar.className = "p-5 rounded-2xl text-white flex justify-between items-center text-xs bg-rose-950 border border-rose-800 animate-pulse"; txt.innerText = "🚨 外場暫緩放人！ | 前方大圖區嚴重堵塞"; }
-        }
-        window.renderTimelineTable = function() {
-            const desktopTbody = document.getElementById('timeline-desktop-tbody'); if(!desktopTbody || !window.appData) return;
-            desktopTbody.innerHTML = window.appData.timeline.map((row, idx) => `<tr><td class="p-3 text-center space-x-1 select-none"><button onclick="moveTimelineRow(${idx}, -1)" class="bg-slate-100 text-[#5483B3] w-6 h-6 rounded-lg"><i class="fa-solid fa-arrow-up"></i></button></td><td class="p-4 text-center font-bold text-slate-400 bg-slate-50/40">${idx + 1}</td><td class="p-4 font-bold text-[#5483B3]" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'time', this.innerText)">${row.time || ''}</td><td class="p-4 font-bold" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'module', this.innerText)">${row.module || ''}</td><td class="p-4 text-slate-600 sync-pre-wrap" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'stage', this.innerText)">${row.stage || ''}</td><td class="p-4 text-slate-600" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'pa', this.innerText)">${row.pa || ''}</td><td class="p-4 text-center"><button onclick="deleteTimelineRow(${idx})" class="text-slate-300 hover:text-rose-500"><i class="fa-solid fa-trash-can"></i></button></td></tr>`).join('');
+            if (color === 'green') { bar.className = "p-4 rounded-xl text-white flex flex-col sm:flex-row justify-between items-center bg-emerald-950 border border-emerald-800 gap-2"; txt.innerText = "🟢 絲滑暢通 | 依正常節奏優雅放人"; } 
+            else if (color === 'yellow') { bar.className = "p-4 rounded-xl text-white flex flex-col sm:flex-row justify-between items-center bg-amber-950 border border-amber-800 gap-2"; txt.innerText = "🟡 人流減速 | 前方拍照區略微回堵"; } 
+            else if (color === 'red') { bar.className = "p-4 rounded-xl text-white flex flex-col sm:flex-row justify-between items-center bg-rose-950 border border-rose-800 animate-pulse gap-2"; txt.innerText = "🚨 外場暫緩放人！ | 前方大圖區嚴重堵塞"; }
         }
         window.renderAwardsFlowTable = function() {
             const tbody = document.getElementById('awards-flow-tbody'); if(!tbody || !window.appData.awardsConfig) return;
-            tbody.innerHTML = window.appData.awardsConfig.map((row, idx) => `<tr><td class="p-4 font-bold" contenteditable="true" onblur="window.updateAwardCell(${idx}, 'name', this.innerText)">${row.name}</td><td class="p-4 text-amber-700" contenteditable="true" onblur="window.updateAwardCell(${idx}, 'type', this.innerText)">${row.type}</td><td class="p-4 text-center"><input type="checkbox" ${row.step1 ? 'checked' : ''} onchange="window.toggleAwardStep(${idx}, 'step1')"></td><td class="p-4 text-center"><input type="checkbox" ${row.step2 ? 'checked' : ''} onchange="window.toggleAwardStep(${idx}, 'step2')"></td><td class="p-4" contenteditable="true" onblur="window.updateAwardCell(${idx}, 'note', this.innerText)">${row.note || ''}</td><td class="p-4 text-center"><button onclick="window.deleteAwardRow(${idx})"><i class="fa-solid fa-trash-can text-slate-300"></i></button></td></tr>`).join('');
+            tbody.innerHTML = window.appData.awardsConfig.map((row, idx) => `<tr><td class="p-3 font-bold" contenteditable="true" onblur="window.updateAwardCell(${idx}, 'name', this.innerText)">${row.name}</td><td class="p-3 text-amber-700 font-semibold" contenteditable="true" onblur="window.updateAwardCell(${idx}, 'type', this.innerText)">${row.type}</td><td class="p-3 text-center"><input type="checkbox" ${row.step1 ? 'checked' : ''} onchange="window.toggleAwardStep(${idx}, 'step1')"></td><td class="p-3 text-center"><input type="checkbox" ${row.step2 ? 'checked' : ''} onchange="window.toggleAwardStep(${idx}, 'step2')"></td><td class="p-3" contenteditable="true" onblur="window.updateAwardCell(${idx}, 'note', this.innerText)">${row.note || ''}</td><td class="p-3 text-center"><button onclick="window.deleteAwardRow(${idx})"><i class="fa-solid fa-trash-can text-slate-300"></i></button></td></tr>`).join('');
         }
         window.renderAssetsMilitaryTable = function() {
             const tbody = document.getElementById('assets-military-tbody'); if(!tbody || !window.appData.assetsConfig) return;
-            tbody.innerHTML = window.appData.assetsConfig.map((row, idx) => `<tr><td class="p-4 font-bold" contenteditable="true" onblur="window.updateAssetCell(${idx}, 'name', this.innerText)">${row.name}</td><td class="p-4" contenteditable="true" onblur="window.updateAssetCell(${idx}, 'type', this.innerText)">${row.type}</td><td class="p-4 text-[#5483B3]" contenteditable="true" onblur="window.updateAssetCell(${idx}, 'time', this.innerText)">${row.time}</td><td class="p-4 text-center"><input type="text" value="${row.url || ''}" oninput="window.updateAssetCell(${idx}, 'url', this.value)" class="border p-1 rounded w-32 text-xs"><a href="${row.url || '#'}" target="_blank" class="bg-[#052659] text-white p-1 px-2 rounded ml-1">下載</a></td><td class="p-4 text-center"><button onclick="window.deleteAssetRow(${idx})"><i class="fa-solid fa-trash-can text-slate-300"></i></button></td></tr>`).join('');
+            tbody.innerHTML = window.appData.assetsConfig.map((row, idx) => `<tr><td class="p-3 font-bold" contenteditable="true" onblur="window.updateAssetCell(${idx}, 'name', this.innerText)">${row.name}</td><td class="p-3 text-slate-500" contenteditable="true" onblur="window.updateAssetCell(${idx}, 'type', this.innerText)">${row.type}</td><td class="p-3 text-[#5483B3]" contenteditable="true" onblur="window.updateAssetCell(${idx}, 'time', this.innerText)">${row.time}</td><td class="p-3 text-center"><div class="flex items-center gap-1"><input type="text" value="${row.url || ''}" oninput="window.updateAssetCell(${idx}, 'url', this.value)" class="border p-1 rounded w-28 text-[11px]"><a href="${row.url || '#'}" target="_blank" class="bg-[#052659] text-white p-1 px-2 rounded text-[11px]">載</a></div></td><td class="p-3 text-center"><button onclick="window.deleteAssetRow(${idx})"><i class="fa-solid fa-trash-can text-slate-300"></i></button></td></tr>`).join('');
         }
         window.renderChecklist = function() {
             const box = document.getElementById('checklist-box'); if(!box) return;
-            box.innerHTML = window.appData.checklist.map((item, idx) => `<div class="flex items-center p-4 gap-4"><input type="checkbox" ${item.done ? 'checked' : ''} onchange="window.toggleCheckItem(${idx})"><div class="flex-1 text-xs font-bold ${item.done ? 'line-through text-slate-400' : ''}" contenteditable="true" onblur="window.updateCheckCellData(${idx}, 'item', this.innerText)">${item.item}</div></div>`).join('');
+            box.innerHTML = window.appData.checklist.map((item, idx) => `<div class="flex items-center p-3 gap-3"><input type="checkbox" ${item.done ? 'checked' : ''} onchange="window.toggleCheckItem(${idx})"><div class="flex-1 text-xs font-bold ${item.done ? 'line-through text-slate-400' : ''}" contenteditable="true" onblur="window.updateCheckCellData(${idx}, 'item', this.innerText)">${item.item}</div></div>`).join('');
         }
-        window.renderTeamModules = function(panel) { const grid = document.getElementById('team-modules-grid'); if(!grid) return; grid.innerHTML = (panel.modules || []).map((mod, mIdx) => `<div class="bg-white border rounded-xl p-4 shadow-sm"><h4 class="text-xs font-bold text-[#052659] mb-1">${mod.title}</h4><div class="text-xs text-slate-500 bg-slate-50 p-2 rounded-lg">${mod.content}</div></div>`).join(''); }
+        window.renderTeamModules = function(panel) { const grid = document.getElementById('team-modules-grid'); if(!grid) return; grid.innerHTML = (panel.modules || []).map((mod, mIdx) => `<div class="bg-white border rounded-xl p-3 shadow-sm"><h4 class="text-xs font-bold text-[#052659] mb-1">${mod.title}</h4><div class="text-xs text-slate-500 bg-slate-50 p-2 rounded-lg">${mod.content}</div></div>`).join(''); }
         window.updateTeamMembersData = function(panelId, value) { const pIdx = window.appData.panels.findIndex(p => p.id === panelId); if (pIdx !== -1) { window.appData.panels[pIdx].members = value; if (window.cloudUpdateCell) window.cloudUpdateCell(`panels/${pIdx}/members`, value); } }
         window.addNewTimelineRow = function() { window.appData.timeline.push({ time: "時段", module: "新節目" }); if (window.cloudSaveEngine) window.cloudSaveEngine(window.appData); }
         window.deleteTimelineRow = function(index) { window.appData.timeline.splice(index, 1); if (window.cloudSaveEngine) window.cloudSaveEngine(window.appData); }
