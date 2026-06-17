@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght=400;600;700&family=Noto+Sans+TC:wght=400;500;700&display=swap');
         :root {
             --color-bg: #F8FAFC;
             --color-primary: #5483B3;
@@ -53,7 +53,7 @@
             </div>
             <div>
                 <h1 class="text-base font-bold tracking-tight text-[#052659]">TS 2026 年度盛會智慧中樞</h1>
-                <p class="text-[9px] uppercase font-bold tracking-widest text-slate-400">📡 雲端直連 100% 核心修復版</p>
+                <p class="text-[9px] uppercase font-bold tracking-widest text-slate-400">📡 全權限通電解鎖版</p>
             </div>
         </div>
         <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
@@ -115,16 +115,14 @@
                 <div class="bg-white border border-slate-200 rounded-2xl p-5 card-shadow flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
                         <h2 class="text-sm font-bold text-[#052659] flex items-center gap-2"><i class="fa-solid fa-table-cells text-[#5483B3]"></i> 主會場桌次與吃素管理盤</h2>
-                        <p class="text-xs text-slate-400 mt-0.5">規格：18.2m x 24.1m | 支援連點與連續打字輸入名單</p>
                     </div>
                     <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200">
                         <label class="text-xs font-bold text-slate-500">大會總桌數：</label>
-                        <input type="number" id="input-total-tables" min="1" max="100" class="w-16 bg-white border border-slate-300 rounded-lg p-1 text-center text-xs font-bold text-[#052659]" onchange="window.adjustTotalTables(this.value)">
+                        <input type="number" id="input-total-tables" min="1" max="100" class="w-16 bg-white border border-slate-300 rounded-lg p-1 text-center text-xs font-bold text-[#052659]" oninput="window.adjustTotalTables(this.value)">
                         <span class="text-xs text-slate-400">桌</span>
                     </div>
                 </div>
                 <div class="grid grid-cols-4 sm:grid-cols-8 lg:grid-cols-10 gap-3" id="venue-tables-grid"></div>
-                
                 <div id="table-details-box" class="bg-white border border-slate-200 rounded-2xl p-6 card-shadow hidden">
                     <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
                         <h3 class="text-xs font-bold text-[#052659]" id="selected-table-title">🎯 座位名單管理</h3>
@@ -136,7 +134,7 @@
             <div id="panel-time-tunnel" class="main-panel hidden space-y-6">
                 <div id="tunnel-traffic-light-bar" class="p-5 rounded-2xl card-shadow text-white flex flex-col sm:flex-row justify-between items-center gap-4 transition-all bg-emerald-950 border border-emerald-800">
                     <div class="flex items-center gap-3">
-                        <div id="tunnel-light-icon" class="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-lg shadow-lg shadow-emerald-500/20 animate-pulse"><i class="fa-solid fa-traffic-light"></i></div>
+                        <div id="tunnel-light-icon" class="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-lg animate-pulse"><i class="fa-solid fa-traffic-light"></i></div>
                         <div>
                             <h3 class="text-xs font-bold text-slate-100">外場進場流速戰術控制燈</h3>
                             <p id="tunnel-light-text" class="text-[10px] text-emerald-300">當前狀態：🟢 絲滑暢通 | 報到處依正常節奏優雅放人</p>
@@ -150,13 +148,12 @@
                 </div>
 
                 <div class="bg-white border border-slate-200 rounded-2xl p-5 card-shadow">
-                    <h2 class="text-base font-bold text-[#052659] flex items-center gap-2"><i class="fa-solid fa-road text-[#5483B3]"></i> 外場｜68 米沈浸式時光隧道進場軌道</h2>
-                    <p class="text-xs text-slate-400 mt-1">精準規格：長 68.0m x 寬 8.8m | 工業風低天井轉折長廊設計</p>
+                    <h2 class="text-base font-bold text-[#052659] flex items-center gap-2"><i class="fa-solid fa-road text-[#5483B3]"></i> 外場｜68 米沈浸式時光隧道</h2>
                 </div>
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-white card-shadow relative overflow-hidden min-h-[250px] flex flex-col justify-between">
                     <div class="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-[#5483B3]/10 to-transparent w-32"></div>
                     <div class="flex justify-between items-center text-xs text-slate-500 border-b border-slate-800 pb-2">
-                        <span>🚪 廊道起點 (報到接待處)</span>
+                        <span>🚪 廊道起點</span>
                         <span class="font-mono tracking-widest text-[#C1E8FF] font-bold">總長度 68 METERS</span>
                         <span>會場大門 🏛️</span>
                     </div>
@@ -194,9 +191,7 @@
 
             <div id="panel-assets-military" class="main-panel hidden space-y-6">
                 <div class="flex justify-between items-center">
-                    <div>
-                        <h2 class="text-base font-bold text-[#052659] flex items-center gap-2"><i class="fa-solid Kiss-cubes text-blue-500"></i> 📦 大會現場視覺資產與播片軍火庫</h2>
-                    </div>
+                    <h2 class="text-base font-bold text-[#052659] flex items-center gap-2"><i class="fa-solid fa-cubes text-blue-500"></i> 📦 大會現場視覺資產與播片軍火庫</h2>
                     <button onclick="window.addNewAssetRow()" class="bg-[#5483B3] text-white text-xs px-3 py-1.5 rounded-xl">＋ 補給新軍火</button>
                 </div>
                 <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden card-shadow">
@@ -242,7 +237,7 @@
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyBQdnW16U1OxpDR05hvAv2fcW4aMKXsyfM",
+            apiKey: "AIzaSyBQdnW16U1OxpDR05hvAv2fcZ4aMKXsyfM",
             authDomain: "test-fee8d.firebaseapp.com",
             projectId: "test-fee8d",
             storageBucket: "test-fee8d.firebasestorage.app",
@@ -259,7 +254,7 @@
             let savedUser = localStorage.getItem('ts_auth_user');
             if (savedKey !== CORRECT_KEY || !savedUser) { document.getElementById('auth-overlay').classList.remove('hidden'); return false; }
             window.currentUser = savedUser;
-            document.getElementById('display-user-name').innerText = `👤 指揮官：${savedUser}`;
+            document.getElementById('display-user-name').innerText = `👤 當前指揮官：${savedUser}`;
             return true;
         }
 
@@ -283,7 +278,7 @@
                 window.cloudSaveEngine = function(data) { set(dataRef, data); };
                 window.cloudUpdateCell = function(path, value) { set(ref(window.cloudDb, `ts_2026_realtime_data/${path}`), value); };
 
-                // 🔴 直連雲端大腦監聽
+                // 📡 全力直連
                 onValue(dataRef, (snapshot) => {
                     const cloudData = snapshot.val();
                     if (cloudData) {
@@ -294,15 +289,15 @@
                         }
                         if (!cloudData.awardsConfig) cloudData.awardsConfig = [];
                         if (!cloudData.assetsConfig) cloudData.assetsConfig = [];
-                        if (!cloudData.tunnelTraffic) cloudData.tunnelTraffic = "green"; // 預設暢通
+                        if (!cloudData.tunnelTraffic) cloudData.tunnelTraffic = "green";
 
                         const corePanels = [
-                            { id: "timeline", name: "大會主細流", icon: "fa-clock-history", type: "system" },
-                            { id: "main_venue", name: "🏛️ 主會場桌位管理", icon: "fa-table-cells", type: "system" },
-                            { id: "time_tunnel", name: "🌌 68米時光隧道", icon: "fa-road", type: "system" },
-                            { id: "awards_flow", name: "🏆 頒獎道具流向盤", icon: "fa-trophy", type: "system" },
-                            { id: "assets_military", name: "📦 大會資產軍火庫", icon: "fa-cubes", type: "system" },
-                            { id: "checklist", name: "物資防線檢核", icon: "fa-list-check", type: "system" }
+                            { id: "timeline", name: "大會主細流", icon: "fa-clock-history" },
+                            { id: "main_venue", name: "🏛️ 主會場桌位管理", icon: "fa-table-cells" },
+                            { id: "time_tunnel", name: "🌌 68米時光隧道", icon: "fa-road" },
+                            { id: "awards_flow", name: "🏆 頒獎道具流向盤", icon: "fa-trophy" },
+                            { id: "assets_military", name: "📦 大會資產軍火庫", icon: "fa-cubes" },
+                            { id: "checklist", name: "物資防線檢核", icon: "fa-list-check" }
                         ];
 
                         const cloudPanels = cloudData.panels || [];
@@ -317,21 +312,10 @@
 
                         window.renderSidebarMenu();
                         window.renderActivePanelOnly();
-                        window.syncTunnelTrafficUI(); // 同步人流紅綠燈
+                        window.syncTunnelTrafficUI();
+                        window.calculateKitchenRadar();
                         
                         document.getElementById('cloud-status-badge').innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span> 雲端連線成功`;
-                    } else {
-                        // 初始化全新的大數據空殼骨架
-                        const initData = {
-                            timeline: [{ time: "09:00 - 12:00", module: "硬體進場與點收", stage: "宴會廳對接", equip: "", pa: "", photo: "", note: "" }],
-                            checklist: [],
-                            tablesConfig: { totalTables: 40, tablesData: {} },
-                            awardsConfig: [],
-                            assetsConfig: [],
-                            tunnelTraffic: "green"
-                        };
-                        for(let i=1; i<=100; i++) { initData.tablesConfig.tablesData[i] = { seats: Array(10).fill({ name: "", isVeg: false }) }; }
-                        window.cloudSaveEngine(initData);
                     }
                 });
             } catch (e) { console.error(e); }
@@ -371,38 +355,8 @@
             });
         }
 
-        window.switchTab = function(tabId) { 
-            window.appData.currentTab = tabId; localStorage.setItem('ts_v3_current_tab', tabId); window.renderSidebarMenu(); window.renderActivePanelOnly(); 
-        }
+        window.switchTab = function(tabId) { window.appData.currentTab = tabId; localStorage.setItem('ts_v3_current_tab', tabId); window.renderSidebarMenu(); window.renderActivePanelOnly(); }
 
-        // 🔴 ⚡ 時光隧道紅綠燈即時雲端同步邏輯
-        window.setTunnelTraffic = function(color) {
-            window.appData.tunnelTraffic = color;
-            if (window.cloudUpdateCell) window.cloudUpdateCell("tunnelTraffic", color);
-        }
-        window.syncTunnelTrafficUI = function() {
-            const bar = document.getElementById('tunnel-traffic-light-bar');
-            const icon = document.getElementById('tunnel-light-icon');
-            const txt = document.getElementById('tunnel-light-text');
-            if(!bar || !icon || !txt || !window.appData.tunnelTraffic) return;
-            
-            const color = window.appData.tunnelTraffic;
-            if (color === 'green') {
-                bar.className = "p-5 rounded-2xl card-shadow text-white flex flex-col sm:flex-row justify-between items-center gap-4 transition-all bg-emerald-950 border border-emerald-800";
-                icon.className = "w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-lg shadow-lg shadow-emerald-500/30 animate-pulse";
-                txt.innerText = "當前狀態：🟢 絲滑暢通 | 報到處依正常節奏優雅放人";
-            } else if (color === 'yellow') {
-                bar.className = "p-5 rounded-2xl card-shadow text-white flex flex-col sm:flex-row justify-between items-center gap-4 transition-all bg-amber-950 border border-amber-800";
-                icon.className = "w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center text-lg shadow-lg shadow-amber-500/30 animate-pulse";
-                txt.innerText = "當前狀態：🟡 人流減速 | 前方拍照區略微回堵，外場請適度放慢放人節奏";
-            } else if (color === 'red') {
-                bar.className = "p-5 rounded-2xl card-shadow text-white flex flex-col sm:flex-row justify-between items-center gap-4 transition-all bg-rose-950 border border-rose-800 animate-pulse";
-                icon.className = "w-10 h-10 rounded-full bg-rose-500 flex items-center justify-center text-lg shadow-lg shadow-rose-500/30 animate-bounce";
-                txt.innerText = "當前狀態：🚨 外場暫緩放人！ | 前方大圖區嚴重堵塞，入口處請立刻暫停放人！";
-            }
-        }
-
-        // 桌次配置渲染
         window.updateTableBoxVegLightOnly = function() {
             const config = window.appData.tablesConfig; if(!config) return;
             for (let i = 1; i <= (config.totalTables || 40); i++) {
@@ -416,18 +370,22 @@
                 }
             }
         }
+
         window.renderVenueTablesGrid = function() {
             const grid = document.getElementById('venue-tables-grid'); const totalInput = document.getElementById('input-total-tables'); if (!grid || !window.appData.tablesConfig) return;
             const config = window.appData.tablesConfig; totalInput.value = config.totalTables || 40;
             let html = ""; for (let i = 1; i <= config.totalTables; i++) { const tData = config.tablesData ? config.tablesData[i] : null; const hasVeg = tData && tData.seats ? tData.seats.some(s => s && s.isVeg) : false; const isSelected = window.appData.selectedTable == i; let style = isSelected ? 'bg-[#052659] text-white border-[#052659] font-bold scale-105' : (hasVeg ? 'bg-emerald-50 text-emerald-700 border-emerald-300 font-bold shadow-inner' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'); html += `<button id="table-box-btn-${i}" onclick="window.selectTableForDetails(${i})" class="h-12 rounded-xl border text-xs flex flex-col items-center justify-center transition-all ${style}"><span>第 ${i} 桌</span><span id="table-veg-indicator-${i}">${hasVeg ? '<span class="text-[8px] text-emerald-500 font-bold">🟢有素</span>' : ''}</span></button>`; }
             grid.innerHTML = html; window.renderTableSeatsControl();
         }
+
         window.adjustTotalTables = function(val) { const num = parseInt(val); if (num < 1 || num > 100) return; window.appData.tablesConfig.totalTables = num; if (window.cloudUpdateCell) { window.cloudUpdateCell("tablesConfig/totalTables", num); } }
         window.selectTableForDetails = function(tableNum) { window.appData.selectedTable = tableNum; window.renderVenueTablesGrid(); }
+        
         window.renderTableSeatsControl = function() {
             const box = document.getElementById('table-details-box'); const grid = document.getElementById('seats-inputs-grid'); const title = document.getElementById('selected-table-title'); if (!box || !grid || !title) return; const tNum = window.appData.selectedTable; if (!tNum || tNum > window.appData.tablesConfig.totalTables) { box.classList.add('hidden'); return; } box.classList.remove('hidden'); title.innerHTML = `正在管理：第 【${tNum}】 桌座位名單`; const tData = window.appData.tablesConfig.tablesData[tNum] || { seats: Array(10).fill({ name: "", isVeg: false }) }; if(!tData.seats) tData.seats = Array(10).fill({ name: "", isVeg: false });
             let html = ""; for (let s = 0; s < 10; s++) { const seat = tData.seats[s] || { name: "", isVeg: false }; const isVeg = seat.isVeg || false; html += `<div id="seat-wrapper-${tNum}-${s}" class="flex items-center gap-1 bg-slate-50 border ${isVeg ? 'border-emerald-300 bg-emerald-50/50' : 'border-slate-200'} p-1.5 rounded-xl"><span class="text-[10px] font-mono text-slate-400 font-bold w-4 text-center">${s+1}</span><input type="text" id="seat-input-${tNum}-${s}" value="${seat.name || ''}" placeholder="空位" oninput="window.updateSeatName(${tNum}, ${s}, this.value)" class="w-full bg-transparent border-none text-xs focus:outline-none font-bold ${isVeg ? 'text-emerald-700' : 'text-slate-800'}"><button id="seat-veg-btn-${tNum}-${s}" onclick="window.toggleSeatVeg(${tNum}, ${s})" class="px-2 py-1 rounded-lg text-[10px] font-bold border ${isVeg ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-400 border-slate-200'}">素</button></div>`; } grid.innerHTML = html;
         }
+
         window.updateSeatName = function(tableNum, seatIdx, val) { if(!window.appData.tablesConfig.tablesData[tableNum].seats) { window.appData.tablesConfig.tablesData[tableNum].seats = Array(10).fill({ name: "", isVeg: false }); } const currentVeg = window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx]?.isVeg || false; window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx] = { name: val, isVeg: currentVeg }; if (window.cloudUpdateCell) { window.cloudUpdateCell(`tablesConfig/tablesData/${tableNum}/seats/${seatIdx}`, { name: val, isVeg: currentVeg }); } }
         window.toggleSeatVeg = function(tableNum, seatIdx) { 
             const seat = window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx] || { name: "", isVeg: false }; const nextVeg = !seat.isVeg; window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx] = { name: seat.name || "", isVeg: nextVeg }; 
@@ -435,6 +393,7 @@
             if (wrapper && input && btn) { wrapper.className = `flex items-center gap-1 bg-slate-50 border ${nextVeg ? 'border-emerald-300 bg-emerald-50/50' : 'border-slate-200'} p-1.5 rounded-xl`; input.className = `w-full bg-transparent border-none text-xs focus:outline-none font-bold ${nextVeg ? 'text-emerald-700' : 'text-slate-800'}`; btn.className = `px-2 py-1 rounded-lg text-[10px] font-bold border transition-all ${nextVeg ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-400 border-slate-200'}`; }
             if (window.cloudUpdateCell) { window.cloudUpdateCell(`tablesConfig/tablesData/${tableNum}/seats/${seatIdx}`, { name: seat.name || "", isVeg: nextVeg }); window.updateTableBoxVegLightOnly(); window.calculateKitchenRadar(); } 
         }
+
         window.calculateKitchenRadar = function() {
             if (!window.appData || !window.appData.tablesConfig || !window.appData.tablesConfig.tablesData) return;
             let total = 0, veg = 0; const config = window.appData.tablesConfig;
@@ -443,7 +402,6 @@
             if (tEl && mEl && vEl) { tEl.innerText = total; vEl.innerText = veg; mEl.innerText = total - veg; }
         }
 
-        // 細流與其他表單渲染
         window.renderTimelineTable = function() {
             const desktopTbody = document.getElementById('timeline-desktop-tbody'); if(!desktopTbody || !window.appData) return;
             desktopTbody.innerHTML = window.appData.timeline.map((row, idx) => {
@@ -467,6 +425,22 @@
         window.renderChecklist = function() { const box = document.getElementById('checklist-box'); if(!box) return; box.innerHTML = window.appData.checklist.map((item, idx) => `<div class="flex items-center p-4 gap-4 ${item.done ? 'bg-slate-50 opacity-50' : ''}"><input type="checkbox" ${item.done ? 'checked' : ''} onchange="window.toggleCheckItem(${idx})" class="w-4 h-4 rounded border-slate-300 text-[#5483B3] focus:ring-0"><div class="flex-1 text-xs font-bold text-slate-800 ${item.done ? 'line-through text-slate-400' : ''} sync-pre-wrap" contenteditable="true" onblur="window.updateCheckCellData(${idx}, 'item', this.innerText)">${item.item}</div><span class="bg-blue-50 text-[#5483B3] text-[10px] px-2 py-0.5 rounded border border-[#5483B3]/20" contenteditable="true" onblur="window.updateCheckCellData(${idx}, 'team', this.innerText)">${item.team}</span><div class="flex-1 text-xs text-slate-400 hidden sm:block sync-pre-wrap" contenteditable="true" onblur="window.updateCheckCellData(${idx}, 'note', this.innerText)">${item.note}</div></div>`).join(''); }
         window.renderTeamModules = function(panel) { const grid = document.getElementById('team-modules-grid'); if(!grid) return; if(!panel.modules) panel.modules = []; grid.innerHTML = panel.modules.map((mod, mIdx) => `<div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm relative group"><div class="flex justify-between items-center mb-2"><h4 class="text-xs font-bold text-[#052659]" id="mod-title-${panel.id}-${mIdx}" contenteditable="true" onblur="window.updateModuleCellData('${panel.id}', ${mIdx}, 'title', this.innerText)">${mod.title}</h4></div><div class="text-xs text-slate-500 leading-relaxed bg-slate-50 p-2 rounded-lg min-h-[50px] sync-pre-wrap" id="mod-content-${panel.id}-${mIdx}" contenteditable="true" onblur="window.updateModuleCellData('${panel.id}', ${mIdx}, 'content', this.innerText)">${mod.content}</div></div>`).join(''); }
 
+        window.setTunnelTraffic = function(color) { window.appData.tunnelTraffic = color; if (window.cloudUpdateCell) window.cloudUpdateCell("tunnelTraffic", color); }
+        window.syncTunnelTrafficUI = function() {
+            const bar = document.getElementById('tunnel-traffic-light-bar'); const icon = document.getElementById('tunnel-light-icon'); const txt = document.getElementById('tunnel-light-text'); if(!bar || !icon || !txt || !window.appData.tunnelTraffic) return;
+            const color = window.appData.tunnelTraffic;
+            if (color === 'green') { bar.className = "p-5 rounded-2xl card-shadow text-white flex flex-col sm:flex-row justify-between items-center gap-4 transition-all bg-emerald-950 border border-emerald-800"; icon.className = "w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-lg shadow-lg shadow-emerald-500/30 animate-pulse"; txt.innerText = "當前狀態：🟢 絲滑暢通 | 報到處依正常節奏優雅放人"; } 
+            else if (color === 'yellow') { bar.className = "p-5 rounded-2xl card-shadow text-white flex flex-col sm:flex-row justify-between items-center gap-4 transition-all bg-amber-950 border border-amber-800"; icon.className = "w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center text-lg shadow-lg shadow-amber-500/30 animate-pulse"; txt.innerText = "當前狀態：🟡 人流減速 | 前方拍照區略微回堵，外場請適度放慢放人節奏"; } 
+            else if (color === 'red') { bar.className = "p-5 rounded-2xl card-shadow text-white flex flex-col sm:flex-row justify-between items-center gap-4 transition-all bg-rose-950 border border-rose-800 animate-pulse"; icon.className = "w-10 h-10 rounded-full bg-rose-500 flex items-center justify-center text-lg shadow-lg shadow-rose-500/30 animate-bounce"; txt.innerText = "當前狀態：🚨 外場暫緩放人！ | 前方大圖區嚴重堵塞，入口處請立刻暫停放人！"; }
+        }
+
+        window.updateAwardCell = function(idx, field, val) { window.appData.awardsConfig[idx][field] = val; if(window.cloudUpdateCell) window.cloudUpdateCell(`awardsConfig/${idx}/${field}`, val); }
+        window.toggleAwardStep = function(idx, field) { window.appData.awardsConfig[idx][field] = !window.appData.awardsConfig[idx][field]; if(window.cloudUpdateCell) window.cloudUpdateCell(`awardsConfig/${idx}/${field}`, window.appData.awardsConfig[idx][field]); }
+        window.addNewAwardRow = function() { if(!window.appData.awardsConfig) window.appData.awardsConfig = []; window.appData.awardsConfig.push({ id: Date.now(), name: "新大會獎項", type: "🏆 數量內容", step1: false, step2: false, note: "交接備忘錄..." }); if(window.cloudSaveEngine) window.cloudSaveEngine(window.appData); }
+        window.deleteAwardRow = function(idx) { if(confirm("確定刪除此獎項流向？")) { window.appData.awardsConfig.splice(idx, 1); if(window.cloudSaveEngine) window.cloudSaveEngine(window.appData); } }
+        window.updateAssetCell = function(idx, field, val) { window.appData.assetsConfig[idx][field] = val; if(window.cloudUpdateCell) window.cloudUpdateCell(`assetsConfig/${idx}/${field}`, val); }
+        window.addNewAssetRow = function() { if(!window.appData.assetsConfig) window.appData.assetsConfig = []; window.appData.assetsConfig.push({ id: Date.now(), name: "新官方標準大會檔案", type: "🎬 格式", time: "時程切入CUE點", url: "" }); if(window.cloudSaveEngine) window.cloudSaveEngine(window.appData); }
+        window.deleteAssetRow = function(idx) { if(confirm("確定移除此軍火檔案？")) { window.appData.assetsConfig.splice(idx, 1); if(window.cloudSaveEngine) window.cloudSaveEngine(window.appData); } }
         window.updateTimelineCellData = function(index, field, value) { window.appData.timeline[index][field] = value; if (window.cloudUpdateCell) { window.cloudUpdateCell(`timeline/${index}/${field}`, value); } }
         window.updateTeamMembersData = function(panelId, value) { const pIdx = window.appData.panels.findIndex(p => p.id === panelId); if (pIdx !== -1) { window.appData.panels[pIdx].members = value; if (window.cloudUpdateCell) { window.cloudUpdateCell(`panels/${pIdx}/members`, value); } } }
         window.updateModuleCellData = function(panelId, mIdx, field, value) { const pIdx = window.appData.panels.findIndex(p => p.id === panelId); if (pIdx !== -1) { window.appData.panels[pIdx].modules[mIdx][field] = value; if (window.cloudUpdateCell) { window.cloudUpdateCell(`panels/${pIdx}/modules/${mIdx}/${field}`, value); } } }
@@ -476,12 +450,6 @@
         window.toggleCheckItem = function(idx) { window.appData.checklist[idx].done = !window.appData.checklist[idx].done; if (window.cloudUpdateCell) window.cloudUpdateCell(`checklist/${idx}/done`, window.appData.checklist[idx].done); }
         window.updateCheckCellData = function(idx, field, val) { window.appData.checklist[idx][field] = val; if (window.cloudUpdateCell) window.cloudUpdateCell(`checklist/${idx}/${field}`, val); }
         window.addNewChecklistItem = function() { window.appData.checklist.push({ id: Date.now(), done: false, item: "新物資項目", team: "主控組", note: "點擊修改..." }); if (window.cloudSaveEngine) { window.cloudSaveEngine(window.appData); } }
-        window.addNewAssetRow = function() { if(!window.appData.assetsConfig) window.appData.assetsConfig = []; window.appData.assetsConfig.push({ id: Date.now(), name: "新官方標準檔案", type: "🎬 格式", time: "時程切入CUE點", url: "" }); if(window.cloudSaveEngine) window.cloudSaveEngine(window.appData); }
-        window.deleteAssetRow = function(idx) { if(confirm("確定移除此軍火檔案？")) { window.appData.assetsConfig.splice(idx, 1); if(window.cloudSaveEngine) window.cloudSaveEngine(window.appData); } }
-        window.addNewAwardRow = function() { if(!window.appData.awardsConfig) window.appData.awardsConfig = []; window.appData.awardsConfig.push({ id: Date.now(), name: "新獎項名稱", type: "🏆 數量內容", step1: false, step2: false, note: "交接備忘錄..." }); if(window.cloudSaveEngine) window.cloudSaveEngine(window.appData); }
-        window.deleteAwardRow = function(idx) { if(confirm("確定刪除此獎項流向？")) { window.appData.awardsConfig.splice(idx, 1); if(window.cloudSaveEngine) window.cloudSaveEngine(window.appData); } }
-
-        document.addEventListener("DOMContentLoaded", () => { window.checkAuthAndRun(); });
     </script>
 </body>
 </html>
