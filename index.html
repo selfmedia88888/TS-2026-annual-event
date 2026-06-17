@@ -10,7 +10,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap');
         body { font-family: 'Inter', 'Noto Sans TC', sans-serif; background-color: #F8FAFC; color: #1e293b; }
         [contenteditable="true"] { white-space: pre-wrap !important; word-break: break-word !important; }
-        [contenteditable="true"]:focus { outline: 2px solid #5483B3; background-color: #ffffff; }
+        [contenteditable="true"]:focus { outline: 2px solid #5483B3; background-color: #ffffff; box-shadow: 0 0 0 4px rgba(84, 131, 179, 0.15); border-radius: 6px; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col pb-32">
@@ -27,7 +27,7 @@
     <header class="border-b bg-white px-6 py-4 flex justify-between items-center shadow-sm">
         <div>
             <h1 class="text-base font-bold text-[#052659]">TS 2026 年度盛會智慧中樞</h1>
-            <p class="text-[9px] text-emerald-600 font-bold">📡 數據庫直接打撈・100% 舊文字復活定案版</p>
+            <p class="text-[9px] text-emerald-600 font-bold">📡 舊版動態完全體・全組方塊編輯解鎖版</p>
         </div>
         <div class="flex items-center gap-3 text-xs text-slate-500">
             <span id="display-user-name">👤 載入中...</span>
@@ -98,7 +98,6 @@
                 window.cloudDb = db;
                 window.cloudUpdateCell = function(path, value) { set(ref(window.cloudDb, `ts_2026_realtime_data/${path}`), value); };
 
-                // 🔴 ⚡ 動態大撈取：不硬寫死陣列長度，雲端有幾組，就直接畫幾組，行銷組保證在！
                 onValue(dataRef, (snapshot) => {
                     const cloudData = snapshot.val();
                     if (cloudData) {
@@ -121,7 +120,6 @@
             if(tabId === 'timeline') {
                 document.getElementById('panel-timeline').classList.remove('hidden'); renderTimelineTable();
             } else {
-                // 動態匹配
                 const panelData = window.appData.panels.find(p => p.id === tabId);
                 const pIdx = window.appData.panels.findIndex(p => p.id === tabId);
                 if(panelData) {
@@ -146,14 +144,19 @@
         }
         window.switchTab = function(tabId) { window.appData.currentTab = tabId; window.renderSidebarMenu(); window.renderActivePanelOnly(); }
 
+        // 🔴 ⚡ 終極手術：動態畫出卡片時，注入 contenteditable="true" 與寫入神經，全面解除封印！
         window.renderTeamModules = function(panel, pIdx) {
             const grid = document.getElementById('team-modules-grid'); if(!grid) return;
             grid.innerHTML = (panel.modules || []).map((mod, mIdx) => `
-                <div class="bg-white border rounded-xl p-4 shadow-sm">
-                    <h4 class="text-xs font-bold text-[#052659] mb-2" contenteditable="true" onblur="window.updateModuleCell(${pIdx}, ${mIdx}, 'title', this.innerText)">${mod.title || ''}</h4>
+                <div class="bg-white border rounded-xl p-4 shadow-sm relative">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="text-xs font-bold text-[#052659]" contenteditable="true" onblur="window.updateModuleCell(${pIdx}, ${mIdx}, 'title', this.innerText)">${mod.title || '任務名稱'}</h4>
+                        <button onclick="window.deleteModuleFromTeam(${pIdx}, ${mIdx})" class="text-slate-300 hover:text-rose-500 text-xs"><i class="fa-solid fa-circle-xmark"></i></button>
+                    </div>
                     <div class="text-xs text-slate-600 bg-slate-50 p-3 rounded-lg focus:outline-none" contenteditable="true" onblur="window.updateModuleCell(${pIdx}, ${mIdx}, 'content', this.innerText)">${mod.content || ''}</div>
                 </div>`).join('');
         }
+        
         window.updateModuleCell = function(pIdx, mIdx, field, val) { if(window.cloudUpdateCell) window.cloudUpdateCell(`panels/${pIdx}/modules/${mIdx}/${field}`, val); }
         window.addNewModuleToTeam = function() {
             const tabId = window.appData.currentTab; const pIdx = window.appData.panels.findIndex(p => p.id === tabId);
@@ -163,6 +166,7 @@
                 if(window.cloudUpdateCell) window.cloudUpdateCell(`panels/${pIdx}/modules`, window.appData.panels[pIdx].modules);
             }
         }
+        window.deleteModuleFromTeam = function(pIdx, mIdx) { if(confirm("確定刪除此工作塊？")) { window.appData.panels[pIdx].modules.splice(mIdx, 1); if(window.cloudUpdateCell) window.cloudUpdateCell(`panels/${pIdx}/modules`, window.appData.panels[pIdx].modules); } }
         window.renderTimelineTable = function() {
             const tbody = document.getElementById('timeline-desktop-tbody'); if(!tbody || !window.appData.timeline) return;
             tbody.innerHTML = window.appData.timeline.map((row, idx) => `<tr><td class="p-4 text-center font-bold text-slate-400 bg-slate-50/40">${idx + 1}</td><td class="p-4 font-bold text-[#5483B3]" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'time', this.innerText)">${row.time || ''}</td><td class="p-4 font-bold" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'module', this.innerText)">${row.module || ''}</td><td class="p-4 text-slate-600" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'stage', this.innerText)">${row.stage || ''}</td><td class="p-4 text-slate-600" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'pa', this.innerText)">${row.pa || ''}</td><td class="p-4 text-center"><button onclick="window.appData.timeline.splice(${idx},1); set(ref(window.cloudDb, 'ts_2026_realtime_data/timeline'), window.appData.timeline);" class="text-slate-300 hover:text-rose-500"><i class="fa-solid fa-trash-can"></i></button></td></tr>`).join('');
