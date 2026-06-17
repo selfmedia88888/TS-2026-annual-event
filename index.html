@@ -11,7 +11,6 @@
         body { font-family: 'Inter', 'Noto Sans TC', sans-serif; background-color: #F8FAFC; color: #1e293b; }
         [contenteditable="true"] { white-space: pre-wrap !important; word-break: break-word !important; }
         [contenteditable="true"]:focus { outline: 2px solid #5483B3; background-color: #ffffff; box-shadow: 0 0 0 4px rgba(84, 131, 179, 0.15); border-radius: 6px; }
-        /* 實戰大字體規格優化 */
         th, td, input, div, button { font-size: 16px !important; font-weight: 500 !important; }
         thead th { font-size: 16px !important; font-weight: 700 !important; }
         .main-panel h2 { font-size: 24px !important; font-weight: 700 !important; }
@@ -35,11 +34,11 @@
     <header class="border-b bg-white px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-2 shadow-sm sticky top-0 z-50">
         <div>
             <h1 class="text-xl font-bold text-[#052659]">TS 2026 年度盛會智慧中樞</h1>
-            <p class="text-xs text-emerald-600 font-bold">📡 一步到位定案版：心血文字大歸位・大表格對齊・局部刷新永不跳頁</p>
+            <p class="text-xs text-emerald-600 font-bold">📡 定案解鎖版：左側面板允許自由新增與刪除</p>
         </div>
         <div class="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto border-t md:border-t-0 pt-2 md:pt-0">
             <span id="display-user-name" class="text-sm bg-slate-100 px-3 py-1.5 rounded-xl text-slate-600 font-bold">👤 載入中...</span>
-            <span id="cloud-status-badge" class="text-xs text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full font-bold">● 獨立隔離連線中</span>
+            <span id="cloud-status-badge" class="text-xs text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full font-bold">● 雙向通電</span>
         </div>
     </header>
 
@@ -115,7 +114,9 @@
                 <div class="bg-white border rounded-2xl p-4 lg:p-6 shadow-sm relative">
                     <div class="flex justify-between items-start">
                         <h2 class="text-[#052659] font-bold" id="team-title-display">小組盤</h2>
-                        <button id="btn-delete-entire-panel" class="text-xs font-bold text-rose-500 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg transition-all hidden"><i class="fa-solid fa-trash-can mr-1"></i> 刪除此面板</button>
+                        <button id="btn-delete-entire-panel" class="text-xs font-bold text-white bg-rose-500 hover:bg-rose-600 px-4 py-2 rounded-xl transition-all">
+                            <i class="fa-solid fa-trash-can mr-1"></i> ❌ 刪除此面板分頁
+                        </button>
                     </div>
                     <div class="mt-3">
                         <label class="text-xs font-bold text-slate-400 block mb-1">👥 本組組員名單</label>
@@ -136,7 +137,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBQdnW16U1OxpDR05hvAv2fcZ4aMKXsyfM",
@@ -163,27 +164,31 @@
                 const dataRef = ref(db, 'ts_2026_realtime_data');
                 window.cloudDb = db;
                 window.cloudUpdateCell = function(path, value) { set(ref(window.cloudDb, `ts_2026_realtime_data/${path}`), value); };
+                window.cloudDeleteNode = function(path) { remove(ref(window.cloudDb, `ts_2026_realtime_data/${path}`)); };
 
                 onValue(dataRef, (snapshot) => {
                     const cloudData = snapshot.val();
                     if (cloudData) {
                         window.appData = cloudData;
                         
-                        // 🔴 🔒 最高核心安全隔離：每個人獨立掌管分頁位置，絕不讀取、不覆蓋雲端 Tab！徹底杜絕跳頁問題！
+                        // 鎖定本地會話路由，絕不跳頁
                         if (!window.currentActiveTab) {
                             window.currentActiveTab = "timeline";
                         }
 
-                        window.corePanelsMap = {
-                            "timeline": { name: "大會主細流", icon: "fa-clock-history" },
-                            "seating": { name: "主會場桌位管理", icon: "fa-table-cells" },
-                            "team_activity": { name: "活動組工作盤", icon: "fa-users-gear" },
-                            "team_admin": { name: "行政組工作盤", icon: "fa-folder-open" },
-                            "team_design": { name: "設計組工作盤", icon: "fa-palette" },
-                            "team_game": { name: "遊戲組工作盤", icon: "fa-dice" },
-                            "team_marketing": { name: "行銷組工作盤", icon: "fa-bullhorn" },
-                            "checklist": { name: "物資防線檢核條目表", icon: "fa-list-check" }
-                        };
+                        // 自動適應讀取雲端的所有現存自訂面板
+                        window.dynamicPanels = [];
+                        const systemKeys = ['timeline', 'seating', 'checklist', 'currentTab', 'tablesConfig', 'timelineConfig'];
+                        for (let key in window.appData) {
+                            if (systemKeys.includes(key)) continue;
+                            if (window.appData[key] && window.appData[key].name) {
+                                window.dynamicPanels.push({
+                                    id: key,
+                                    name: window.appData[key].name,
+                                    icon: window.appData[key].icon || "fa-folder"
+                                });
+                            }
+                        }
 
                         window.renderSidebarMenu();
                         window.updateTableBoxVegLightOnly(); 
@@ -209,55 +214,74 @@
             } else if(tabId === 'checklist') {
                 document.getElementById('panel-checklist').classList.remove('hidden'); renderChecklist();
             } else {
-                // 🔴 ⚡ 雙軌並流防空機制：如果 panels 或直接欄位有資料就直接對接，拒絕顯示空白或 undefined！
-                let teamData = window.appData[tabId];
-                if (!teamData && window.appData.panels) {
-                    teamData = window.appData.panels.find(p => p.id === tabId || p.id === tabId.replace("team_", ""));
+                const teamData = window.appData[tabId];
+                if(teamData) {
+                    document.getElementById('panel-team-generic').classList.remove('hidden'); 
+                    document.getElementById('team-title-display').innerText = teamData.name || "工作盤";
+                    
+                    const membersBox = document.getElementById('team-members-box');
+                    if (document.activeElement !== membersBox) { membersBox.innerText = teamData.members || ""; }
+                    membersBox.onblur = function() { if(window.cloudUpdateCell) window.cloudUpdateCell(`${tabId}/members`, this.innerText); };
+
+                    // ❌ 刪除當前大面板按鈕接線上鏈
+                    const delBtn = document.getElementById('btn-delete-entire-panel');
+                    delBtn.onclick = function() { window.deleteEntireCustomPanel(tabId); };
+
+                    renderTeamModules(teamData, tabId);
+                } else {
+                    // 如果被刪掉了，一秒安全退回主細流
+                    window.switchTab("timeline");
                 }
-                
-                // 防寫死隔離保護：如果雲端真的一時沒抓到，在前端給予空物件，但「絕對不准擅自把空物件寫回 Firebase 抹煞原始資料」！
-                if(!teamData) teamData = { name: window.corePanelsMap[tabId]?.name || "小組盤", members: "", modules: [] };
-
-                document.getElementById('panel-team-generic').classList.remove('hidden'); 
-                document.getElementById('team-title-display').innerText = teamData.name || window.corePanelsMap[tabId]?.name || "工作盤";
-                
-                const membersBox = document.getElementById('team-members-box');
-                if (document.activeElement !== membersBox) { membersBox.innerText = teamData.members || ""; }
-                membersBox.onblur = function() { if(window.cloudUpdateCell) window.cloudUpdateCell(`${tabId}/members`, this.innerText); };
-
-                renderTeamModules(teamData, tabId);
             }
         }
 
         window.renderSidebarMenu = function() {
-            const menu = document.getElementById('sidebar-menu'); if(!menu || !window.corePanelsMap) return;
+            const menu = document.getElementById('sidebar-menu'); if(!menu) return;
             let currentTabId = window.currentActiveTab || "timeline";
+            
             let html = `<p class="text-xs font-bold text-slate-400 px-3 mb-2">大會總指揮面板</p>`;
             
-            for (let key in window.corePanelsMap) {
-                const isActive = currentTabId === key;
-                html += `<button onclick="window.switchTab('${key}')" class="text-left px-4 py-2.5 rounded-xl text-sm ${isActive ? 'bg-[#5483B3]/10 text-[#5483B3] font-bold border-l-4 border-[#5483B3]' : 'text-slate-500 hover:bg-slate-50'}"><i class="fa-solid ${window.corePanelsMap[key].icon} mr-1.5 w-4 text-center"></i><span>${window.corePanelsMap[key].name}</span></button>`;
-            }
-
-            if (window.appData.panels) {
-                window.appData.panels.forEach(p => {
-                    const coreIds = ['timeline', 'seating', 'checklist', 'team_activity', 'team_admin', 'team_design', 'team_game', 'team_marketing'];
-                    if (coreIds.includes(p.id) || p.name.includes("時光隧道") || p.name.includes("軍火庫")) return;
+            // 1. 內建核心三寶
+            html += `<button onclick="window.switchTab('timeline')" class="text-left px-4 py-2.5 rounded-xl text-sm ${currentTabId === 'timeline' ? 'bg-[#5483B3]/10 text-[#5483B3] font-bold border-l-4 border-[#5483B3]' : 'text-slate-500 hover:bg-slate-50'}"><i class="fa-solid fa-clock-history mr-1.5 w-4 text-center"></i><span>大會主細流</span></button>`;
+            html += `<button onclick="window.switchTab('seating')" class="text-left px-4 py-2.5 rounded-xl text-sm mt-1 ${currentTabId === 'seating' ? 'bg-[#5483B3]/10 text-[#5483B3] font-bold border-l-4 border-[#5483B3]' : 'text-slate-500 hover:bg-slate-50'}"><i class="fa-solid fa-table-cells mr-1.5 w-4 text-center"></i><span>主會場桌位管理</span></button>`;
+            html += `<button onclick="window.switchTab('checklist')" class="text-left px-4 py-2.5 rounded-xl text-sm mt-1 ${currentTabId === 'checklist' ? 'bg-[#5483B3]/10 text-[#5483B3] font-bold border-l-4 border-[#5483B3]' : 'text-slate-500 hover:bg-slate-50'}"><i class="fa-solid fa-list-check mr-1.5 w-4 text-center"></i><span>物資防線檢核條目表</span></button>`;
+            
+            // 2. 自由增刪的動態小組
+            if (window.dynamicPanels) {
+                window.dynamicPanels.forEach(p => {
                     const isActive = currentTabId === p.id;
-                    html += `<button onclick="window.switchTab('${p.id}')" class="text-left px-3 py-2 rounded-xl text-sm ${isActive ? 'bg-[#5483B3]/10 text-[#5483B3] font-bold border-l-4 border-[#5483B3]' : 'text-slate-500 hover:bg-slate-50'}"><i class="fa-solid fa-folder mr-1.5 w-4 text-center"></i><span>${p.name}</span></button>`;
+                    html += `<button onclick="window.switchTab('${p.id}')" class="text-left px-4 py-2.5 rounded-xl text-sm mt-1 ${isActive ? 'bg-[#5483B3]/10 text-[#5483B3] font-bold border-l-4 border-[#5483B3]' : 'text-slate-500 hover:bg-slate-50'}"><i class="fa-solid ${p.icon} mr-1.5 w-4 text-center"></i><span>${p.name}</span></button>`;
                 });
             }
             menu.innerHTML = html;
         }
 
-        // 🔴 ⚡ 終極鎖定：只切換本地會話（Local Session），不修改雲端 Tab，根治亂跳頁！
-        window.switchTab = function(tabId) { 
-            window.currentActiveTab = tabId; 
-            window.renderSidebarMenu(); 
-            window.renderActivePanelOnly(); 
+        window.switchTab = function(tabId) { window.currentActiveTab = tabId; window.renderSidebarMenu(); window.renderActivePanelOnly(); }
+
+        // ⚡ 核心功能：自由建立全新選單分頁
+        window.createNewCustomPanel = function() {
+            const panelName = prompt("請輸入全新工作面板/小組名稱 (例如: 行政佈達盤):");
+            if (!panelName || !panelName.trim()) return;
+            const newId = "panel_" + Date.now();
+            const initStructure = {
+                name: panelName.trim(),
+                icon: "fa-folder",
+                members: "點擊填寫組員名單...",
+                modules: [{ title: "核心任務方塊一", content: "點擊開始編輯詳細計畫內容..." }]
+            };
+            window.currentActiveTab = newId;
+            if(window.cloudUpdateCell) window.cloudUpdateCell(newId, initStructure);
         }
 
-        // 大表格主細流渲染 (移動排序絕對不跳頁)
+        // ⚡ 核心功能：一鍵徹底把左側整個選單分頁連根拔除
+        window.deleteEntireCustomPanel = function(tabId) {
+            if (confirm(`⚠️ 警告：確定要完全刪除【${window.appData[tabId]?.name || '此面板'}】嗎？\n刪除後左側欄位將立刻移除，內存的所有文字方塊也將一併被永久清空！`)) {
+                window.currentActiveTab = "timeline";
+                if(window.cloudDeleteNode) window.cloudDeleteNode(tabId);
+            }
+        }
+
+        // 大表格細流
         window.renderTimelineTable = function() {
             const tbody = document.getElementById('timeline-desktop-tbody'); if(!tbody || !window.appData.timeline) return;
             tbody.innerHTML = window.appData.timeline.map((row, idx) => `
@@ -281,6 +305,7 @@
             const targetIndex = index + direction; if (targetIndex < 0 || targetIndex >= window.appData.timeline.length) return;
             const temp = window.appData.timeline[index]; window.appData.timeline[index] = window.appData.timeline[targetIndex]; window.appData.timeline[targetIndex] = temp;
             if (window.cloudUpdateCell) window.cloudUpdateCell("timeline", window.appData.timeline);
+            renderTimelineTable(); 
         }
         window.addNewTimelineRow = function() {
             if(!window.appData.timeline) window.appData.timeline = [];
@@ -305,7 +330,7 @@
         window.addNewChecklistItem = function() { if(!window.appData.checklist) window.appData.checklist = []; window.appData.checklist.push({ done: false, item: "點擊編輯新物資條目..." }); if (window.cloudUpdateCell) window.cloudUpdateCell(`checklist`, window.appData.checklist); }
         window.deleteCheckItem = function(idx) { if(confirm("確定刪除此物資？")) { window.appData.checklist.splice(idx, 1); if (window.cloudUpdateCell) window.cloudUpdateCell(`checklist`, window.appData.checklist); } }
 
-        // 1-40 桌次控制 (點按「素」局部刷新、絕不跳頁)
+        // 桌次管理
         window.renderVenueTablesGrid = function() {
             const grid = document.getElementById('venue-tables-grid'); const totalInput = document.getElementById('input-total-tables'); if (!grid || !window.appData.tablesConfig) return;
             const config = window.appData.tablesConfig; totalInput.value = config.totalTables || 40;
@@ -322,7 +347,7 @@
         window.adjustTotalTables = function(val) { const num = parseInt(val); if (num < 1 || num > 100) return; if (window.cloudUpdateCell) window.cloudUpdateCell("tablesConfig/totalTables", num); }
         window.selectTableForDetails = function(tableNum) { window.appData.selectedTable = tableNum; window.renderVenueTablesGrid(); }
         window.renderTableSeatsControl = function() {
-            const box = document.getElementById('table-details-box'); const grid = document.getElementById('seats-inputs-grid'); const title = document.getElementById('selected-table-title'); if (!box || !grid || !title) return; const tNum = window.appData.selectedTable; if (!tNum || !window.appData.tablesConfig || tNum > window.appData.tablesConfig.totalTables) { box.classList.add('hidden'); return; } box.classList.remove('hidden'); title.innerHTML = `第 【${tNum}】 桌座位安排名單 (一桌配置 10 人)`; const tData = (window.appData.tablesConfig.tablesData && window.appData.tablesConfig.tablesData[tNum]) ? window.appData.tablesConfig.tablesData[tNum] : { seats: Array(10).fill({ name: "", isVeg: false }) };
+            const box = document.getElementById('table-details-box'); const grid = document.getElementById('seats-inputs-grid'); const title = document.getElementById('selected-table-title'); if (!box || !grid || !title) return; const tNum = window.appData.selectedTable; if (!tNum || !window.appData.tablesConfig || tNum > window.appData.tablesConfig.totalTables) { box.classList.add('hidden'); return; } box.classList.remove('hidden'); title.innerHTML = `第 【${tNum}】 桌座位安排名單 (1桌配置 10 人)`; const tData = (window.appData.tablesConfig.tablesData && window.appData.tablesConfig.tablesData[tNum]) ? window.appData.tablesConfig.tablesData[tNum] : { seats: Array(10).fill({ name: "", isVeg: false }) };
             let html = ""; 
             for (let s = 0; s < 10; s++) { 
                 const seat = (tData.seats && tData.seats[s]) ? tData.seats[s] : { name: "", isVeg: false }; const isVeg = seat.isVeg || false; 
@@ -355,12 +380,12 @@
             if (tEl) tEl.innerText = total; if (vEl) vEl.innerText = veg; if (mEl) mEl.innerText = total - veg;
         }
 
-        // 📦 歷史方塊語法除錯（🔴 ⚡ 精準綁定 ${mIdx}，拆除罷工炸彈）
+        // 任務方塊
         window.renderTeamModules = function(teamData, tabId) { 
             const grid = document.getElementById('team-modules-grid'); if(!grid) return; 
             const modules = teamData.modules || []; 
             if (modules.length === 0) {
-                grid.innerHTML = `<div class="col-span-full text-slate-400 text-center py-8 bg-slate-50 border rounded-xl border-dashed">這裡目前沒有方塊資料，請點擊右上方按鈕新增任務塊。</div>`;
+                grid.innerHTML = `<div class="col-span-full text-slate-400 text-center py-8 bg-slate-50 border rounded-xl border-dashed">目前尚無作戰方塊。點擊右上方按鈕新增。</div>`;
                 return;
             }
             grid.innerHTML = modules.map((mod, mIdx) => `
@@ -377,22 +402,10 @@
             const tabId = window.currentActiveTab || "team_activity"; 
             if(!window.appData[tabId]) window.appData[tabId] = {};
             if(!window.appData[tabId].modules) window.appData[tabId].modules = []; 
-            window.appData[tabId].modules.push({ title: "新核心任務方塊", content: "點擊編輯詳細計畫內容與招募人數..." }); 
+            window.appData[tabId].modules.push({ title: "新自訂任務方塊", content: "點擊編輯詳細計畫內容與招募人數..." }); 
             if(window.cloudUpdateCell) window.cloudUpdateCell(`${tabId}/modules`, window.appData[tabId].modules); 
         }
         window.deleteModuleFromTeam = function(tabId, mIdx) { if(confirm("確定刪除此文字方塊？")) { window.appData[tabId].modules.splice(mIdx, 1); if(window.cloudUpdateCell) window.cloudUpdateCell(`${tabId}/modules`, window.appData[tabId].modules); } }
-        window.createNewCustomPanel = function() {
-            const panelName = prompt("請輸入全新自訂工作面板名稱:"); if (!panelName || !panelName.trim()) return;
-            const newId = "custom_" + Date.now(); if(!window.appData.panels) window.appData.panels = [];
-            window.appData.panels.push({ id: newId, name: panelName.trim(), members: "", modules: [{ title: "自訂標題", content: "作戰內文..." }] });
-            if(window.cloudUpdateCell) { window.cloudUpdateCell(`panels`, window.appData.panels); window.currentActiveTab = newId; }
-        }
-        window.deleteEntireCustomPanel = function(tabId) {
-            if (confirm("確定完全刪除此面板？")) {
-                const pIdx = window.appData.panels.findIndex(p => p.id === tabId);
-                if (pIdx !== -1) { window.appData.panels.splice(pIdx, 1); if(window.cloudUpdateCell) { window.cloudUpdateCell(`panels`, window.appData.panels); window.currentActiveTab = "timeline"; } }
-            }
-        }
     </script>
 </body>
 </html>
