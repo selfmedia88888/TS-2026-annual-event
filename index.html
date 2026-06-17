@@ -3,391 +3,497 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026 TS 年度盛會｜大會雲端指揮官中樞</title>
+    <title>2026 TS 年度盛會｜總導播智慧主控中樞</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap');
-        body { font-family: 'Inter', 'Noto Sans TC', sans-serif; background-color: #F8FAFC; color: #1e293b; }
-        [contenteditable="true"] { white-space: pre-wrap !important; word-break: break-word !important; }
-        [contenteditable="true"]:focus { outline: 2px solid #5483B3; background-color: #ffffff; box-shadow: 0 0 0 4px rgba(84, 131, 179, 0.15); border-radius: 6px; }
-        .card-shadow { box-shadow: 0 4px 18px -4px rgba(5, 38, 89, 0.05); }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        /* 針對手持直螢幕的強制大字體 */
-        th, td, input, div { font-size: 16px !important; }
-        h2 { font-size: 22px !important; font-weight: 700 !important; }
-        h3 { font-size: 18px !important; font-weight: 700 !important; }
+        
+        /* 嚴格導入組長專屬色碼系統（清新藍白調優化版） */
+        :root {
+            --color-bg: #F8FAFC;        /* 清新藍灰底 */
+            --color-card: #FFFFFF;      /* 純白卡片 */
+            --color-navy: #021024;      /* 深邃夜藍 (深色字用) */
+            --color-darkblue: #052659;  /* 內斂暗藍 (主標題用) */
+            --color-primary: #5483B3;   /* 核心鋼鐵藍 */
+            --color-muted: #7DA0CA;     /* 柔和迷霧藍 */
+            --color-light: #C1E8FF;     /* 耀眼冰藍 */
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: var(--color-bg);
+            color: #1e293b;
+        }
+
+        /* 拖拽時的視覺特效 */
+        .dragging {
+            opacity: 0.5;
+            background-color: #f1f5f9 !important;
+            border: 2px dashed var(--color-primary) !important;
+        }
+        
+        /* 美化滾動條 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--color-bg);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--color-primary);
+            border-radius: 4px;
+        }
+
+        /* 讓可編輯欄位更有回饋感 */
+        [contenteditable="true"]:focus {
+            outline: 2px solid var(--color-primary);
+            background-color: #ffffff;
+            box-shadow: 0 0 0 4px rgba(84, 131, 179, 0.15);
+            border-radius: 6px;
+            padding: 2px;
+        }
+
+        .card-shadow {
+            box-shadow: 0 4px 18px -4px rgba(5, 38, 89, 0.05), 0 2px 6px -1px rgba(5, 38, 89, 0.03);
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col pb-32">
+<body class="min-h-screen flex flex-col overflow-x-hidden">
 
-    <div id="auth-overlay" class="fixed inset-0 bg-[#052659]/90 backdrop-blur-lg z-[9999] flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-4">
-            <h2 class="text-[#052659] text-center">TS 2026 指揮中樞身份核驗</h2>
-            <div class="space-y-3">
-                <input type="password" id="input-auth-key" placeholder="輸入密碼 (ts2026)" class="w-full bg-slate-50 border rounded-xl p-3 text-sm">
-                <input type="text" id="input-auth-user" placeholder="例如：活動組-Owen" class="w-full bg-slate-50 border rounded-xl p-3 text-sm">
-                <button onclick="window.submitAuth()" class="w-full bg-[#5483B3] text-white font-bold py-3 rounded-xl text-sm">驗證身分並登錄</button>
+    <header class="border-b border-slate-200 bg-white/90 backdrop-blur-md sticky top-0 z-50 px-8 py-4 flex justify-between items-center shadow-sm">
+        <div class="flex items-center gap-3">
+            <div class="w-11 h-11 bg-gradient-to-tr from-[#5483B3] to-[#C1E8FF] rounded-xl flex items-center justify-center shadow-md shadow-[#5483B3]/20">
+                <svg viewBox="0 0 24 24" class="w-7 h-7 text-white fill-current" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2,12C2,12 5,3 12,3C16,3 22,6 22,12C22,15 18,20 12,20C8,20 5,17 4,15C5.5,15.5 7.5,15 9,14C6,13 4.5,10.5 4.5,8.5C5.5,9.5 7,10 8,9.5C5,8 4.5,5 5.5,4C6.5,6.5 9,9 13,9.5C12,8 12.5,6 14,4.5C16,3 18.5,4 19.5,5.5C18.5,5 17,5 16,5.5C17,6.5 17.5,8 17,9.5C18.5,9 20,7.5 20.5,6.5C20,8.5 18.5,10 17,11C19,11 20.5,10.5 21,10C20.5,12 18.5,13.5 16.5,14C18,15.5 19,17.5 18.5,19.5C16,18 14,15.5 13,14C10,15 6,15 2,12Z"/>
+                </svg>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-bold tracking-widest bg-[#5483B3]/10 text-[#5483B3] border border-[#5483B3]/20 px-1.5 py-0.5 rounded">2026 TS MASTER</span>
+                </div>
+                <h1 class="text-base font-bold tracking-tight text-[#052659]">年度盛會｜大會智慧決策中樞</h1>
             </div>
         </div>
-    </div>
-
-    <header class="border-b bg-white px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-2 shadow-sm sticky top-0 z-50">
-        <div class="text-center md:text-left w-full md:w-auto">
-            <h1 class="text-lg font-bold text-[#052659]">TS 2026 年度盛會智慧中樞</h1>
-            <p class="text-xs text-rose-500 font-bold">📱 真正手持直螢幕優化・大拇指控盤完全體</p>
-        </div>
-        <div class="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto border-t md:border-t-0 pt-2 md:pt-0">
-            <span id="display-user-name" class="text-xs bg-slate-100 px-2.5 py-1 rounded-xl text-slate-600">👤 載入中...</span>
-            <span id="cloud-status-badge" class="text-xs text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full font-medium"></span>
+        <div class="flex items-center gap-3">
+            <button onclick="exportAllData()" class="bg-white hover:bg-slate-50 text-[#5483B3] text-xs px-4 py-2 rounded-xl border border-slate-200 transition-all flex items-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-cloud-arrow-down"></i> 備份導出
+            </button>
+            <span class="text-xs text-emerald-600 bg-emerald-50 border border-emerald-100 px-3 py-2 rounded-full flex items-center gap-1.5 font-medium">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> 實時同步中
+            </span>
         </div>
     </header>
 
-    <div class="flex flex-1 flex-col lg:flex-row">
-        <aside class="w-full lg:w-64 border-b lg:border-b-0 lg:border-r bg-white p-2 lg:p-4 flex flex-row lg:flex-col gap-1.5 overflow-x-auto lg:overflow-x-visible no-scrollbar shrink-0 select-none shadow-sm">
-            <div class="flex flex-row lg:flex-col gap-1.5" id="sidebar-menu"></div>
-            <div class="lg:pt-4 lg:border-t lg:mt-4 shrink-0 whitespace-nowrap pl-2 lg:pl-0">
-                <button onclick="window.createNewCustomPanel()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-3 lg:py-2.5 lg:px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all">
-                    <i class="fa-solid fa-folder-plus text-[#5483B3]"></i> ＋ 新增自訂面板
+    <div class="flex flex-1">
+        <aside class="w-64 border-r border-slate-200 bg-white p-4 flex flex-col justify-between select-none">
+            <div class="flex flex-col gap-1" id="sidebar-menu">
+                <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3 mb-2">大會指揮官面版</p>
+                </div>
+            
+            <div class="pt-4 border-t border-slate-100 mt-4 flex flex-col gap-2">
+                <button onclick="createNewPanelPrompt()" class="w-full bg-[#5483B3] hover:bg-[#5483B3]/90 text-white text-xs font-medium py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm shadow-blue-100">
+                    <i class="fa-solid fa-folder-plus"></i> ＋ 新增主控分組
                 </button>
+                <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 text-[11px] text-slate-500 leading-relaxed">
+                    <i class="fa-solid fa-circle-info text-[#5483B3]"></i> 提示：時程表的左側按鈕 <i class="fa-solid fa-grip-lines"></i> 可直接「滑鼠拖曳」重排先後順序。
+                </div>
             </div>
         </aside>
 
-        <main class="flex-1 p-4 lg:p-8 overflow-x-hidden">
+        <main class="flex-1 p-8 bg-[#F8FAFC] overflow-y-auto">
             
-            <div id="panel-timeline" class="main-panel hidden space-y-4">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-[#052659]">大會核心時程主骨架</h2>
-                    <button onclick="addNewTimelineRow()" class="bg-[#5483B3] text-white text-xs font-bold px-4 py-2 rounded-xl shadow-sm">＋ 新增時段</button>
-                </div>
-                <div class="space-y-4" id="timeline-mobile-container"></div>
-            </div>
-
-            <div id="panel-checklist" class="main-panel hidden space-y-4">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-[#052659]">📦 大會現場物資防線檢核表</h2>
-                    <button onclick="window.addNewChecklistItem()" class="bg-[#5483B3] text-white text-xs font-bold px-4 py-2 rounded-xl">＋ 新增資產物資</button>
-                </div>
-                <div class="bg-white border rounded-xl divide-y card-shadow" id="checklist-box"></div>
-            </div>
-
-            <div id="panel-team-generic" class="main-panel hidden space-y-5">
-                <div class="bg-white border rounded-2xl p-4 lg:p-6 shadow-sm relative">
-                    <div class="flex justify-between items-start">
-                        <h2 class="text-[#052659]" id="team-title-display">小組盤</h2>
-                        <button id="btn-delete-entire-panel" class="text-xs font-bold text-rose-500 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg transition-all hidden"><i class="fa-solid fa-trash-can mr-1"></i> 刪除此面板</button>
+            <div id="panel-timeline" class="main-panel hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold tracking-tight text-[#052659] flex items-center gap-2">
+                            <i class="fa-solid fa-list-timeline text-[#5483B3]"></i> 大會核心時程大骨架
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-1">此處為大會總進度表，包含器材、音控與攝影等全新串接防線。</p>
                     </div>
-                    <div class="mt-3">
-                        <label class="text-xs font-bold text-slate-400 block mb-1">👥 本組組員名單</label>
-                        <div id="team-members-box" contenteditable="true" class="bg-slate-50 border rounded-xl p-3 text-base min-h-[45px] focus:outline-none"></div>
-                    </div>
-                </div>
-
-                <div id="admin-venue-seating-dashboard" class="space-y-4 hidden border-t pt-4">
-                    <div class="bg-slate-900 rounded-xl p-3 text-white flex flex-col gap-1 text-sm font-mono card-shadow">
-                        <div class="font-bold text-emerald-400">🍳 行政組專用：廚房總出菜雷達</div>
-                        <div class="flex justify-between border-t border-slate-800 pt-1 text-xs">
-                            <div>總人數: <span id="panel-stat-total" class="text-[#C1E8FF] font-bold">0</span></div>
-                            <div>葷食: <span id="panel-stat-meat" class="text-amber-400 font-bold">0</span></div>
-                            <div>🟢 素食: <span id="panel-stat-veg" class="text-emerald-400 font-bold">0</span></div>
-                        </div>
-                    </div>
-                    <div class="bg-white border rounded-xl p-3 flex justify-between items-center gap-2">
-                        <h2 class="text-sm font-bold text-[#052659]">🏛️ 主會場 400人桌次矩陣</h2>
-                        <div class="flex items-center gap-1.5 bg-slate-50 p-1 rounded-lg border">
-                            <input type="number" id="input-total-tables" min="1" max="100" class="w-12 bg-white border text-center font-bold text-[#052659]" onchange="window.adjustTotalTables(this.value)"> <span class="text-xs text-slate-400">桌</span>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 md:grid-cols-8 lg:grid-cols-10 gap-2.5" id="venue-tables-grid"></div>
-                    <div id="table-details-box" class="bg-white border-2 border-slate-300 rounded-xl p-4 card-shadow hidden">
-                        <h3 class="text-sm font-bold text-[#052659] border-b pb-2 mb-3" id="selected-table-title">🎯 1桌10人座位管理</h3>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5" id="seats-inputs-grid"></div>
-                    </div>
-                </div>
-                
-                <div class="flex justify-between items-center pt-2">
-                    <h3 class="text-slate-400 tracking-wider text-xs uppercase">📦 本組核心作戰模塊</h3>
-                    <button onclick="window.addNewModuleToTeam()" class="text-xs font-bold text-white bg-[#5483B3] hover:bg-[#436c9b] px-3 py-2 rounded-xl shadow-sm transition-all">
-                        <i class="fa-solid fa-plus mr-1"></i> 新增文字方塊
+                    <button onclick="addNewTimelineRow()" class="bg-[#5483B3] hover:bg-[#5483B3]/90 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-all flex items-center gap-1.5 shadow-sm shadow-blue-100">
+                        <i class="fa-solid fa-plus"></i> 新增時段
                     </button>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="team-modules-grid"></div>
+
+                <div class="bg-white border border-slate-200 rounded-2xl overflow-x-auto card-shadow">
+                    <table class="w-full text-left border-collapse min-w-[1300px]">
+                        <thead>
+                            <tr class="bg-slate-50/70 border-b border-slate-200 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                                <th class="p-4 w-12 text-center">排</th>
+                                <th class="p-4 w-32">時間段</th>
+                                <th class="p-4 w-44">核心節目模組</th>
+                                <th class="p-4 w-64">內容與舞台設定 (T台運用)</th>
+                                <th class="p-4 w-48">器材清單</th>
+                                <th class="p-4 w-44">PA / 音控 CUE</th>
+                                <th class="p-4 w-44">攝影與 Photocall</th>
+                                <th class="p-4 w-44">備註</th>
+                                <th class="p-4 w-16 text-center">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="timeline-drag-tbody" class="divide-y divide-slate-100 text-xs">
+                            </tbody>
+                    </table>
+                </div>
             </div>
+
+            <div id="panel-checklist" class="main-panel hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-[#052659] flex items-center gap-2">
+                            <i class="fa-solid fa-shield-heart text-[#5483B3]"></i> 大會物資與安全防線守護
+                        </h2>
+                    </div>
+                    <button onclick="addNewChecklistItem()" class="bg-[#5483B3] text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-sm">＋ 新增物資項目</button>
+                </div>
+                <div class="bg-white border border-slate-200 rounded-2xl divide-y divide-slate-100 card-shadow" id="checklist-box">
+                    </div>
+            </div>
+
+            <div id="panel-team-generic" class="main-panel hidden">
+                <div class="border-b border-slate-200 pb-6 mb-6 flex justify-between items-start">
+                    <div>
+                        <div class="flex items-center gap-3">
+                            <h2 class="text-xl font-bold text-[#052659]" id="team-title-display">專屬小組盤</h2>
+                            <span class="text-xs bg-slate-100 text-[#5483B3] px-2.5 py-0.5 rounded-full border border-slate-200 font-medium">協作防線組</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-2">點擊文字可直接新增或修改組員，並利用下方區塊規劃本組專屬工作任務。</p>
+                    </div>
+                    <button onclick="deleteCurrentCustomPanel()" id="btn-delete-panel" class="bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs px-3 py-1.5 rounded-xl transition-all">
+                        <i class="fa-solid fa-trash-can"></i> 刪除此組別
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-1">
+                        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm card-shadow">
+                            <label class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5 mb-3">
+                                <i class="fa-solid fa-user-gear text-[#5483B3]"></i> 本組作戰組員 (直接點擊修改)
+                            </label>
+                            <div id="team-members-box" contenteditable="true" onblur="saveCurrentTeamMembers(this.innerText)" class="bg-slate-50 text-slate-700 text-xs border border-slate-200 rounded-xl p-4 min-h-[120px] focus:outline-none leading-relaxed">
+                                暫無組員資訊，點擊此處直接新增編輯。
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-2">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xs font-bold uppercase text-slate-500 tracking-wider flex items-center gap-1.5">
+                                <i class="fa-solid fa-cubes text-[#5483B3]"></i> 本組專屬功能戰術模塊
+                            </h3>
+                            <button onclick="addNewModuleToTeam()" class="bg-white hover:bg-slate-50 text-[#5483B3] border border-slate-200 text-xs px-3 py-1.5 rounded-xl transition-all shadow-sm">
+                                <i class="fa-solid fa-square-plus text-[#5483B3]"></i> ＋ 新增專屬模塊
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="team-modules-grid">
+                            </div>
+                    </div>
+                </div>
+            </div>
+
         </main>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    <script>
+        const fallbackTimeline = [
+            { time: "09:00 - 12:00", module: "前置與彩排", stage: "硬體測試、大螢幕簡報、抽獎畫面。彩排重點：主持人與長官走位、T台燈光。", equip: "無線麥克風*4、簡報筆*2", pa: "播放開場音樂、測試燈光", photo: "主要攝影、Photocall點位確認", note: "工作人員8點半到" },
+            { time: "12:00 - 13:00", module: "港風沉浸進場", stage: "開放外場拍照區、背景港風 BGM 播放。400人依座位入座。", equip: "拍照背板、指示牌", pa: "經典港片組曲", photo: "外場拍照背板區抓拍", note: "動線組防止拍照回堵" },
+            { time: "13:00 - 13:30", module: "盛大開場秀", stage: "T 台全面啟用！燈光音效全開。核心籌備團隊與長官港風走秀進場。", equip: "走秀道具、墨鏡", pa: "震撼開場大片與音效", photo: "T台正前方主位攝影", note: "舞台執行組引導順序" },
+            { time: "13:30 - 14:00", module: "🎯 遊戲接口 A", stage: "全場就座，主持人宣讀今年港風大賽總規則。預留發放籌碼時間。", equip: "初始卡牌、規則手冊", pa: "背景賭神音樂低音量", photo: "捕捉台下驚訝與互動神情", note: "控制在30分鐘內" },
+            { time: "14:00 - 16:00", module: "第一章：榮耀表揚", stage: "全場專注力最高峰。長官致詞、表揚頒獎。T台作為榮耀大道，燈光聚焦金黃色。", equip: "獎盃、托盤、證書", pa: "頒獎大氣激勵音樂", photo: "受獎者特寫與大合照", note: "得獎感言嚴控超時" },
+            { time: "16:00 - 17:30", module: "🎯 遊戲接口 B", stage: "全場解封！進入高互動大逃殺環節（400人社交猜拳搶星星）。", equip: "星星貼紙、計分板、大球*3", pa: "大逃殺緊張倒數音樂", photo: "全景空拍、桌間移動抓拍", note: "動線組全員下去維護安全" },
+            { time: "17:30 - 18:30", module: "中場沉澱與熱舞", stage: "眾人回座，公布決賽名單。首席熱舞炸場，無縫轉入晚宴氣氛。", equip: "舞者表演道具", pa: "熱舞高強拍節奏音樂", photo: "舞台動態錄影", note: "行政組通知餐廳備菜" },
+            { time: "18:30 - 19:30", module: "圓桌晚宴 (前段)", stage: "40桌同時用餐，播放港風爵士。大會主控群與長官進行第一輪逐桌敬酒。", equip: "主控席酒水", pa: "舒服港風爵士樂", photo: "逐桌用餐溫馨花絮", note: "動線組開路嚴防卡關" },
+            { time: "19:30 - 20:15", module: "🎯 遊戲接口 C", stage: "晚宴高潮：巔峰決戰（賭神爭霸）。決賽選手登上架高 T 台，40桌觀戰下注。", equip: "決賽桌椅、撲克牌道具", pa: "賭神決戰命懸一線音效", photo: "T台決戰主螢幕轉播", note: "舞台組提早搬運道具" },
+            { time: "20:15 - 21:15", module: "第四章：星海排字", stage: "全場感性最高峰。現場燈光瞬間全關（Blackout）。400人開啟手機燈光高空空拍。", equip: "空拍機、應援物", pa: "溫暖、團魂凝聚墊樂", photo: "全場黑燈大高空俯拍", note: "音控組死守全黑燈點" },
+            { time: "21:15 - 22:30", module: "終章：傳承大合照", stage: "核心精神傳承儀式、時光膠囊封箱。400人依桌號分批有序登上 T 台進行大合照。", equip: "時光膠囊寶盒、合照階梯", pa: "溫馨傳承合唱音樂", photo: "400人梯次分批大合照", note: "安全第一，控管T台承重" },
+            { time: "22:30 - 23:00", module: "平安賦歸與撤場", stage: "播放溫馨散場音樂。工作人員清點一廊宴會廳大會物資，撤場。", equip: "清點清單", pa: "散場抒情音樂", photo: "工作人員大合照", note: "Owen 主導清點撤場" }
+        ];
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBQdnW16U1OxpDR05hvAv2fcZ4aMKXsyfM",
-            authDomain: "test-fee8d.firebaseapp.com",
-            projectId: "test-fee8d",
-            databaseURL: "https://test-fee8d-default-rtdb.firebaseio.com" 
+        const fallbackChecklist = [
+            { id: 1, done: true, item: "架高 T 台安全與邊緣承重檢查", team: "活動組", note: "彩排時死守邊緣，防止踩空" },
+            { id: 2, done: false, item: "黑幫默示錄初始卡牌道具到位", team: "遊戲組", note: "12:00 前必須送到簽到處配合報到" },
+            { id: 3, done: false, item: "抽獎大螢幕視訊字卡聯動測試", team: "設計組", note: "機票與 iPad Pro 抽獎特效走位確認" },
+            { id: 4, done: true, item: "40 箱啤酒與後場冰塊對接", team: "行政組", note: "冰塊指定 17:50 抵達宴會廳後場" },
+            { id: 5, done: false, item: "頒獎典禮送花動線安全規範", team: "活動組", note: "禁止送花夥伴在頒獎時爬上 T 台阻擋空拍" }
+        ];
+
+        const defaultPanels = [
+            { id: "timeline", name: "大會主骨架細流", icon: "fa-clock-history", type: "system" },
+            { id: "checklist", name: "物資與防線檢核", icon: "fa-list-check", type: "system" },
+            { id: "team_activity", name: "活動組工作盤", icon: "fa-users-gear", type: "team", members: "Owen (組長), 執行A (舞台), 執行B (音控), 執行C (動線)", modules: [{title: "四大執行防線", content: "包含舞台控制(Floor Manager)、視訊音控組、場內動線引導、主持控時組。"}] },
+            { id: "team_admin", name: "行政組工作盤", icon: "fa-folder-open", type: "team", members: "恩安 (組長), 夥伴群", modules: [{title: "報到簽到與桌次", content: "控管 400 人圓桌分配、吃素名單與餐廳出菜進度。"}] },
+            { id: "team_marketing", name: "行銷組工作盤", icon: "fa-bullhorn", type: "team", members: "待招募核心夥伴", modules: [{title: "社群曝光排程", content: "年會倒數視覺、當天精采瞬间即時返圖與宣傳文案。"}] },
+            { id: "team_design", name: "設計組工作盤", icon: "fa-palette", type: "team", members: "宇哲 (組長)", modules: [{title: "製作物規格追蹤", content: "主背板視覺輸出、手牌、獎狀托盤與抽獎動態畫面。"}] },
+            { id: "team_game", name: "遊戲組工作盤", icon: "fa-dice", type: "team", members: "柏任 (組長)", modules: [{title: "賭博默示錄規則", content: "負責規劃400人大逃殺、籌碼發放比例與晚宴T台巔峰決戰機制。"}] }
+        ];
+
+        let appData = {
+            timeline: JSON.parse(localStorage.getItem('ts_v3_timeline')) || fallbackTimeline,
+            checklist: JSON.parse(localStorage.getItem('ts_v3_checklist')) || fallbackChecklist,
+            panels: JSON.parse(localStorage.getItem('ts_v3_panels')) || defaultPanels,
+            currentTab: localStorage.getItem('ts_v3_current_tab') || "timeline"
         };
 
-        const CORRECT_KEY = "ts2026";
-        window.checkAuthAndRun = function() {
-            let savedKey = localStorage.getItem('ts_auth_key'); let savedUser = localStorage.getItem('ts_auth_user');
-            if (savedKey !== CORRECT_KEY || !savedUser) { document.getElementById('auth-overlay').classList.remove('hidden'); return false; }
-            window.currentUser = savedUser; document.getElementById('display-user-name').innerText = `👤 指揮官：${savedUser}`; return true;
-        }
-        window.submitAuth = function() {
-            const inputKey = document.getElementById('input-auth-key').value.trim(); const inputUser = document.getElementById('input-auth-user').value.trim();
-            if (inputKey !== CORRECT_KEY || !inputUser) { alert("暗號錯誤！"); return; }
-            localStorage.setItem('ts_auth_key', inputKey); localStorage.setItem('ts_auth_user', inputUser); window.location.reload();
+        function saveData() {
+            localStorage.setItem('ts_v3_timeline', JSON.stringify(appData.timeline));
+            localStorage.setItem('ts_v3_checklist', JSON.stringify(appData.checklist));
+            localStorage.setItem('ts_v3_panels', JSON.stringify(appData.panels));
+            localStorage.setItem('ts_v3_current_tab', appData.currentTab);
         }
 
-        if (window.checkAuthAndRun()) {
-            try {
-                const app = initializeApp(firebaseConfig); const db = getDatabase(app);
-                const dataRef = ref(db, 'ts_2026_realtime_data');
-                window.cloudDb = db;
-                window.cloudUpdateCell = function(path, value) { set(ref(window.cloudDb, `ts_2026_realtime_data/${path}`), value); };
-
-                onValue(dataRef, (snapshot) => {
-                    const cloudData = snapshot.val();
-                    if (cloudData) {
-                        window.appData = cloudData;
-                        if (!window.appData.currentTab) window.appData.currentTab = "timeline";
-                        if (!window.appData.tablesConfig) window.appData.tablesConfig = { totalTables: 40 };
-                        if (!window.appData.tablesConfig.tablesData) {
-                            window.appData.tablesConfig.tablesData = {};
-                            for(let i=1; i<=100; i++) { window.appData.tablesConfig.tablesData[i] = { seats: Array(10).fill({ name: "", isVeg: false }) }; }
-                        }
-                        if (!window.appData.checklist) window.appData.checklist = [];
-
-                        window.panelList = [
-                            { id: "timeline", name: "大會主細流", icon: "fa-clock-history" },
-                            { id: "team_activity", name: "活動組工作盤", icon: "fa-users-gear" },
-                            { id: "team_admin", name: "行政組工作盤", icon: "fa-folder-open" },
-                            { id: "team_design", name: "設計組工作盤", icon: "fa-palette" },
-                            { id: "team_game", name: "遊戲組工作盤", icon: "fa-dice" },
-                            { id: "team_marketing", name: "行銷組工作盤", icon: "fa-bullhorn" },
-                            { id: "checklist", name: "物資防線檢核條目表", icon: "fa-list-check" }
-                        ];
-
-                        window.renderSidebarMenu();
-                        window.updateTableBoxVegLightOnly(); 
-                        window.calculateKitchenRadar();
-                        window.renderActivePanelOnly();
-                        
-                        document.getElementById('cloud-status-badge').innerHTML = `● 同步中`;
-                    }
-                });
-            } catch (e) { console.error(e); }
+        // 渲染左側選單
+        function renderSidebarMenu() {
+            const menu = document.getElementById('sidebar-menu');
+            menu.innerHTML = `<p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3 mb-2">大會指揮官面版</p>`;
+            
+            appData.panels.forEach(p => {
+                const isActive = appData.currentTab === p.id;
+                let activeStyle = isActive 
+                    ? `bg-[#5483B3]/10 text-[#5483B3] border-[#5483B3]/30 font-bold shadow-sm` 
+                    : `text-slate-500 hover:bg-slate-50 hover:text-slate-800 border-transparent`;
+                
+                menu.innerHTML += `
+                    <button onclick="switchTab('${p.id}')" class="w-full text-left px-4 py-2.5 rounded-xl border text-xs transition-all flex items-center justify-between group ${activeStyle}">
+                        <div class="flex items-center gap-2.5">
+                            <i class="fa-solid ${p.icon} w-4 text-center ${isActive ? 'text-[#5483B3]' : 'text-slate-400' }"></i>
+                            <span>${p.name}</span>
+                        </div>
+                        ${p.type === 'team' && !isActive ? '<span class="text-[9px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-400 group-hover:bg-[#5483B3]/10 group-hover:text-[#5483B3]">組</span>' : ''}
+                    </button>
+                `;
+            });
         }
-    </script>
 
-    <script>
-        window.renderActivePanelOnly = function() {
-            if (!window.appData) return;
-            const tabId = window.appData.currentTab || "timeline";
+        // 分頁切換器
+        function switchTab(tabId) {
+            appData.currentTab = tabId;
+            saveData();
+            renderSidebarMenu();
             
             document.querySelectorAll('.main-panel').forEach(p => p.classList.add('hidden'));
-            document.getElementById('admin-venue-seating-dashboard').classList.add('hidden'); 
-
+            
             if(tabId === 'timeline') {
-                document.getElementById('panel-timeline').classList.remove('hidden'); renderTimelineTable();
+                document.getElementById('panel-timeline').classList.remove('hidden');
+                renderTimelineTable();
             } else if(tabId === 'checklist') {
-                document.getElementById('panel-checklist').classList.remove('hidden'); renderChecklist();
+                document.getElementById('panel-checklist').classList.remove('hidden');
+                renderChecklist();
             } else {
-                const teamData = window.appData[tabId];
-                if(teamData) {
-                    document.getElementById('panel-team-generic').classList.remove('hidden'); 
-                    document.getElementById('team-title-display').innerText = teamData.name;
+                const panelData = appData.panels.find(p => p.id === tabId);
+                if(panelData) {
+                    const genericPanel = document.getElementById('panel-team-generic');
+                    genericPanel.classList.remove('hidden');
+                    document.getElementById('team-title-display').innerText = panelData.name;
+                    document.getElementById('team-members-box').innerText = panelData.members || "點擊此處輸入名單...";
                     
-                    const membersBox = document.getElementById('team-members-box');
-                    if (document.activeElement !== membersBox) { membersBox.innerText = teamData.members || ""; }
-                    membersBox.onblur = function() { if(window.cloudUpdateCell) window.cloudUpdateCell(`${tabId}/members`, this.innerText); };
-                    
-                    if (tabId === 'team_admin' || teamData.name.includes("行政組")) {
-                        document.getElementById('admin-venue-seating-dashboard').classList.remove('hidden');
-                        renderVenueTablesGrid();
+                    const systemGroupIds = ['team_activity', 'team_admin', 'team_marketing', 'team_design', 'team_game'];
+                    if(systemGroupIds.includes(panelData.id)) {
+                        document.getElementById('btn-delete-panel').classList.add('hidden');
+                    } else {
+                        document.getElementById('btn-delete-panel').classList.remove('hidden');
                     }
 
-                    const delBtn = document.getElementById('btn-delete-entire-panel');
-                    const coreIds = ['timeline', 'checklist', 'team_activity', 'team_admin', 'team_design', 'team_game', 'team_marketing'];
-                    if (!coreIds.includes(tabId)) {
-                        delBtn.classList.remove('hidden');
-                        delBtn.onclick = function() { window.deleteEntireCustomPanel(tabId); };
-                    } else { delBtn.classList.add('hidden'); }
-
-                    renderTeamModules(teamData, tabId);
+                    renderTeamModules(panelData);
                 }
             }
         }
 
-        window.renderSidebarMenu = function() {
-            const menu = document.getElementById('sidebar-menu'); if(!menu || !window.panelList) return;
-            let currentTabId = window.appData.currentTab || "timeline";
-            let html = "";
-            
-            window.panelList.forEach(p => {
-                const isActive = currentTabId === p.id;
-                html += `<button onclick="window.switchTab('${p.id}')" class="text-left px-3 py-2 rounded-xl text-sm ${isActive ? 'bg-[#5483B3]/10 text-[#5483B3] font-bold border-l-4 border-[#5483B3]' : 'text-slate-500 hover:bg-slate-50'}"><i class="fa-solid ${p.icon} mr-1.5 w-4 text-center"></i><span>${p.name}</span></button>`;
+        // --- 功能 1 & 2：時程表拖拉與多功能欄位 ---
+        function renderTimelineTable() {
+            const tbody = document.getElementById('timeline-drag-tbody');
+            tbody.innerHTML = appData.timeline.map((row, idx) => `
+                <tr class="hover:bg-slate-50/60 transition-all" draggable="true" ondragstart="handleDragStart(event, ${idx})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${idx})" ondragend="handleDragEnd(event)">
+                    <td class="p-4 text-center cursor-grab text-slate-300 hover:text-[#5483B3] text-sm"><i class="fa-solid fa-grip-lines"></i></td>
+                    <td class="p-4 font-mono font-bold text-[#5483B3]" contenteditable="true" onblur="updateTimelineCell(${idx}, 'time', this.innerText)">${row.time}</td>
+                    <td class="p-4 font-bold text-slate-800" contenteditable="true" onblur="updateTimelineCell(${idx}, 'module', this.innerText)">${row.module}</td>
+                    <td class="p-4 text-slate-600 leading-relaxed" contenteditable="true" onblur="updateTimelineCell(${idx}, 'stage', this.innerText)">${row.stage}</td>
+                    <td class="p-4 text-slate-600" contenteditable="true" onblur="updateTimelineCell(${idx}, 'equip', this.innerText)">${row.equip || ''}</td>
+                    <td class="p-4 text-[#5483B3] font-medium" contenteditable="true" onblur="updateTimelineCell(${idx}, 'pa', this.innerText)">${row.pa || ''}</td>
+                    <td class="p-4 text-slate-600" contenteditable="true" onblur="updateTimelineCell(${idx}, 'photo', this.innerText)">${row.photo || ''}</td>
+                    <td class="p-4 text-slate-400 italic" contenteditable="true" onblur="updateTimelineCell(${idx}, 'note', this.innerText)">${row.note || ''}</td>
+                    <td class="p-4 text-center">
+                        <button onclick="deleteTimelineRow(${idx})" class="text-slate-300 hover:text-rose-500 transition-colors p-1"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        let dragStartIndex = null;
+        function handleDragStart(e, index) {
+            dragStartIndex = index;
+            e.currentTarget.classList.add('dragging');
+        }
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+        function handleDrop(e, index) {
+            e.preventDefault();
+            if(dragStartIndex === null || dragStartIndex === index) return;
+            const draggedItem = appData.timeline.splice(dragStartIndex, 1)[0];
+            appData.timeline.splice(index, 0, draggedItem);
+            saveData();
+            renderTimelineTable();
+        }
+        function handleDragEnd(e) {
+            e.currentTarget.classList.remove('dragging');
+        }
+
+        function updateTimelineCell(index, field, value) {
+            appData.timeline[index][field] = value;
+            saveData();
+        }
+
+        function addNewTimelineRow() {
+            appData.timeline.push({ time: "18:00 - 18:30", module: "新項目模組", stage: "主舞台 / T台動線設定...", equip: "", pa: "", photo: "", note: "" });
+            saveData();
+            renderTimelineTable();
+        }
+
+        function deleteTimelineRow(index) {
+            if(confirm("確定要刪除這段時間排程嗎？")) {
+                appData.timeline.splice(index, 1);
+                saveData();
+                renderTimelineTable();
+            }
+        }
+
+        // --- 功能 3：手動自訂分組 ---
+        function createNewPanelPrompt() {
+            const name = prompt("請輸入全新協作組別的名稱（例如：公關組、財務組）：");
+            if(!name) return;
+            const id = "team_" + Date.now();
+            appData.panels.push({
+                id: id,
+                name: name + "工作盤",
+                icon: "fa-users-rectangle",
+                type: "team",
+                members: "組長與組員名單...",
+                modules: [{ title: "初始任務指標", content: "點擊文字直接修改任務清單..." }]
             });
+            saveData();
+            switchTab(id);
+        }
 
-            if (window.appData.panels) {
-                window.appData.panels.forEach(p => {
-                    const coreIds = ['timeline', 'checklist', 'team_activity', 'team_admin', 'team_design', 'team_game', 'team_marketing', 'tunnel', 'arsenal'];
-                    if (coreIds.includes(p.id) || p.name.includes("時光隧道") || p.name.includes("軍火庫")) return;
-                    const isActive = currentTabId === p.id;
-                    html += `<button onclick="window.switchTab('${p.id}')" class="text-left px-3 py-2 rounded-xl text-sm ${isActive ? 'bg-[#5483B3]/10 text-[#5483B3] font-bold border-l-4 border-[#5483B3]' : 'text-slate-500 hover:bg-slate-50'}"><i class="fa-solid fa-folder mr-1.5 w-4 text-center"></i><span>${p.name}</span></button>`;
-                });
+        function deleteCurrentCustomPanel() {
+            if(confirm("確定要徹底刪除此小組的所有板塊與名單嗎？")) {
+                appData.panels = appData.panels.filter(p => p.id !== appData.currentTab);
+                appData.currentTab = "timeline";
+                saveData();
+                switchTab("timeline");
             }
-            menu.innerHTML = html;
         }
 
-        // 🔴 ⚡ 關鍵修正：切換分頁直接修改本地變數，絕對不准重置雲端監聽！永不跳頁！
-        window.switchTab = function(tabId) { 
-            window.appData.currentTab = tabId; 
-            window.renderSidebarMenu(); 
-            window.renderActivePanelOnly(); 
+        // --- 功能 4：編輯組員與戰術子模塊 ---
+        function saveCurrentTeamMembers(text) {
+            const panel = appData.panels.find(p => p.id === appData.currentTab);
+            if(panel) {
+                panel.members = text;
+                saveData();
+            }
         }
 
-        // 📱 ⚡ 核心優化：主細流改為由上到下的「直向時間軸科技卡片」，手持單手狂滑、絕不跳走！
-        window.renderTimelineTable = function() {
-            const container = document.getElementById('timeline-mobile-container'); if(!container || !window.appData.timeline) return;
-            container.innerHTML = window.appData.timeline.map((row, idx) => `
-                <div class="bg-white border border-slate-200 rounded-2xl p-4 card-shadow space-y-3">
-                    <div class="flex justify-between items-center border-b pb-2 select-none">
-                        <div class="flex items-center gap-1.5 text-[#5483B3] font-bold font-mono">
-                            <i class="fa-regular fa-clock text-sm"></i>
-                            <span contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'time', this.innerText)">${row.time || '12:00'}</span>
-                        </div>
-                        <div class="flex gap-1">
-                            <button onclick="window.moveTimelineRow(${idx}, -1)" class="bg-slate-100 text-slate-500 w-8 h-8 rounded-lg flex items-center justify-center"><i class="fa-solid fa-arrow-up text-xs"></i></button>
-                            <button onclick="window.moveTimelineRow(${idx}, 1)" class="bg-slate-100 text-slate-500 w-8 h-8 rounded-lg flex items-center justify-center"><i class="fa-solid fa-arrow-down text-xs"></i></button>
-                            <button onclick="window.deleteTimelineRow(${idx})" class="bg-rose-50 text-rose-500 w-8 h-8 rounded-lg flex items-center justify-center"><i class="fa-solid fa-trash-can text-xs"></i></button>
-                        </div>
+        function renderTeamModules(panel) {
+            const grid = document.getElementById('team-modules-grid');
+            if(!panel.modules) panel.modules = [];
+            
+            grid.innerHTML = panel.modules.map((mod, mIdx) => `
+                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm relative group card-shadow">
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="text-xs font-bold text-[#052659]" contenteditable="true" onblur="updateModuleData(${mIdx}, 'title', this.innerText)">${mod.title}</h4>
+                        <button onclick="deleteModuleFromTeam(${mIdx})" class="text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity text-xs"><i class="fa-solid fa-square-minus"></i> 刪除</button>
                     </div>
-                    <div class="grid grid-cols-1 gap-2.5">
-                        <div><span class="text-xs font-bold text-slate-400 block mb-0.5">📌 流程名稱</span><div class="font-bold text-slate-800 focus:outline-none" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'module', this.innerText)">${row.module || ''}</div></div>
-                        <div><span class="text-xs font-bold text-slate-400 block mb-0.5">📝 詳細內容與設定</span><div class="text-slate-600 bg-slate-50 p-2.5 rounded-xl min-h-[40px] focus:outline-none" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'stage', this.innerText)">${row.stage || ''}</div></div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div><span class="text-[11px] font-bold text-slate-400 block mb-0.5">🛠️ 器材清單</span><div class="text-xs text-slate-600 border rounded-xl p-2 focus:outline-none" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'pa', this.innerText)">${row.pa || ''}</div></div>
-                            <div><span class="text-[11px] font-bold text-slate-400 block mb-0.5">💡 備註</span><div class="text-xs text-slate-600 border rounded-xl p-2 focus:outline-none" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'notes', this.innerText)">${row.notes || ''}</div></div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2 border-t pt-2">
-                            <div><span class="text-[11px] font-bold text-slate-400 block mb-0.5">🎵 PA / 音控</span><div class="text-xs text-slate-700 font-bold focus:outline-none" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'audio', this.innerText)">${row.audio || ''}</div></div>
-                            <div><span class="text-[11px] font-bold text-slate-400 block mb-0.5">📹 攝影畫面</span><div class="text-xs text-slate-700 font-bold focus:outline-none" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'video', this.innerText)">${row.video || ''}</div></div>
-                        </div>
+                    <div class="text-xs text-slate-500 leading-relaxed bg-slate-50 border border-slate-100 p-3 rounded-lg focus:outline-none min-h-[60px]" contenteditable="true" onblur="updateModuleData(${mIdx}, 'content', this.innerText)">${mod.content}</div>
+                </div>
+            `).join('');
+        }
+
+        function updateModuleData(mIdx, field, value) {
+            const panel = appData.panels.find(p => p.id === appData.currentTab);
+            if(panel && panel.modules[mIdx]) {
+                panel.modules[mIdx][field] = value;
+                saveData();
+            }
+        }
+
+        function addNewModuleToTeam() {
+            const panel = appData.panels.find(p => p.id === appData.currentTab);
+            if(panel) {
+                if(!panel.modules) panel.modules = [];
+                panel.modules.push({ title: "新工作模塊", content: "在此輸入具體工作細節..." });
+                saveData();
+                renderTeamModules(panel);
+            }
+        }
+
+        function deleteModuleFromTeam(mIdx) {
+            const panel = appData.panels.find(p => p.id === appData.currentTab);
+            if(panel && panel.modules) {
+                panel.modules.splice(mIdx, 1);
+                saveData();
+                renderTeamModules(panel);
+            }
+        }
+
+        // --- 物資檢核清單 (CHECKLIST) ---
+        function renderChecklist() {
+            const box = document.getElementById('checklist-box');
+            box.innerHTML = appData.checklist.map((item, idx) => `
+                <div class="grid grid-cols-12 p-4 items-center gap-3 ${item.done ? 'bg-slate-50/60 opacity-50' : ''}">
+                    <div class="col-span-1 text-center">
+                        <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleCheckItem(${idx})" class="w-4 h-4 rounded border-slate-300 text-[#5483B3] focus:ring-0">
                     </div>
-                </div>`).join('');
-        }
-        window.moveTimelineRow = function(index, direction) {
-            const targetIndex = index + direction; if (targetIndex < 0 || targetIndex >= window.appData.timeline.length) return;
-            const temp = window.appData.timeline[index]; window.appData.timeline[index] = window.appData.timeline[targetIndex]; window.appData.timeline[targetIndex] = temp;
-            if (window.cloudUpdateCell) window.cloudUpdateCell("timeline", window.appData.timeline);
-        }
-        window.addNewTimelineRow = function() {
-            if(!window.appData.timeline) window.appData.timeline = [];
-            window.appData.timeline.push({ time: "12:00", module: "新項目", stage: "", pa: "", notes: "", audio: "", video: "" });
-            if(window.cloudUpdateCell) window.cloudUpdateCell(`timeline`, window.appData.timeline);
-        }
-        window.deleteTimelineRow = function(idx) { if(confirm("確定刪除此流程卡？")) { window.appData.timeline.splice(idx, 1); if(window.cloudUpdateCell) window.cloudUpdateCell(`timeline`, window.appData.timeline); } }
-
-        // 📊 條列式物資檢核
-        window.renderChecklist = function() {
-            const box = document.getElementById('checklist-box'); if(!box) return;
-            box.innerHTML = (window.appData.checklist || []).map((item, idx) => `
-                <div class="flex items-center p-4 gap-4 ${item.done ? 'bg-slate-50/50' : 'bg-white'}">
-                    <input type="checkbox" ${item.done ? 'checked' : ''} onchange="window.toggleCheckItem(${idx})" class="w-6 h-6 rounded border-slate-300 text-[#5483B3] cursor-pointer shrink-0">
-                    <div class="flex-1 text-base font-medium focus:outline-none ${item.done ? 'line-through text-slate-400' : 'text-slate-800'}" contenteditable="true" onblur="window.updateCheckItemText(${idx}, this.innerText)">${item.item || ''}</div>
-                    <button onclick="window.deleteCheckItem(${idx})" class="text-slate-300 hover:text-rose-500 p-1 shrink-0"><i class="fa-solid fa-trash-can"></i></button>
-                </div>`).join('');
-        }
-        window.toggleCheckItem = function(idx) { window.appData.checklist[idx].done = !window.appData.checklist[idx].done; if (window.cloudUpdateCell) window.cloudUpdateCell(`checklist/${idx}/done`, window.appData.checklist[idx].done); }
-        window.updateCheckItemText = function(idx, val) { window.appData.checklist[idx].item = val; if (window.cloudUpdateCell) window.cloudUpdateCell(`checklist/${idx}/${item}`, val); }
-        window.addNewChecklistItem = function() { if(!window.appData.checklist) window.appData.checklist = []; window.appData.checklist.push({ done: false, item: "點擊編輯新資產物資..." }); if (window.cloudUpdateCell) window.cloudUpdateCell(`checklist`, window.appData.checklist); }
-        window.deleteCheckItem = function(idx) { if(confirm("確定刪除此物資？")) { window.appData.checklist.splice(idx, 1); if (window.cloudUpdateCell) window.cloudUpdateCell(`checklist`, window.appData.checklist); } }
-
-        // 🪑 行政組內建：1-40 桌發光亮燈大方塊
-        window.renderVenueTablesGrid = function() {
-            const grid = document.getElementById('venue-tables-grid'); const totalInput = document.getElementById('input-total-tables'); if (!grid || !window.appData.tablesConfig) return;
-            const config = window.appData.tablesConfig; totalInput.value = config.totalTables || 40;
-            let html = ""; 
-            for (let i = 1; i <= config.totalTables; i++) { 
-                const tData = config.tablesData ? config.tablesData[i] : null; 
-                const hasVeg = tData && tData.seats ? tData.seats.some(s => s && s.isVeg) : false; 
-                const isSelected = window.appData.selectedTable == i; 
-                // 🔴 🟢 真正發光綠色大按鈕：只要有素，手機大盤直接通電爆亮！
-                let style = isSelected ? 'bg-[#052659] text-white border-[#052659] font-bold scale-105 shadow-md' : (hasVeg ? 'bg-emerald-600 text-white border-emerald-700 font-bold shadow-lg shadow-emerald-600/30' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'); 
-                html += `<button id="table-box-btn-${i}" onclick="window.selectTableForDetails(${i})" class="h-16 rounded-2xl border flex flex-col items-center justify-center transition-all ${style}"><span>第 ${i} 桌</span><span id="table-veg-indicator-${i}">${hasVeg ? '<span class="text-[11px] text-emerald-100 underline">🟢有素食</span>' : ''}</span></button>`; 
-            }
-            grid.innerHTML = html; window.renderTableSeatsControl();
-        }
-        window.adjustTotalTables = function(val) { const num = parseInt(val); if (num < 1 || num > 100) return; window.appData.tablesConfig.totalTables = num; if (window.cloudUpdateCell) window.cloudUpdateCell("tablesConfig/totalTables", num); }
-        window.selectTableForDetails = function(tableNum) { window.appData.selectedTable = tableNum; window.renderVenueTablesGrid(); }
-        window.renderTableSeatsControl = function() {
-            const box = document.getElementById('table-details-box'); const grid = document.getElementById('seats-inputs-grid'); const title = document.getElementById('selected-table-title'); if (!box || !grid || !title) return; const tNum = window.appData.selectedTable; if (!tNum || tNum > window.appData.tablesConfig.totalTables) { box.classList.add('hidden'); return; } box.classList.remove('hidden'); title.innerHTML = `第 【${tNum}】 桌座位安排名單`; const tData = window.appData.tablesConfig.tablesData[tNum] || { seats: Array(10).fill({ name: "", isVeg: false }) };
-            let html = ""; 
-            for (let s = 0; s < 10; s++) { 
-                const seat = tData.seats[s] || { name: "", isVeg: false }; const isVeg = seat.isVeg || false; 
-                html += `<div id="seat-wrapper-${tNum}-${s}" class="flex items-center gap-2 bg-slate-50 border ${isVeg ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200'} p-2 rounded-xl"><span class="text-sm font-bold text-slate-400 w-5 text-center">${s+1}</span><input type="text" id="seat-input-${tNum}-${s}" value="${seat.name || ''}" placeholder="空位" oninput="window.updateSeatName(${tNum}, ${s}, this.value)" class="w-full bg-transparent border-none focus:outline-none font-bold ${isVeg ? 'text-emerald-700' : 'text-slate-800'}"><button id="seat-veg-btn-${tNum}-${s}" onclick="window.toggleSeatVeg(${tNum}, ${s})" class="px-3 py-1.5 rounded-lg text-sm font-bold border transition-all ${isVeg ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-400 border-slate-200'}">素</button></div>`; 
-            } grid.innerHTML = html;
-        }
-        window.updateSeatName = function(tableNum, seatIdx, val) { if(!window.appData.tablesConfig.tablesData[tableNum].seats) { window.appData.tablesConfig.tablesData[tableNum].seats = Array(10).fill({ name: "", isVeg: false }); } window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx].name = val; if (window.cloudUpdateCell) window.cloudUpdateCell(`tablesConfig/tablesData/${tableNum}/seats/${seatIdx}/name`, val); }
-        window.toggleSeatVeg = function(tableNum, seatIdx) {
-            const seat = window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx] || { name: "", isVeg: false }; const nextVeg = !seat.isVeg; window.appData.tablesConfig.tablesData[tableNum].seats[seatIdx].isVeg = nextVeg;
-            if (window.cloudUpdateCell) { window.cloudUpdateCell(`tablesConfig/tablesData/${tableNum}/seats/${seatIdx}/isVeg`, nextVeg); window.updateTableBoxVegLightOnly(); window.calculateKitchenRadar(); window.renderTableSeatsControl(); }
-        }
-        window.updateTableBoxVegLightOnly = function() {
-            const config = window.appData.tablesConfig; if(!config) return;
-            for (let i = 1; i <= (config.totalTables || 40); i++) {
-                const tData = config.tablesData ? config.tablesData[i] : null; const hasVeg = tData && tData.seats ? tData.seats.some(s => s && s.isVeg) : false;
-                const btn = document.getElementById(`table-box-btn-${i}`); const indicator = document.getElementById(`table-veg-indicator-${i}`);
-                if (btn && indicator) {
-                    if (window.appData.selectedTable == i) { btn.className = `h-16 rounded-2xl border flex flex-col items-center justify-center transition-all bg-[#052659] text-white border-[#052659] font-bold scale-105 shadow-md`; }
-                    else { btn.className = `h-16 rounded-2xl border flex flex-col items-center justify-center transition-all ${hasVeg ? 'bg-emerald-600 text-white border-emerald-700 font-bold shadow-lg' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}`; }
-                    indicator.innerHTML = hasVeg ? '<span class="text-[11px] text-white underline">🟢有素食</span>' : '';
-                }
-            }
-        }
-        window.calculateKitchenRadar = function() {
-            if (!window.appData || !window.appData.tablesConfig || !window.appData.tablesConfig.tablesData) return;
-            let total = 0, veg = 0; const config = window.appData.tablesConfig;
-            for(let i=1; i<=(config.totalTables || 40); i++) { const tData = config.tablesData[i]; if(tData && tData.seats) { tData.seats.forEach(s => { if(s && s.name && s.name.trim() !== "") { total++; if(s.isVeg) veg++; } }); } }
-            const tEl = document.getElementById('panel-stat-total'); const vEl = document.getElementById('panel-stat-veg');
-            if (tEl && vEl) { tEl.innerText = total; vEl.innerText = veg; document.getElementById('panel-stat-meat').innerText = total - veg; }
-        }
-
-        // 📦 自訂任務與自訂面板新增
-        window.renderTeamModules = function(teamData, tabId) { 
-            const grid = document.getElementById('team-modules-grid'); if(!grid) return; 
-            const modules = teamData.modules || []; 
-            grid.innerHTML = modules.map((mod, mIdx) => `
-                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm relative card-shadow">
-                    <div class="flex justify-between items-center mb-2 select-none">
-                        <h4 class="text-base font-bold text-[#052659] w-full" contenteditable="true" onblur="window.updateModuleCell('${tabId}', ${mIdx}, 'title', this.innerText)">${mod.title || '任務名稱'}</h4>
-                        <button onclick="window.deleteModuleFromTeam('${tabId}', ${mIdx})" class="text-slate-400 hover:text-rose-500 text-sm ml-2"><i class="fa-solid fa-circle-xmark"></i></button>
+                    <div class="col-span-3 text-xs font-bold text-slate-800 ${item.done ? 'line-through text-slate-400' : ''}" contenteditable="true" onblur="updateCheckCell(${idx}, 'item', this.innerText)">${item.item}</div>
+                    <div class="col-span-2 text-xs"><span class="bg-blue-50/60 text-[#5483B3] px-2.5 py-1 rounded-md border border-[#5483B3]/20" contenteditable="true" onblur="updateCheckCell(${idx}, 'team', this.innerText)">${item.team}</span></div>
+                    <div class="col-span-5 text-xs text-slate-500" contenteditable="true" onblur="updateCheckCell(${idx}, 'note', this.innerText)">${item.note}</div>
+                    <div class="col-span-1 text-center">
+                        <button onclick="deleteCheckItem(${idx})" class="text-slate-300 hover:text-rose-500 transition-colors text-xs"><i class="fa-solid fa-trash-can"></i></button>
                     </div>
-                    <div class="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg focus:outline-none min-h-[60px]" contenteditable="true" onblur="window.updateModuleCell('${tabId}', ${mIdx}, 'content', this.innerText)">${mod.content || ''}</div>
-                </div>`).join(''); 
+                </div>
+            `).join('');
         }
-        window.updateModuleCell = function(tabId, mIdx, field, val) { if(window.cloudUpdateCell) window.cloudUpdateCell(`${tabId}/modules/${mIdx}/${field}`, val); }
-        window.addNewModuleToTeam = function() { 
-            const tabId = window.appData.currentTab || "team_activity"; 
-            if(!window.appData[tabId].modules) window.appData[tabId].modules = []; 
-            window.appData[tabId].modules.push({ title: "新核心任務方塊", content: "點擊編輯詳細計畫內容與招募人數..." }); 
-            if(window.cloudUpdateCell) window.cloudUpdateCell(`${tabId}/modules`, window.appData[tabId].modules); 
-        }
-        window.deleteModuleFromTeam = function(tabId, mIdx) { if(confirm("確定刪除此文字方塊？")) { window.appData[tabId].modules.splice(mIdx, 1); if(window.cloudUpdateCell) window.cloudUpdateCell(`${tabId}/modules`, window.appData[tabId].modules); } }
 
-        window.createNewCustomPanel = function() {
-            const panelName = prompt("請輸入全新自訂工作面板名稱:"); if (!panelName || !panelName.trim()) return;
-            const newId = "custom_" + Date.now(); if(!window.appData.panels) window.appData.panels = [];
-            window.appData.panels.push({ id: newId, name: panelName.trim(), members: "", modules: [{ title: "自訂標題", content: "作戰內文..." }] });
-            if(window.cloudUpdateCell) { window.cloudUpdateCell(`panels`, window.appData.panels); window.switchTab(newId); }
+        function toggleCheckItem(idx) {
+            appData.checklist[idx].done = !appData.checklist[idx].done;
+            saveData();
+            renderChecklist();
         }
-        window.deleteEntireCustomPanel = function(tabId) {
-            if (confirm("確定完全刪除此面板？")) {
-                const pIdx = window.appData.panels.findIndex(p => p.id === tabId);
-                if (pIdx !== -1) { window.appData.panels.splice(pIdx, 1); if(window.cloudUpdateCell) { window.cloudUpdateCell(`panels`, window.appData.panels); window.switchTab("timeline"); } }
-            }
+
+        function updateCheckCell(idx, field, val) {
+            appData.checklist[idx][field] = val;
+            saveData();
         }
+
+        function addNewChecklistItem() {
+            appData.checklist.push({ id: Date.now(), done: false, item: "全新防線物資", team: "主控組", note: "修改備註..." });
+            saveData();
+            renderChecklist();
+        }
+
+        function deleteCheckItem(idx) {
+            appData.checklist.splice(idx, 1);
+            saveData();
+            renderChecklist();
+        }
+
+        // 導出 JSON 數據
+        function exportAllData() {
+            const blob = new Blob([JSON.stringify(appData, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "2026_TS_年度盛會_全功能清新藍指揮官配置檔.json";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        // 初始化驅動
+        document.addEventListener("DOMContentLoaded", () => {
+            switchTab(appData.currentTab);
+        });
     </script>
 </body>
 </html>
