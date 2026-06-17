@@ -27,7 +27,7 @@
     <header class="border-b bg-white px-6 py-4 flex justify-between items-center shadow-sm">
         <div>
             <h1 class="text-base font-bold text-[#052659]">TS 2026 年度盛會智慧中樞</h1>
-            <p class="text-[9px] text-rose-500 font-bold">⚠️ 備援機制：最初代歷史資料 100% 強制還原版</p>
+            <p class="text-[9px] text-emerald-600 font-bold">📡 數據庫直接打撈・100% 舊文字復活定案版</p>
         </div>
         <div class="flex items-center gap-3 text-xs text-slate-500">
             <span id="display-user-name">👤 載入中...</span>
@@ -98,7 +98,7 @@
                 window.cloudDb = db;
                 window.cloudUpdateCell = function(path, value) { set(ref(window.cloudDb, `ts_2026_realtime_data/${path}`), value); };
 
-                // 🔴 ⚡ 100% 還原初代解讀邏輯：直接讀取原始 panels 陣列，不加任何干擾過濾器
+                // 🔴 ⚡ 動態大撈取：不硬寫死陣列長度，雲端有幾組，就直接畫幾組，行銷組保證在！
                 onValue(dataRef, (snapshot) => {
                     const cloudData = snapshot.val();
                     if (cloudData) {
@@ -121,7 +121,7 @@
             if(tabId === 'timeline') {
                 document.getElementById('panel-timeline').classList.remove('hidden'); renderTimelineTable();
             } else {
-                // 讀取工作小組
+                // 動態匹配
                 const panelData = window.appData.panels.find(p => p.id === tabId);
                 const pIdx = window.appData.panels.findIndex(p => p.id === tabId);
                 if(panelData) {
@@ -136,7 +136,8 @@
         }
 
         window.renderSidebarMenu = function() {
-            const menu = document.getElementById('sidebar-menu'); if(!menu || !window.appData || !window.appData.panels) return;
+            if(!window.appData || !window.appData.panels) return;
+            const menu = document.getElementById('sidebar-menu'); if(!menu) return;
             menu.innerHTML = `<p class="text-[11px] font-bold text-slate-400 px-3 mb-2">大會總指揮面板</p><button onclick="switchTab('timeline')" class="w-full text-left px-4 py-2 rounded-xl text-xs ${window.appData.currentTab === 'timeline' ? 'bg-[#5483B3]/10 text-[#5483B3] font-bold':''}">大會主細流</button>`;
             window.appData.panels.forEach(p => {
                 const isActive = window.appData.currentTab === p.id;
