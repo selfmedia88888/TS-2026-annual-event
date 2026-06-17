@@ -11,6 +11,9 @@
         body { font-family: 'Inter', 'Noto Sans TC', sans-serif; background-color: #F8FAFC; color: #1e293b; }
         [contenteditable="true"] { white-space: pre-wrap !important; word-break: break-word !important; }
         [contenteditable="true"]:focus { outline: 2px solid #5483B3; background-color: #ffffff; box-shadow: 0 0 0 4px rgba(84, 131, 179, 0.15); border-radius: 6px; }
+        /* 強制加大表格與通用字體 */
+        th, td { font-size: 14px !important; }
+        .main-panel h2 { font-size: 20px !important; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col pb-32">
@@ -26,10 +29,10 @@
 
     <header class="border-b bg-white px-6 py-4 flex justify-between items-center shadow-sm">
         <div>
-            <h1 class="text-base font-bold text-[#052659]">TS 2026 年度盛會智慧中樞</h1>
-            <p class="text-[9px] text-emerald-600 font-bold">📡 完全修正版：自訂新增文字方塊功能全面歸位</p>
+            <h1 class="text-lg font-bold text-[#052659]">TS 2026 年度盛會智慧中樞</h1>
+            <p class="text-xs text-emerald-600 font-bold">📡 字體放大・大會主細流規格修正・主桌功能復活版</p>
         </div>
-        <div class="flex items-center gap-3 text-xs text-slate-500">
+        <div class="flex items-center gap-3 text-sm text-slate-500">
             <span id="display-user-name">👤 載入中...</span>
         </div>
     </header>
@@ -40,33 +43,59 @@
         <main class="flex-1 p-8">
             <div id="panel-timeline" class="main-panel hidden">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-base font-bold text-[#052659]">大會核心時程主骨架</h2>
-                    <button onclick="addNewTimelineRow()" class="bg-[#5483B3] text-white text-xs px-4 py-2 rounded-xl">＋ 新增時段</button>
+                    <h2 class="font-bold text-[#052659]">大會核心時程主骨架</h2>
+                    <button onclick="addNewTimelineRow()" class="bg-[#5483B3] text-white text-sm px-5 py-2.5 rounded-xl shadow-sm">＋ 新增時段</button>
                 </div>
-                <table class="w-full text-left text-xs bg-white border rounded-2xl overflow-hidden shadow-sm">
-                    <thead><tr class="bg-slate-50 border-b">
-                        <th class="p-4 w-12 text-center">序</th><th class="p-4 w-32">時間段</th><th class="p-4 w-44">核心節目</th><th class="p-4">內容與舞台設定</th><th class="p-4 w-12 text-center">刪</th>
-                    </tr></thead>
-                    <tbody id="timeline-desktop-tbody" class="divide-y"></tbody>
-                </table>
+                <div class="overflow-x-auto bg-white border rounded-2xl shadow-sm">
+                    <table class="w-full text-left bg-white border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 border-b border-slate-200 text-[#052659] font-bold">
+                                <th class="p-4 w-12 text-center border-r border-slate-200">序</th>
+                                <th class="p-4 w-32 border-r border-slate-200">時間段</th>
+                                <th class="p-4 w-40 border-r border-slate-200">流程</th>
+                                <th class="p-4 min-w-[150px] border-r border-slate-200">內容</th>
+                                <th class="p-4 min-w-[120px] border-r border-slate-200">器材清單</th>
+                                <th class="p-4 min-w-[120px] border-r border-slate-200">備註</th>
+                                <th class="p-4 w-32 border-r border-slate-200">PA/音控</th>
+                                <th class="p-4 w-32 border-r border-slate-200">攝影</th>
+                                <th class="p-4 w-12 text-center">刪</th>
+                            </tr>
+                        </thead>
+                        <tbody id="timeline-desktop-tbody" class="divide-y divide-slate-200"></tbody>
+                    </table>
+                </div>
             </div>
 
             <div id="panel-team-generic" class="main-panel hidden">
-                <div class="bg-white border rounded-2xl p-5 shadow-sm mb-6">
-                    <h2 class="text-lg font-bold text-[#052659]" id="team-title-display">小組盤</h2>
+                <div class="bg-white border rounded-2xl p-6 shadow-sm mb-6">
+                    <h2 class="font-bold text-[#052659]" id="team-title-display">小組盤</h2>
                     <div class="mt-4">
                         <label class="text-xs font-bold text-slate-400 block mb-2">👥 本組組員名單</label>
-                        <div id="team-members-box" contenteditable="true" class="bg-slate-50 border rounded-xl p-3 text-xs min-h-[50px] focus:outline-none"></div>
+                        <div id="team-members-box" contenteditable="true" class="bg-slate-50 border rounded-xl p-4 text-sm min-h-[50px] focus:outline-none"></div>
+                    </div>
+                </div>
+
+                <div id="admin-seating-box" class="bg-white border rounded-2xl p-6 shadow-sm mb-6 hidden">
+                    <h3 class="text-base font-bold text-[#052659] mb-4"><i class="fa-solid fa-chair mr-2 text-[#5483B3]"></i>核心主桌桌次安排控制</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                            <label class="text-xs font-bold text-slate-400 block mb-2">🔴 主桌 1 號桌名單及設定</label>
+                            <div id="seating-table-1" contenteditable="true" class="bg-white border rounded-lg p-3 text-sm min-h-[80px] focus:outline-none"></div>
+                        </div>
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                            <label class="text-xs font-bold text-slate-400 block mb-2">🔵 主桌 2 號桌名單及設定</label>
+                            <div id="seating-table-2" contenteditable="true" class="bg-white border rounded-lg p-3 text-sm min-h-[80px] focus:outline-none"></div>
+                        </div>
                     </div>
                 </div>
                 
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xs font-bold uppercase text-slate-400 tracking-wider">📦 本組核心作戰模塊</h3>
-                    <button onclick="window.addNewModuleToTeam()" class="text-xs font-bold text-white bg-[#5483B3] hover:bg-[#436c9b] px-4 py-2 rounded-xl shadow-sm transition-all">
+                    <h3 class="text-sm font-bold uppercase text-slate-400 tracking-wider">📦 本組核心作戰模塊</h3>
+                    <button onclick="window.addNewModuleToTeam()" class="text-sm font-bold text-white bg-[#5483B3] hover:bg-[#436c9b] px-4 py-2 rounded-xl shadow-sm transition-all">
                         <i class="fa-solid fa-plus mr-1"></i> 新增文字方塊
                     </button>
                 </div>
-                <div class="grid grid-cols-2 gap-4" id="team-modules-grid"></div>
+                <div class="grid grid-cols-2 gap-5" id="team-modules-grid"></div>
             </div>
         </main>
     </div>
@@ -118,51 +147,71 @@
         window.renderActivePanelOnly = function() {
             if (!window.appData || !window.appData.panels) return;
             document.querySelectorAll('.main-panel').forEach(p => p.classList.add('hidden'));
+            document.getElementById('admin-seating-box').classList.add('hidden'); // 預設隱藏主桌安排
             const tabId = window.appData.currentTab;
             
             if(tabId === 'timeline') {
-                document.getElementById('panel-timeline').classList.remove('hidden'); renderTimelineTable();
+                document.getElementById('panel-timeline').classList.remove('hidden'); 
+                renderTimelineTable();
             } else {
                 const panelData = window.appData.panels.find(p => p.id === tabId);
                 const pIdx = window.appData.panels.findIndex(p => p.id === tabId);
                 if(panelData) {
                     document.getElementById('panel-team-generic').classList.remove('hidden');
                     document.getElementById('team-title-display').innerText = panelData.name;
+                    
                     const membersBox = document.getElementById('team-members-box');
                     if (document.activeElement !== membersBox) { membersBox.innerText = panelData.members || ""; }
                     membersBox.onblur = function() { if(window.cloudUpdateCell) window.cloudUpdateCell(`panels/${pIdx}/members`, this.innerText); };
+                    
+                    // 🍽️ 核心修正：如果當前切換到「行政組」，立刻強制大復活顯示主桌桌次功能！
+                    if (panelData.name.includes("行政組") || panelData.id === "admin") {
+                        const seatingBox = document.getElementById('admin-seating-box');
+                        seatingBox.classList.remove('hidden');
+                        
+                        const t1 = document.getElementById('seating-table-1');
+                        const t2 = document.getElementById('seating-table-2');
+                        if (document.activeElement !== t1) t1.innerText = window.appData.seating_table_1 || "尚未填寫主桌 1 號著名單...";
+                        if (document.activeElement !== t2) t2.innerText = window.appData.seating_table_2 || "尚未填寫主桌 2 號著名單...";
+                        
+                        t1.onblur = function() { if(window.cloudUpdateCell) window.cloudUpdateCell(`seating_table_1`, this.innerText); };
+                        t2.onblur = function() { if(window.cloudUpdateCell) window.cloudUpdateCell(`seating_table_2`, this.innerText); };
+                    }
+
                     renderTeamModules(panelData, pIdx);
                 }
             }
         }
 
+        // 🔴 ⚡ 徹底移除「時光隧道」與「大會資產軍火庫」，只留下真正需要的作戰盤
         window.renderSidebarMenu = function() {
             if(!window.appData || !window.appData.panels) return;
             const menu = document.getElementById('sidebar-menu'); if(!menu) return;
-            menu.innerHTML = `<p class="text-[11px] font-bold text-slate-400 px-3 mb-2">大會總指揮面板</p><button onclick="switchTab('timeline')" class="w-full text-left px-4 py-2 rounded-xl text-xs ${window.appData.currentTab === 'timeline' ? 'bg-[#5483B3]/10 text-[#5483B3] font-bold':''}">大會主細流</button>`;
+            menu.innerHTML = `<p class="text-xs font-bold text-slate-400 px-3 mb-2">大會總指揮面板</p>
+            <button onclick="switchTab('timeline')" class="w-full text-left px-4 py-2.5 rounded-xl text-sm ${window.appData.currentTab === 'timeline' ? 'bg-[#5483B3]/10 text-[#5483B3] font-bold':''}">大會主細流</button>`;
+            
             window.appData.panels.forEach(p => {
+                // 過濾不要的垃圾欄位
+                if (p.name.includes("時光隧道") || p.name.includes("軍火庫") || p.id === "tunnel" || p.id === "arsenal") return;
                 const isActive = window.appData.currentTab === p.id;
-                menu.innerHTML += `<button onclick="switchTab('${p.id}')" class="w-full text-left px-4 py-2 rounded-xl text-xs mt-1 ${isActive ? 'bg-[#5483B3]/10 text-[#5483B3] font-bold':''}">${p.name}</button>`;
+                menu.innerHTML += `<button onclick="switchTab('${p.id}')" class="w-full text-left px-4 py-2.5 rounded-xl text-sm mt-1 ${isActive ? 'bg-[#5483B3]/10 text-[#5483B3] font-bold':''}">${p.name}</button>`;
             });
         }
         window.switchTab = function(tabId) { window.appData.currentTab = tabId; window.renderSidebarMenu(); window.renderActivePanelOnly(); }
 
-        // 🔴 ⚡ 終極修復：保證卡片不是死圖卡，注入右上角「❌ 刪除按鈕」與編輯神經
         window.renderTeamModules = function(panel, pIdx) {
             const grid = document.getElementById('team-modules-grid'); if(!grid) return;
             grid.innerHTML = (panel.modules || []).map((mod, mIdx) => `
-                <div class="bg-white border rounded-xl p-4 shadow-sm relative">
+                <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm relative">
                     <div class="flex justify-between items-center mb-2">
-                        <h4 class="text-xs font-bold text-[#052659] w-full" contenteditable="true" onblur="window.updateModuleCell(${pIdx}, ${mIdx}, 'title', this.innerText)">${mod.title || '點擊輸入標題'}</h4>
-                        <button onclick="window.deleteModuleFromTeam(${pIdx}, ${mIdx})" class="text-slate-300 hover:text-rose-500 text-xs ml-2"><i class="fa-solid fa-circle-xmark"></i></button>
+                        <h4 class="text-sm font-bold text-[#052659] w-full" contenteditable="true" onblur="window.updateModuleCell(${pIdx}, ${mIdx}, 'title', this.innerText)">${mod.title || '點擊輸入標題'}</h4>
+                        <button onclick="window.deleteModuleFromTeam(${pIdx}, ${mIdx})" class="text-slate-300 hover:text-rose-500 text-sm ml-2"><i class="fa-solid fa-circle-xmark"></i></button>
                     </div>
-                    <div class="text-xs text-slate-600 bg-slate-50 p-3 rounded-lg focus:outline-none min-h-[60px]" contenteditable="true" onblur="window.updateModuleCell(${pIdx}, ${mIdx}, 'content', this.innerText)">${mod.content || '點擊編輯內容...'}</div>
+                    <div class="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg focus:outline-none min-h-[60px]" contenteditable="true" onblur="window.updateModuleCell(${pIdx}, ${mIdx}, 'content', this.innerText)">${mod.content || ''}</div>
                 </div>`).join('');
         }
         
         window.updateModuleCell = function(pIdx, mIdx, field, val) { if(window.cloudUpdateCell) window.cloudUpdateCell(`panels/${pIdx}/modules/${mIdx}/${field}`, val); }
-        
-        // ⚡ 連動修復：點擊「新增文字方塊」按鈕時，立刻在資料庫裡塞入一個新格子
         window.addNewModuleToTeam = function() {
             const tabId = window.appData.currentTab; const pIdx = window.appData.panels.findIndex(p => p.id === tabId);
             if(pIdx !== -1) {
@@ -171,13 +220,25 @@
                 if(window.cloudUpdateCell) window.cloudUpdateCell(`panels/${pIdx}/modules`, window.appData.panels[pIdx].modules);
             }
         }
-        
-        // 自由刪除功能
         window.deleteModuleFromTeam = function(pIdx, mIdx) { if(confirm("確定刪除此文字方塊？")) { window.appData.panels[pIdx].modules.splice(mIdx, 1); if(window.cloudUpdateCell) window.cloudUpdateCell(`panels/${pIdx}/modules`, window.appData.panels[pIdx].modules); } }
         
+        // 🔴 ⚡ 大會主細流重繪：精準對齊 [時間段、流程、內容、器材清單、備註、PA/音控、攝影] 
         window.renderTimelineTable = function() {
             const tbody = document.getElementById('timeline-desktop-tbody'); if(!tbody || !window.appData.timeline) return;
-            tbody.innerHTML = window.appData.timeline.map((row, idx) => `<tr><td class="p-4 text-center font-bold text-slate-400 bg-slate-50/40">${idx + 1}</td><td class="p-4 font-bold text-[#5483B3]" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'time', this.innerText)">${row.time || ''}</td><td class="p-4 font-bold" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'module', this.innerText)">${row.module || ''}</td><td class="p-4 text-slate-600" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'stage', this.innerText)">${row.stage || ''}</td><td class="p-4 text-slate-600" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'pa', this.innerText)">${row.pa || ''}</td><td class="p-4 text-center"><button onclick="window.appData.timeline.splice(${idx},1); set(ref(window.cloudDb, 'ts_2026_realtime_data/timeline'), window.appData.timeline);" class="text-slate-300 hover:text-rose-500"><i class="fa-solid fa-trash-can"></i></button></td></tr>`).join('');
+            tbody.innerHTML = window.appData.timeline.map((row, idx) => `
+                <tr class="hover:bg-slate-50/80 transition-colors">
+                    <td class="p-4 text-center font-bold text-slate-400 bg-slate-50/50 border-r border-slate-200">${idx + 1}</td>
+                    <td class="p-4 font-bold text-[#5483B3] border-r border-slate-200" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'time', this.innerText)">${row.time || ''}</td>
+                    <td class="p-4 font-bold text-slate-800 border-r border-slate-200" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'module', this.innerText)">${row.module || ''}</td>
+                    <td class="p-4 text-slate-600 border-r border-slate-200" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'stage', this.innerText)">${row.stage || ''}</td>
+                    <td class="p-4 text-slate-600 border-r border-slate-200" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'pa', this.innerText)">${row.pa || ''}</td>
+                    <td class="p-4 text-slate-500 border-r border-slate-200" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'notes', this.innerText)">${row.notes || ''}</td>
+                    <td class="p-4 text-slate-600 border-r border-slate-200" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'audio', this.innerText)">${row.audio || ''}</td>
+                    <td class="p-4 text-slate-600 border-r border-slate-200" contenteditable="true" onblur="window.updateTimelineCellData(${idx}, 'video', this.innerText)">${row.video || ''}</td>
+                    <td class="p-4 text-center">
+                        <button onclick="window.appData.timeline.splice(${idx},1); set(ref(window.cloudDb, 'ts_2026_realtime_data/timeline'), window.appData.timeline);" class="text-slate-300 hover:text-rose-500 text-sm"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                </tr>`).join('');
         }
         window.updateTimelineCellData = function(index, field, value) { if(window.cloudUpdateCell) window.cloudUpdateCell(`timeline/${index}/${field}`, value); }
         document.addEventListener("DOMContentLoaded", () => { window.checkAuthAndRun(); });
