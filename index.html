@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght=400;600;700&family=Noto+Sans+TC:wght=400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap');
         :root {
             --color-bg: #F8FAFC;
             --color-primary: #5483B3;
@@ -53,7 +53,7 @@
             </div>
             <div>
                 <h1 class="text-base font-bold tracking-tight text-[#052659]">TS 2026 年度盛會智慧中樞</h1>
-                <p class="text-[9px] uppercase font-bold tracking-widest text-slate-400">📡 全權限通電解鎖版</p>
+                <p class="text-[9px] uppercase font-bold tracking-widest text-slate-400">📡 歷史數據吸回・完全體大防線</p>
             </div>
         </div>
         <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
@@ -118,7 +118,7 @@
                     </div>
                     <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200">
                         <label class="text-xs font-bold text-slate-500">大會總桌數：</label>
-                        <input type="number" id="input-total-tables" min="1" max="100" class="w-16 bg-white border border-slate-300 rounded-lg p-1 text-center text-xs font-bold text-[#052659]" oninput="window.adjustTotalTables(this.value)">
+                        <input type="number" id="input-total-tables" min="1" max="100" class="w-16 bg-white border border-slate-300 rounded-lg p-1 text-center text-xs font-bold text-[#052659]" onchange="window.adjustTotalTables(this.value)">
                         <span class="text-xs text-slate-400">桌</span>
                     </div>
                 </div>
@@ -278,7 +278,6 @@
                 window.cloudSaveEngine = function(data) { set(dataRef, data); };
                 window.cloudUpdateCell = function(path, value) { set(ref(window.cloudDb, `ts_2026_realtime_data/${path}`), value); };
 
-                // 📡 全力直連
                 onValue(dataRef, (snapshot) => {
                     const cloudData = snapshot.val();
                     if (cloudData) {
@@ -291,6 +290,7 @@
                         if (!cloudData.assetsConfig) cloudData.assetsConfig = [];
                         if (!cloudData.tunnelTraffic) cloudData.tunnelTraffic = "green";
 
+                        // 大會最高骨架
                         const corePanels = [
                             { id: "timeline", name: "大會主細流", icon: "fa-clock-history" },
                             { id: "main_venue", name: "🏛️ 主會場桌位管理", icon: "fa-table-cells" },
@@ -300,7 +300,14 @@
                             { id: "checklist", name: "物資防線檢核", icon: "fa-list-check" }
                         ];
 
-                        const cloudPanels = cloudData.panels || [];
+                        // 🔴 ⚡ 關鍵相容層：把雲端原本的舊工作小組盤撈進來，確保大家打的歷史文字絕對不丟失！
+                        const cloudPanels = cloudData.panels || [
+                            { id: "team_activity", name: "活動組工作盤", icon: "fa-users-gear", type: "team", members: "Owen (組長)", modules: [] },
+                            { id: "team_admin", name: "行政組工作盤", icon: "fa-folder-open", type: "team", members: "恩安 (組長)", modules: [] },
+                            { id: "team_design", name: "設計組工作盤", icon: "fa-palette", type: "team", members: "宇哲 (組長)", modules: [] },
+                            { id: "team_game", name: "遊戲組工作盤", icon: "fa-dice", type: "team", members: "柏任 (組長)", modules: [] }
+                        ];
+                        
                         const mergedPanels = [...corePanels];
                         cloudPanels.forEach(cp => { if (!mergedPanels.some(mp => mp.id === cp.id)) { mergedPanels.push(cp); } });
 
@@ -342,6 +349,16 @@
                 document.getElementById('panel-assets-military').classList.remove('hidden'); renderAssetsMilitaryTable();
             } else if(tabId === 'checklist') {
                 document.getElementById('panel-checklist').classList.remove('hidden'); renderChecklist();
+            } else {
+                const panelData = window.appData.panels.find(p => p.id === tabId);
+                if(panelData) {
+                    document.getElementById('panel-team-generic').classList.remove('hidden');
+                    document.getElementById('team-title-display').innerText = panelData.name;
+                    const membersBox = document.getElementById('team-members-box');
+                    if (document.activeElement !== membersBox) { membersBox.innerText = panelData.members || ""; }
+                    membersBox.onblur = function() { window.updateTeamMembersData(panelData.id, this.innerText); };
+                    renderTeamModules(panelData);
+                }
             }
         }
 
@@ -380,7 +397,6 @@
 
         window.adjustTotalTables = function(val) { const num = parseInt(val); if (num < 1 || num > 100) return; window.appData.tablesConfig.totalTables = num; if (window.cloudUpdateCell) { window.cloudUpdateCell("tablesConfig/totalTables", num); } }
         window.selectTableForDetails = function(tableNum) { window.appData.selectedTable = tableNum; window.renderVenueTablesGrid(); }
-        
         window.renderTableSeatsControl = function() {
             const box = document.getElementById('table-details-box'); const grid = document.getElementById('seats-inputs-grid'); const title = document.getElementById('selected-table-title'); if (!box || !grid || !title) return; const tNum = window.appData.selectedTable; if (!tNum || tNum > window.appData.tablesConfig.totalTables) { box.classList.add('hidden'); return; } box.classList.remove('hidden'); title.innerHTML = `正在管理：第 【${tNum}】 桌座位名單`; const tData = window.appData.tablesConfig.tablesData[tNum] || { seats: Array(10).fill({ name: "", isVeg: false }) }; if(!tData.seats) tData.seats = Array(10).fill({ name: "", isVeg: false });
             let html = ""; for (let s = 0; s < 10; s++) { const seat = tData.seats[s] || { name: "", isVeg: false }; const isVeg = seat.isVeg || false; html += `<div id="seat-wrapper-${tNum}-${s}" class="flex items-center gap-1 bg-slate-50 border ${isVeg ? 'border-emerald-300 bg-emerald-50/50' : 'border-slate-200'} p-1.5 rounded-xl"><span class="text-[10px] font-mono text-slate-400 font-bold w-4 text-center">${s+1}</span><input type="text" id="seat-input-${tNum}-${s}" value="${seat.name || ''}" placeholder="空位" oninput="window.updateSeatName(${tNum}, ${s}, this.value)" class="w-full bg-transparent border-none text-xs focus:outline-none font-bold ${isVeg ? 'text-emerald-700' : 'text-slate-800'}"><button id="seat-veg-btn-${tNum}-${s}" onclick="window.toggleSeatVeg(${tNum}, ${s})" class="px-2 py-1 rounded-lg text-[10px] font-bold border ${isVeg ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-400 border-slate-200'}">素</button></div>`; } grid.innerHTML = html;
@@ -400,6 +416,15 @@
             for(let i=1; i<=(config.totalTables || 40); i++) { const tData = config.tablesData[i]; if(tData && tData.seats) { tData.seats.forEach(s => { if(s && s.name && s.name.trim() !== "") { total++; if(s.isVeg) veg++; } }); } }
             const tEl = document.getElementById('panel-stat-total'); const mEl = document.getElementById('panel-stat-meat'); const vEl = document.getElementById('panel-stat-veg');
             if (tEl && mEl && vEl) { tEl.innerText = total; vEl.innerText = veg; mEl.innerText = total - veg; }
+        }
+
+        window.setTunnelTraffic = function(color) { window.appData.tunnelTraffic = color; if (window.cloudUpdateCell) window.cloudUpdateCell("tunnelTraffic", color); }
+        window.syncTunnelTrafficUI = function() {
+            const bar = document.getElementById('tunnel-traffic-light-bar'); const icon = document.getElementById('tunnel-light-icon'); const txt = document.getElementById('tunnel-light-text'); if(!bar || !icon || !txt || !window.appData.tunnelTraffic) return;
+            const color = window.appData.tunnelTraffic;
+            if (color === 'green') { bar.className = "p-5 rounded-2xl card-shadow text-white flex flex-col sm:flex-row justify-between items-center gap-4 transition-all bg-emerald-950 border border-emerald-800"; icon.className = "w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-lg animate-pulse"; txt.innerText = "當前狀態：🟢 絲滑暢通 | 報到處依正常節奏優雅放人"; } 
+            else if (color === 'yellow') { bar.className = "p-5 rounded-2xl card-shadow text-white flex flex-col sm:flex-row justify-between items-center gap-4 transition-all bg-amber-950 border border-amber-800"; icon.className = "w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center text-lg animate-pulse"; txt.innerText = "當前狀態：🟡 人流減速 | 前方拍照區略微回堵，外場請適度放慢放人節奏"; } 
+            else if (color === 'red') { bar.className = "p-5 rounded-2xl card-shadow text-white flex flex-col sm:flex-row justify-between items-center gap-4 transition-all bg-rose-950 border border-rose-800 animate-pulse"; icon.className = "w-10 h-10 rounded-full bg-rose-500 flex items-center justify-center text-lg shadow-rose-500/30 animate-bounce"; txt.innerText = "當前狀態：🚨 外場暫緩放人！ | 前方大圖區嚴重堵塞，入口處請立刻暫停放人！"; }
         }
 
         window.renderTimelineTable = function() {
@@ -424,15 +449,6 @@
         }
         window.renderChecklist = function() { const box = document.getElementById('checklist-box'); if(!box) return; box.innerHTML = window.appData.checklist.map((item, idx) => `<div class="flex items-center p-4 gap-4 ${item.done ? 'bg-slate-50 opacity-50' : ''}"><input type="checkbox" ${item.done ? 'checked' : ''} onchange="window.toggleCheckItem(${idx})" class="w-4 h-4 rounded border-slate-300 text-[#5483B3] focus:ring-0"><div class="flex-1 text-xs font-bold text-slate-800 ${item.done ? 'line-through text-slate-400' : ''} sync-pre-wrap" contenteditable="true" onblur="window.updateCheckCellData(${idx}, 'item', this.innerText)">${item.item}</div><span class="bg-blue-50 text-[#5483B3] text-[10px] px-2 py-0.5 rounded border border-[#5483B3]/20" contenteditable="true" onblur="window.updateCheckCellData(${idx}, 'team', this.innerText)">${item.team}</span><div class="flex-1 text-xs text-slate-400 hidden sm:block sync-pre-wrap" contenteditable="true" onblur="window.updateCheckCellData(${idx}, 'note', this.innerText)">${item.note}</div></div>`).join(''); }
         window.renderTeamModules = function(panel) { const grid = document.getElementById('team-modules-grid'); if(!grid) return; if(!panel.modules) panel.modules = []; grid.innerHTML = panel.modules.map((mod, mIdx) => `<div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm relative group"><div class="flex justify-between items-center mb-2"><h4 class="text-xs font-bold text-[#052659]" id="mod-title-${panel.id}-${mIdx}" contenteditable="true" onblur="window.updateModuleCellData('${panel.id}', ${mIdx}, 'title', this.innerText)">${mod.title}</h4></div><div class="text-xs text-slate-500 leading-relaxed bg-slate-50 p-2 rounded-lg min-h-[50px] sync-pre-wrap" id="mod-content-${panel.id}-${mIdx}" contenteditable="true" onblur="window.updateModuleCellData('${panel.id}', ${mIdx}, 'content', this.innerText)">${mod.content}</div></div>`).join(''); }
-
-        window.setTunnelTraffic = function(color) { window.appData.tunnelTraffic = color; if (window.cloudUpdateCell) window.cloudUpdateCell("tunnelTraffic", color); }
-        window.syncTunnelTrafficUI = function() {
-            const bar = document.getElementById('tunnel-traffic-light-bar'); const icon = document.getElementById('tunnel-light-icon'); const txt = document.getElementById('tunnel-light-text'); if(!bar || !icon || !txt || !window.appData.tunnelTraffic) return;
-            const color = window.appData.tunnelTraffic;
-            if (color === 'green') { bar.className = "p-5 rounded-2xl card-shadow text-white flex flex-col sm:flex-row justify-between items-center gap-4 transition-all bg-emerald-950 border border-emerald-800"; icon.className = "w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-lg shadow-lg shadow-emerald-500/30 animate-pulse"; txt.innerText = "當前狀態：🟢 絲滑暢通 | 報到處依正常節奏優雅放人"; } 
-            else if (color === 'yellow') { bar.className = "p-5 rounded-2xl card-shadow text-white flex flex-col sm:flex-row justify-between items-center gap-4 transition-all bg-amber-950 border border-amber-800"; icon.className = "w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center text-lg shadow-lg shadow-amber-500/30 animate-pulse"; txt.innerText = "當前狀態：🟡 人流減速 | 前方拍照區略微回堵，外場請適度放慢放人節奏"; } 
-            else if (color === 'red') { bar.className = "p-5 rounded-2xl card-shadow text-white flex flex-col sm:flex-row justify-between items-center gap-4 transition-all bg-rose-950 border border-rose-800 animate-pulse"; icon.className = "w-10 h-10 rounded-full bg-rose-500 flex items-center justify-center text-lg shadow-lg shadow-rose-500/30 animate-bounce"; txt.innerText = "當前狀態：🚨 外場暫緩放人！ | 前方大圖區嚴重堵塞，入口處請立刻暫停放人！"; }
-        }
 
         window.updateAwardCell = function(idx, field, val) { window.appData.awardsConfig[idx][field] = val; if(window.cloudUpdateCell) window.cloudUpdateCell(`awardsConfig/${idx}/${field}`, val); }
         window.toggleAwardStep = function(idx, field) { window.appData.awardsConfig[idx][field] = !window.appData.awardsConfig[idx][field]; if(window.cloudUpdateCell) window.cloudUpdateCell(`awardsConfig/${idx}/${field}`, window.appData.awardsConfig[idx][field]); }
