@@ -2,14 +2,17 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>TS 2026 指揮中樞｜最終定案版</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 TS 年度盛會｜指揮中樞</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .main-panel { display: none; }
+        .main-panel.active { display: block; }
+    </style>
 </head>
-<body class="bg-gray-50 min-h-screen p-4">
-    <div id="app" class="max-w-3xl mx-auto space-y-6">
-        <h1 class="text-2xl font-bold text-blue-900">TS 2026 年度盛會指揮中樞</h1>
-        <div id="content" class="space-y-6">讀取中...</div>
-    </div>
+<body class="bg-gray-50 min-h-screen">
+    <div id="content" class="p-6">載入中...</div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -24,39 +27,19 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const dataRef = ref(db, 'ts_2026_realtime_data/panels');
+        // 鎖定這個路徑，這是你 Firebase 裡面所有資料的根目錄
+        const dataRef = ref(db, 'ts_2026_realtime_data');
 
         onValue(dataRef, (snapshot) => {
-            const panels = snapshot.val();
-            const content = document.getElementById('content');
-            content.innerHTML = "";
-
-            if (panels && Array.isArray(panels)) {
-                panels.forEach((p) => {
-                    if (!p) return; // 略過無效項目
-                    
-                    let html = `
-                        <div class="bg-white p-6 rounded-xl shadow-lg border border-blue-100">
-                            <h2 class="text-2xl font-bold text-blue-900 border-b pb-2 mb-4">${p.name || '未命名分頁'}</h2>
-                            <p class="text-sm font-bold text-gray-500 mb-2">👤 組員名單:</p>
-                            <div class="bg-gray-50 p-3 rounded-lg mb-4 text-gray-800">${p.members || '無'}</div>
-                            <div class="space-y-3">
-                                <p class="text-sm font-bold text-gray-500">📦 任務模塊:</p>`;
-                    
-                    if (p.modules && Array.isArray(p.modules)) {
-                        p.modules.forEach(m => {
-                            html += `
-                                <div class="bg-white p-3 rounded border border-gray-200">
-                                    <h3 class="font-bold text-blue-700">${m.title || '任務'}</h3>
-                                    <p class="text-gray-700 text-sm mt-1 whitespace-pre-wrap">${m.content || ''}</p>
-                                </div>`;
-                        });
-                    }
-                    html += `</div></div>`;
-                    content.innerHTML += html;
-                });
-            } else {
-                content.innerHTML = '<p class="text-red-500">無法讀取面板資料，請檢查資料庫結構。</p>';
+            const data = snapshot.val();
+            if (data) {
+                window.appData = data;
+                console.log("資料庫已成功同步，內容為：", data);
+                // 這裡會觸發你原本寫好的 renderSidebarMenu() 和 renderActivePanelOnly()
+                // 為了確保你的 UI 能動，我建議你直接呼叫你原本寫好的渲染函數：
+                if(window.renderSidebarMenu) window.renderSidebarMenu();
+                if(window.renderActivePanelOnly) window.renderActivePanelOnly();
+                document.getElementById('content').innerHTML = "系統已載入完畢，請點選選單。";
             }
         });
     </script>
