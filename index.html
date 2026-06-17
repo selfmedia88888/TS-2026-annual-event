@@ -11,7 +11,7 @@
         body { font-family: 'Inter', 'Noto Sans TC', sans-serif; background-color: #F8FAFC; color: #1e293b; }
         [contenteditable="true"] { white-space: pre-wrap !important; word-break: break-word !important; }
         [contenteditable="true"]:focus { outline: 2px solid #5483B3; background-color: #ffffff; box-shadow: 0 0 0 4px rgba(84, 131, 179, 0.15); border-radius: 6px; }
-        /* 實戰清晰大字體 */
+        /* 實戰大字體規格優化 */
         th, td, input, div, button { font-size: 16px !important; font-weight: 500 !important; }
         thead th { font-size: 16px !important; font-weight: 700 !important; }
         .main-panel h2 { font-size: 24px !important; font-weight: 700 !important; }
@@ -35,11 +35,11 @@
     <header class="border-b bg-white px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-2 shadow-sm sticky top-0 z-50">
         <div>
             <h1 class="text-xl font-bold text-[#052659]">TS 2026 年度盛會智慧中樞</h1>
-            <p class="text-xs text-emerald-600 font-bold">📡 一步到位定案版：文字回歸・大表格排版・局部刷新永不跳頁</p>
+            <p class="text-xs text-emerald-600 font-bold">📡 一步到位定案版：心血文字大歸位・大表格對齊・局部刷新永不跳頁</p>
         </div>
         <div class="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto border-t md:border-t-0 pt-2 md:pt-0">
             <span id="display-user-name" class="text-sm bg-slate-100 px-3 py-1.5 rounded-xl text-slate-600 font-bold">👤 載入中...</span>
-            <span id="cloud-status-badge" class="text-xs text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full font-bold">● 連線成功</span>
+            <span id="cloud-status-badge" class="text-xs text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full font-bold">● 獨立隔離連線中</span>
         </div>
     </header>
 
@@ -169,9 +169,9 @@
                     if (cloudData) {
                         window.appData = cloudData;
                         
-                        // 🔴 🔒 核心防線：本地有切換分頁，就絕對沿用本地分頁，Firebase 重新整理時絕不霸道跳頁！
+                        // 🔴 🔒 最高核心安全隔離：每個人獨立掌管分頁位置，絕不讀取、不覆蓋雲端 Tab！徹底杜絕跳頁問題！
                         if (!window.currentActiveTab) {
-                            window.currentActiveTab = window.appData.currentTab || "timeline";
+                            window.currentActiveTab = "timeline";
                         }
 
                         window.corePanelsMap = {
@@ -209,13 +209,14 @@
             } else if(tabId === 'checklist') {
                 document.getElementById('panel-checklist').classList.remove('hidden'); renderChecklist();
             } else {
-                // 🔴 ⚡ 雙軌並流打撈：兼容舊資料 team_activity 結構，確保歷史心血 100% 吐回畫面，拒絕 undefined！
+                // 🔴 ⚡ 雙軌並流防空機制：如果 panels 或直接欄位有資料就直接對接，拒絕顯示空白或 undefined！
                 let teamData = window.appData[tabId];
                 if (!teamData && window.appData.panels) {
                     teamData = window.appData.panels.find(p => p.id === tabId || p.id === tabId.replace("team_", ""));
                 }
                 
-                if(!teamData) teamData = { name: window.corePanelsMap[tabId]?.name || "工作盤", members: "", modules: [] };
+                // 防寫死隔離保護：如果雲端真的一時沒抓到，在前端給予空物件，但「絕對不准擅自把空物件寫回 Firebase 抹煞原始資料」！
+                if(!teamData) teamData = { name: window.corePanelsMap[tabId]?.name || "小組盤", members: "", modules: [] };
 
                 document.getElementById('panel-team-generic').classList.remove('hidden'); 
                 document.getElementById('team-title-display').innerText = teamData.name || window.corePanelsMap[tabId]?.name || "工作盤";
@@ -243,19 +244,20 @@
                     const coreIds = ['timeline', 'seating', 'checklist', 'team_activity', 'team_admin', 'team_design', 'team_game', 'team_marketing'];
                     if (coreIds.includes(p.id) || p.name.includes("時光隧道") || p.name.includes("軍火庫")) return;
                     const isActive = currentTabId === p.id;
-                    html += `<button onclick="window.switchTab('${p.id}')" class="text-left px-4 py-2 rounded-xl text-sm ${isActive ? 'bg-[#5483B3]/10 text-[#5483B3] font-bold border-l-4 border-[#5483B3]' : 'text-slate-500 hover:bg-slate-50'}"><i class="fa-solid fa-folder mr-1.5 w-4 text-center"></i><span>${p.name}</span></button>`;
+                    html += `<button onclick="window.switchTab('${p.id}')" class="text-left px-3 py-2 rounded-xl text-sm ${isActive ? 'bg-[#5483B3]/10 text-[#5483B3] font-bold border-l-4 border-[#5483B3]' : 'text-slate-500 hover:bg-slate-50'}"><i class="fa-solid fa-folder mr-1.5 w-4 text-center"></i><span>${p.name}</span></button>`;
                 });
             }
             menu.innerHTML = html;
         }
 
-        // 🔴 ⚡ 終極防跳頁路由修改：只鎖定本地會話狀態，杜絕任何事件觸發跳頁 Bug
+        // 🔴 ⚡ 終極鎖定：只切換本地會話（Local Session），不修改雲端 Tab，根治亂跳頁！
         window.switchTab = function(tabId) { 
             window.currentActiveTab = tabId; 
             window.renderSidebarMenu(); 
             window.renderActivePanelOnly(); 
         }
 
+        // 大表格主細流渲染 (移動排序絕對不跳頁)
         window.renderTimelineTable = function() {
             const tbody = document.getElementById('timeline-desktop-tbody'); if(!tbody || !window.appData.timeline) return;
             tbody.innerHTML = window.appData.timeline.map((row, idx) => `
@@ -282,12 +284,13 @@
         }
         window.addNewTimelineRow = function() {
             if(!window.appData.timeline) window.appData.timeline = [];
-            window.appData.timeline.push({ time: "12:00", module: "新流程", stage: "", pa: "", notes: "", audio: "", video: "" });
+            window.appData.timeline.push({ time: "12:00", module: "新項目", stage: "", pa: "", notes: "", audio: "", video: "" });
             if(window.cloudUpdateCell) window.cloudUpdateCell(`timeline`, window.appData.timeline);
         }
         window.deleteTimelineRow = function(idx) { if(confirm("確定刪除此流程項目？")) { window.appData.timeline.splice(idx, 1); if(window.cloudUpdateCell) window.cloudUpdateCell(`timeline`, window.appData.timeline); } }
         window.updateTimelineCellData = function(index, field, value) { if(window.cloudUpdateCell) window.cloudUpdateCell(`timeline/${index}/${field}`, value); }
 
+        // 物資檢核
         window.renderChecklist = function() {
             const box = document.getElementById('checklist-box'); if(!box) return;
             box.innerHTML = (window.appData.checklist || []).map((item, idx) => `
@@ -302,6 +305,7 @@
         window.addNewChecklistItem = function() { if(!window.appData.checklist) window.appData.checklist = []; window.appData.checklist.push({ done: false, item: "點擊編輯新物資條目..." }); if (window.cloudUpdateCell) window.cloudUpdateCell(`checklist`, window.appData.checklist); }
         window.deleteCheckItem = function(idx) { if(confirm("確定刪除此物資？")) { window.appData.checklist.splice(idx, 1); if (window.cloudUpdateCell) window.cloudUpdateCell(`checklist`, window.appData.checklist); } }
 
+        // 1-40 桌次控制 (點按「素」局部刷新、絕不跳頁)
         window.renderVenueTablesGrid = function() {
             const grid = document.getElementById('venue-tables-grid'); const totalInput = document.getElementById('input-total-tables'); if (!grid || !window.appData.tablesConfig) return;
             const config = window.appData.tablesConfig; totalInput.value = config.totalTables || 40;
@@ -318,7 +322,7 @@
         window.adjustTotalTables = function(val) { const num = parseInt(val); if (num < 1 || num > 100) return; if (window.cloudUpdateCell) window.cloudUpdateCell("tablesConfig/totalTables", num); }
         window.selectTableForDetails = function(tableNum) { window.appData.selectedTable = tableNum; window.renderVenueTablesGrid(); }
         window.renderTableSeatsControl = function() {
-            const box = document.getElementById('table-details-box'); const grid = document.getElementById('seats-inputs-grid'); const title = document.getElementById('selected-table-title'); if (!box || !grid || !title) return; const tNum = window.appData.selectedTable; if (!tNum || !window.appData.tablesConfig || tNum > window.appData.tablesConfig.totalTables) { box.classList.add('hidden'); return; } box.classList.remove('hidden'); title.innerHTML = `第 【${tNum}】 桌座位安排名單 (1桌配置 10 人)`; const tData = (window.appData.tablesConfig.tablesData && window.appData.tablesConfig.tablesData[tNum]) ? window.appData.tablesConfig.tablesData[tNum] : { seats: Array(10).fill({ name: "", isVeg: false }) };
+            const box = document.getElementById('table-details-box'); const grid = document.getElementById('seats-inputs-grid'); const title = document.getElementById('selected-table-title'); if (!box || !grid || !title) return; const tNum = window.appData.selectedTable; if (!tNum || !window.appData.tablesConfig || tNum > window.appData.tablesConfig.totalTables) { box.classList.add('hidden'); return; } box.classList.remove('hidden'); title.innerHTML = `第 【${tNum}】 桌座位安排名單 (一桌配置 10 人)`; const tData = (window.appData.tablesConfig.tablesData && window.appData.tablesConfig.tablesData[tNum]) ? window.appData.tablesConfig.tablesData[tNum] : { seats: Array(10).fill({ name: "", isVeg: false }) };
             let html = ""; 
             for (let s = 0; s < 10; s++) { 
                 const seat = (tData.seats && tData.seats[s]) ? tData.seats[s] : { name: "", isVeg: false }; const isVeg = seat.isVeg || false; 
@@ -351,12 +355,12 @@
             if (tEl) tEl.innerText = total; if (vEl) vEl.innerText = veg; if (mEl) mEl.innerText = total - veg;
         }
 
-        // 🔴 ⚡ 終極除錯：將 ${mIdx} 變數完美綁定，徹底告別一動不動死機 Bug！
+        // 📦 歷史方塊語法除錯（🔴 ⚡ 精準綁定 ${mIdx}，拆除罷工炸彈）
         window.renderTeamModules = function(teamData, tabId) { 
             const grid = document.getElementById('team-modules-grid'); if(!grid) return; 
             const modules = teamData.modules || []; 
             if (modules.length === 0) {
-                grid.innerHTML = `<div class="col-span-full text-slate-400 text-center py-8 bg-slate-50 border rounded-xl border-dashed">目前尚無作戰方塊。點擊右上方按鈕新增任務塊。</div>`;
+                grid.innerHTML = `<div class="col-span-full text-slate-400 text-center py-8 bg-slate-50 border rounded-xl border-dashed">這裡目前沒有方塊資料，請點擊右上方按鈕新增任務塊。</div>`;
                 return;
             }
             grid.innerHTML = modules.map((mod, mIdx) => `
