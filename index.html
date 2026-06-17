@@ -2,17 +2,12 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026 TS 年度盛會｜最終修復版</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        [contenteditable="true"]:focus { outline: 2px solid #5483B3; background-color: #ffffff; }
-    </style>
+    <title>TS 2026 最終救援版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-50 min-h-screen">
-    <div id="app" class="p-4">
-        <h1 class="text-2xl font-bold mb-4">資料處理中，請稍候...</h1>
+<body class="p-4 bg-gray-100">
+    <div id="display-area" class="space-y-4">
+        <h1 class="text-xl font-bold">正在讀取雲端原始資料...</h1>
     </div>
 
     <script type="module">
@@ -28,20 +23,15 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        
-        // 這一行是直接讀取資料庫最原始的 ts_2026_realtime_data
         const dataRef = ref(db, 'ts_2026_realtime_data');
 
         onValue(dataRef, (snapshot) => {
             const data = snapshot.val();
-            console.log("資料庫撈取原始資料:", data);
+            const display = document.getElementById('display-area');
+            display.innerHTML = '<h1 class="text-xl font-bold mb-4">雲端所有資料內容：</h1>';
             
-            // 這裡直接檢查是否有原本的 team_activity 等欄位
-            if (data) {
-                // 如果你看到控制台輸出這些資料，代表字都在！
-                // 之後我們可以根據這個 log 決定怎麼把字填回新的介面
-                alert("系統已連線，請檢查瀏覽器控制台 (F12) 查看所有歷史文字！");
-            }
+            // 直接暴力把雲端所有東西轉成文字列出來
+            display.innerHTML += `<pre class="bg-white p-4 border rounded shadow-sm text-sm overflow-x-auto">${JSON.stringify(data, null, 2)}</pre>`;
         });
     </script>
 </body>
