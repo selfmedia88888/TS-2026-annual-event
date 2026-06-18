@@ -19,6 +19,7 @@
     </style>
 </head>
 <body class="min-h-screen flex flex-col pb-32">
+
     <div id="auth-overlay" class="fixed inset-0 bg-[#052659]/90 backdrop-blur-lg z-[9999] flex items-center justify-center hidden p-4">
         <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-4">
             <h2 class="text-[#052659] text-center font-bold">TS 2026 指揮中樞身份核驗</h2>
@@ -53,22 +54,71 @@
 
         <main class="flex-1 p-4 lg:p-8 overflow-x-hidden">
             <div id="panel-timeline" class="main-panel hidden space-y-4">
-                <div class="flex justify-between items-center"><h2 class="text-[#052659] font-bold">📊 大會主細流主骨架</h2><button onclick="addNewTimelineRow()" class="bg-[#5483B3] text-white text-sm font-bold px-4 py-2 rounded-xl shadow-sm">＋ 新增時段</button></div>
-                <div class="overflow-x-auto bg-white border border-slate-200 rounded-2xl shadow-sm"><table class="w-full text-left bg-white border-collapse min-w-[1200px]"><thead><tr class="bg-slate-100 border-b border-slate-300 text-[#052659] font-bold"><th class="p-4 w-28 border-r">排序</th><th class="p-4 w-16 border-r">序</th><th class="p-4 w-40 border-r">時間段</th><th class="p-4 w-48 border-r">流程</th><th class="p-4 min-w-[250px] border-r">內容</th><th class="p-4 min-w-[180px] border-r">器材清單</th><th class="p-4 min-w-[180px] border-r">備註</th><th class="p-4 w-44 border-r">PA/音控</th><th class="p-4 w-44 border-r">攝影</th><th class="p-4 w-16 text-center">刪</th></tr></thead><tbody id="timeline-desktop-tbody" class="divide-y divide-slate-200"></tbody></table></div>
+                <div class="flex justify-between items-center">
+                    <h2 class="text-[#052659] font-bold">📊 大會主細流主骨架</h2>
+                    <button onclick="addNewTimelineRow()" class="bg-[#5483B3] text-white text-sm font-bold px-4 py-2 rounded-xl shadow-sm">＋ 新增時段</button>
+                </div>
+                <div class="overflow-x-auto bg-white border border-slate-200 rounded-2xl shadow-sm">
+                    <table class="w-full text-left bg-white border-collapse min-w-[1200px]">
+                        <thead>
+                            <tr class="bg-slate-100 border-b border-slate-300 text-[#052659] font-bold select-none">
+                                <th class="p-4 w-28 text-center border-r">排序</th><th class="p-4 w-16 text-center border-r">序</th><th class="p-4 w-40 border-r">時間段</th><th class="p-4 w-48 border-r">流程</th><th class="p-4 min-w-[250px] border-r">內容</th><th class="p-4 min-w-[180px] border-r">器材清單</th><th class="p-4 min-w-[180px] border-r">備註</th><th class="p-4 w-44 border-r">PA/音控</th><th class="p-4 w-44 border-r">攝影</th><th class="p-4 w-16 text-center">刪</th>
+                            </tr>
+                        </thead>
+                        <tbody id="timeline-desktop-tbody" class="divide-y divide-slate-200"></tbody>
+                    </table>
+                </div>
             </div>
+
             <div id="panel-seating" class="main-panel hidden space-y-4">
-                <div class="bg-slate-900 rounded-xl p-4 text-white flex flex-col gap-1 text-sm font-mono card-shadow"><div class="font-bold text-emerald-400">🍳 行政組專用：廚房總出菜雷達</div><div class="flex justify-between border-t border-slate-800 pt-1 text-xs"><div>總人數: <span id="panel-stat-total" class="text-[#C1E8FF] font-bold">0</span></div><div>葷食: <span id="panel-stat-meat" class="text-amber-400 font-bold">0</span></div><div>🟢 素食: <span id="panel-stat-veg" class="text-emerald-400 font-bold">0</span></div></div></div>
-                <div class="bg-white border rounded-xl p-3 flex justify-between items-center gap-2"><h2 class="text-sm font-bold text-[#052659]">🏛️ 主會場桌次管理矩陣盤</h2><div class="flex items-center gap-1.5 bg-slate-50 p-1 rounded-lg border"><input type="number" id="input-total-tables" min="1" max="100" class="w-12 bg-white border text-center font-bold text-[#052659]" onchange="window.adjustTotalTables(this.value)"> <span class="text-xs text-slate-400">桌</span></div></div>
+                <div class="bg-slate-900 rounded-xl p-4 text-white flex flex-col gap-1 text-sm font-mono card-shadow">
+                    <div class="font-bold text-emerald-400">🍳 行政組專用：廚房總出菜雷達</div>
+                    <div class="flex justify-between border-t border-slate-800 pt-1 text-xs">
+                        <div>總人數: <span id="panel-stat-total" class="text-[#C1E8FF] font-bold">0</span></div>
+                        <div>葷食: <span id="panel-stat-meat" class="text-amber-400 font-bold">0</span></div>
+                        <div>🟢 素食: <span id="panel-stat-veg" class="text-emerald-400 font-bold">0</span></div>
+                    </div>
+                </div>
+                <div class="bg-white border rounded-xl p-3 flex justify-between items-center gap-2">
+                    <h2 class="text-sm font-bold text-[#052659]">🏛️ 主會場 400人桌次管理矩陣盤</h2>
+                    <div class="flex items-center gap-1.5 bg-slate-50 p-1 rounded-lg border">
+                        <input type="number" id="input-total-tables" min="1" max="100" class="w-12 bg-white border text-center font-bold text-[#052659]" onchange="window.adjustTotalTables(this.value)"> <span class="text-xs text-slate-400">桌</span>
+                    </div>
+                </div>
                 <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 lg:grid-cols-10 gap-2.5" id="venue-tables-grid"></div>
-                <div id="table-details-box" class="bg-white border-2 border-slate-300 rounded-xl p-4 card-shadow hidden"><h3 class="text-sm font-bold text-[#052659] border-b pb-2 mb-3" id="selected-table-title">🎯 桌座位安排名單</h3><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3" id="seats-inputs-grid"></div></div>
+                <div id="table-details-box" class="bg-white border-2 border-slate-300 rounded-xl p-4 card-shadow hidden">
+                    <h3 class="text-sm font-bold text-[#052659] border-b pb-2 mb-3" id="selected-table-title">🎯 1桌10人座位安排名單</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3" id="seats-inputs-grid"></div>
+                </div>
             </div>
+
             <div id="panel-checklist" class="main-panel hidden space-y-4">
-                <div class="flex justify-between items-center"><h2 class="text-[#052659] font-bold">📦 大會現場物資防線檢核條目表</h2><button onclick="window.addNewChecklistItem()" class="bg-[#5483B3] text-white text-xs font-bold px-4 py-2 rounded-xl">＋ 新增資產物資</button></div>
+                <div class="flex justify-between items-center">
+                    <h2 class="text-[#052659] font-bold">📦 大會現場物資防線檢核條目表</h2>
+                    <button onclick="window.addNewChecklistItem()" class="bg-[#5483B3] text-white text-xs font-bold px-4 py-2 rounded-xl">＋ 新增資產物資</button>
+                </div>
                 <div class="bg-white border rounded-xl divide-y card-shadow" id="checklist-box"></div>
             </div>
+
             <div id="panel-team-generic" class="main-panel hidden space-y-5">
-                <div class="bg-white border rounded-2xl p-4 lg:p-6 shadow-sm relative"><div class="flex justify-between items-start"><h2 class="text-[#052659] font-bold" id="team-title-display">小組盤</h2><button id="btn-delete-entire-panel" class="text-xs font-bold text-white bg-rose-500 hover:bg-rose-600 px-4 py-2 rounded-xl transition-all"><i class="fa-solid fa-trash-can mr-1"></i> 刪除此面板</button></div><div class="mt-3"><label class="text-xs font-bold text-slate-400 block mb-1">👥 本組組員名單</label><div id="team-members-box" contenteditable="true" class="bg-slate-50 border rounded-xl p-3 text-base min-h-[45px] focus:outline-none"></div></div></div>
-                <div class="flex justify-between items-center pt-2"><h3 class="text-slate-400 tracking-wider text-xs uppercase">📦 本組核心作戰模塊</h3><button onclick="window.addNewModuleToTeam()" class="text-xs font-bold text-white bg-[#5483B3] hover:bg-[#436c9b] px-3 py-2 rounded-xl shadow-sm transition-all"><i class="fa-solid fa-plus mr-1"></i> 新增文字方塊</button></div>
+                <div class="bg-white border rounded-2xl p-4 lg:p-6 shadow-sm relative">
+                    <div class="flex justify-between items-start">
+                        <h2 class="text-[#052659] font-bold" id="team-title-display">小組盤</h2>
+                        <button id="btn-delete-entire-panel" class="text-xs font-bold text-white bg-rose-500 hover:bg-rose-600 px-4 py-2 rounded-xl transition-all">
+                            <i class="fa-solid fa-trash-can mr-1"></i> ❌ 刪除此面板分頁
+                        </button>
+                    </div>
+                    <div class="mt-3">
+                        <label class="text-xs font-bold text-slate-400 block mb-1">👥 本組組員名單</label>
+                        <div id="team-members-box" contenteditable="true" class="bg-slate-50 border rounded-xl p-3 text-base min-h-[45px] focus:outline-none"></div>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center pt-2">
+                    <h3 class="text-slate-400 tracking-wider text-xs uppercase">📦 本組核心作戰模塊</h3>
+                    <button onclick="window.addNewModuleToTeam()" class="text-xs font-bold text-white bg-[#5483B3] hover:bg-[#436c9b] px-3 py-2 rounded-xl shadow-sm transition-all">
+                        <i class="fa-solid fa-plus mr-1"></i> 新增文字方塊
+                    </button>
+                </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="team-modules-grid"></div>
             </div>
         </main>
@@ -78,38 +128,37 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
         const firebaseConfig = { apiKey: "AIzaSyBQdnW16U1OxpDR05hvAv2fcZ4aMKXsyfM", authDomain: "test-fee8d.firebaseapp.com", projectId: "test-fee8d", databaseURL: "https://test-fee8d-default-rtdb.firebaseio.com" };
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+        const db = getDatabase(initializeApp(firebaseConfig));
         window.cloudDb = db;
         window.cloudUpdateCell = (path, val) => set(ref(db, `ts_2026_realtime_data/${path}`), val);
         window.cloudDeleteNode = (path) => remove(ref(db, `ts_2026_realtime_data/${path}`));
         
-        // 登入邏輯
-        window.submitAuth = () => {
-            if(document.getElementById('input-auth-key').value === "ts2026") {
-                localStorage.setItem('ts_auth_key', "ts2026");
-                localStorage.setItem('ts_auth_user', document.getElementById('input-auth-user').value);
-                window.location.reload();
-            } else { alert("暗號錯誤！"); }
+        window.checkAuthAndRun = function() {
+            let savedKey = localStorage.getItem('ts_auth_key'); let savedUser = localStorage.getItem('ts_auth_user');
+            if (savedKey !== "ts2026" || !savedUser) { document.getElementById('auth-overlay').classList.remove('hidden'); return false; }
+            document.getElementById('display-user-name').innerText = `👤 指揮官：${savedUser}`; return true;
         }
-        if (localStorage.getItem('ts_auth_key') === "ts2026") {
-            onValue(ref(db, 'ts_2026_realtime_data'), (s) => { window.appData = s.val(); if(window.appData) { window.renderSidebarMenu(); window.renderActivePanelOnly(); window.updateTableBoxVegLightOnly(); window.calculateKitchenRadar(); } });
-        } else { document.getElementById('auth-overlay').classList.remove('hidden'); }
-    </script>
+        window.submitAuth = function() {
+            const k = document.getElementById('input-auth-key').value.trim(); const u = document.getElementById('input-auth-user').value.trim();
+            if (k !== "ts2026" || !u) { alert("暗號錯誤！"); return; }
+            localStorage.setItem('ts_auth_key', k); localStorage.setItem('ts_auth_user', u); window.location.reload();
+        }
 
+        if (window.checkAuthAndRun()) {
+            onValue(ref(db, 'ts_2026_realtime_data'), (s) => { 
+                window.appData = s.val(); 
+                if(window.appData) { window.renderSidebarMenu(); window.renderActivePanelOnly(); window.updateTableBoxVegLightOnly(); window.calculateKitchenRadar(); } 
+            });
+        }
+    </script>
     <script>
-        // 你的原始函數，我原封不動貼回來，只改了 updateSeatName
+        // --- 下面這些全是你的原版邏輯，我一字沒改，只加了防卡頓 ---
+        let seatTimer = {};
+        window.updateSeatName = function(tn, si, v) { clearTimeout(seatTimer[`${tn}_${si}`]); seatTimer[`${tn}_${si}`] = setTimeout(() => { window.cloudUpdateCell(`tablesConfig/tablesData/${tn}/seats/${si}/name`, v); }, 500); }
+        
         window.switchTab = function(tid) { window.currentActiveTab = tid; window.renderSidebarMenu(); window.renderActivePanelOnly(); }
         window.createNewCustomPanel = function() { const n = prompt("輸入小組名稱:"); if(!n) return; const id = "panel_"+Date.now(); window.cloudUpdateCell(id, {name:n, members:"...", modules:[]}); }
         window.deleteEntireCustomPanel = function(tid) { if(confirm("確定刪除？")) { window.currentActiveTab="timeline"; window.cloudDeleteNode(tid); } }
-        
-        // --- 核心優化：防卡頓 ---
-        let seatTimer = {};
-        window.updateSeatName = function(tn, si, v) {
-            clearTimeout(seatTimer[`${tn}_${si}`]);
-            seatTimer[`${tn}_${si}`] = setTimeout(() => { window.cloudUpdateCell(`tablesConfig/tablesData/${tn}/seats/${si}/name`, v); }, 500);
-        }
-        // --- 其餘函數 ---
         window.updateTimelineCellData = (i, f, v) => window.cloudUpdateCell(`timeline/${i}/${f}`, v);
         window.addNewTimelineRow = () => { if(!window.appData.timeline) window.appData.timeline=[]; window.appData.timeline.push({time:"12:00"}); window.cloudUpdateCell('timeline', window.appData.timeline); }
         window.deleteTimelineRow = (i) => { window.appData.timeline.splice(i,1); window.cloudUpdateCell('timeline', window.appData.timeline); }
